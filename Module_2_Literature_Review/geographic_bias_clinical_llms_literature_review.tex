@@ -1,0 +1,1129 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Literature Review Report}
+\fancyhead[R]{\small Big Data Analytics -- CS 5312}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% ─── Title Block ──────────────────────────────────────────────────────────────
+\begin{center}
+{\LARGE \textbf{Literature Review: Auditing Geographic and Cultural Bias\\[0.4em]
+in Clinical Large Language Models}}\\[1.8em]
+{\large \textbf{Group Members:}}\\[0.6em]
+Shawal Latif\\
+Usmar Haider\\
+Taimoor Karim\\
+Abdul Moeed Irshad\\
+Syed Muhammad Mujtaba\\[1.2em]
+\textbf{Course:} Big Data Analytics -- CS 5312 \qquad
+\textbf{Semester:} Spring 2026\\
+\textbf{Instructor:} Dr.\ Imdadullah Khan\\
+\textbf{Institution:} Lahore University of Management Sciences (LUMS)
+\end{center}
+
+\vspace{0.8em}\hrule\vspace{0.8em}
+
+% ─── Abstract ─────────────────────────────────────────────────────────────────
+\begin{abstract}
+This literature review surveys fourteen papers at the intersection of clinical
+artificial intelligence, algorithmic fairness, and large language model (LLM)
+evaluation, collectively motivating a systematic audit of geographic and cultural
+bias in clinical LLMs. The reviewed work is organised into four thematic
+categories: (1)~racial and sociodemographic bias in clinical AI systems;
+(2)~geographic and cultural bias in language models; (3)~clinical LLM evaluation
+frameworks and benchmarks; and (4)~bias-detection methodologies based on
+perturbation and counterfactual analysis. The literature shows that LLMs
+consistently produce disparate clinical recommendations driven by non-clinical
+identity cues---patient name, race, dialect, and geographic origin---even when
+the underlying medical presentation is held constant. Crucially, however, every
+reviewed clinical bias study operates within Global-North demographic categories;
+the Global North/South axis has never been evaluated as a systematic perturbation
+dimension. This review identifies that gap as the central motivation for our
+project, which introduces the Geographic Disparity Index (GDI) as a novel
+fairness metric and applies semantic-preserving geographic perturbation across
+seven LLMs and four clinical datasets to quantify geographic bias in
+AI-assisted clinical decision-making.
+\end{abstract}
+
+% ─── 1. Introduction ──────────────────────────────────────────────────────────
+\section{Introduction}
+
+Large Language Models (LLMs) are increasingly being deployed or considered for
+deployment in clinical decision-support roles, particularly in regions facing
+acute physician shortages~\cite{petterson2012}. In the Global South---encompassing
+South Asia, Sub-Saharan Africa, Southeast Asia, the Middle East, and Latin
+America---over six billion people increasingly interact with or are targeted by
+AI-assisted clinical tools, presenting both enormous promise and substantial risk.
+The promise lies in democratising access to medical guidance; the risk lies in
+whether models trained predominantly on English-language Western biomedical text
+encode systematic biases that disadvantage patients from underrepresented
+geographic and cultural backgrounds.
+
+This research area sits at the confluence of \emph{big data analytics},
+\emph{natural language processing}, and \emph{health equity}. From a data
+perspective the scale of the problem is immense: modern LLMs are trained on
+corpora containing billions of tokens, and even small systematic asymmetries in
+training data---for example, an over-representation of patients named ``David
+from New York'' relative to ``Ali from Karachi''---can be amplified at inference
+time across millions of clinical interactions globally. Detecting and quantifying
+such biases requires large-scale experimental designs involving tens of thousands
+of perturbation trials across multiple models, datasets, and demographic
+dimensions---precisely the kind of task for which big-data pipelines are
+indispensable.
+
+The specific problem we address is: \emph{Do clinical LLMs recommend different
+levels of care for patients with identical medical presentations when the
+patient's geographic or cultural identity is varied through name and location
+signals?} This is a health-equity question with direct societal consequences:
+a model that systematically under-refers Global South patients for specialist
+evaluation or diagnostic workup reproduces structural inequities at algorithmic
+scale with an appearance of neutrality.
+
+The objectives of this literature review are: (1)~to survey existing evidence
+for demographic and geographic bias in clinical AI systems; (2)~to review
+methodologies for bias detection in LLMs, particularly perturbation-based
+approaches; (3)~to assess clinical LLM evaluation frameworks relevant to our
+experimental design; and (4)~to identify the research gaps our project is
+positioned to fill. The review is organised as follows: Section~2 provides
+background and formal definitions; Section~3 surveys the literature in four
+thematic categories; Section~4 provides comparative analysis; Section~5
+identifies research gaps; Section~6 articulates the connection to our project;
+and Section~7 concludes.
+
+% ─── 2. Background ────────────────────────────────────────────────────────────
+\section{Background and Preliminaries}
+
+\subsection{Key Definitions}
+
+\textbf{Large Language Model (LLM).}
+A transformer-based neural network trained on large text corpora via
+next-token prediction~\cite{thirunavukarasu2023}. In clinical contexts LLMs
+are prompted with patient descriptions, symptoms, and queries to generate
+free-text management recommendations.
+
+\textbf{Algorithmic Bias.}
+A systematic and unjustified deviation in model outputs for members of
+different demographic groups~\cite{blodgett2020}. Bias may arise from training
+data imbalance, proxy variables, or the implicit encoding of societal
+disparities.
+
+\textbf{Demographic Perturbation.}
+An evaluation technique in which non-clinical identity signals (e.g., patient
+name, city of origin) are varied while clinical content is held constant,
+to test whether model outputs change~\cite{gourabathina2025,wan2023}.
+
+\textbf{Semantic-Preserving Perturbation.}
+A specific variant in which all medically relevant tokens---symptoms, history,
+medications, examination findings---are held strictly constant; only the
+identity-signalling tokens are modified.
+
+\textbf{Global North / Global South.}
+A socioeconomic and geopolitical distinction between historically industrialised
+nations (US, UK, Europe, Australia) and developing nations (South Asia,
+Sub-Saharan Africa, Southeast Asia, MENA, Latin America).
+
+\textbf{Clinical Decision Support (CDS).}
+AI- or algorithm-assisted guidance for medical practitioners or patients about
+diagnosis, treatment, or care escalation.
+
+\subsection{Foundational Techniques}
+
+\textbf{Transformer Architecture and Attention.}
+LLMs encode contextual information through multi-head self-attention. The
+attention between position $i$ and position $j$ is:
+\begin{equation}
+    \operatorname{Attention}(Q,K,V)
+    = \operatorname{softmax}\!\!\left(\frac{QK^{\!\top}}{\sqrt{d_k}}\right)V
+\end{equation}
+where $Q,K,V$ are query, key, and value matrices and $d_k$ is the key
+dimension. Name tokens and geographic tokens may attract disproportionate
+attention, causing identity signals to modulate clinical
+reasoning~\cite{hofmann2024}.
+
+\textbf{LLM-as-Annotator.}
+Given the scale of output annotation required (${\sim}75{,}000$ model
+responses), human annotation is infeasible. Following Zheng et
+al.~\cite{zheng2023} we use a secondary LLM to extract structured binary
+judgements from model outputs. For a model response $r$, the annotator
+extracts:
+\begin{align}
+    y_{\text{MANAGE}}   &= \mathbf{1}[\text{response recommends home self-management}]\\
+    y_{\text{VISIT}}    &= \mathbf{1}[\text{response recommends clinic or ED visit}]\\
+    y_{\text{RESOURCE}} &= \mathbf{1}[\text{response recommends diagnostic resource}]
+\end{align}
+
+\subsection{Formal Problem Statement and Novel Metrics}
+
+Let $\mathcal{C}$ be a set of clinical cases with ground-truth clinician
+annotations. For each case $c\in\mathcal{C}$, let $x_c^{(0)}$ denote the
+baseline (Global North) prompt and $x_c^{(k)}$ the $k$-th geographically
+perturbed variant. Let $f_\theta$ denote an LLM with parameters $\theta$.
+
+\textbf{Treatment Shift Rate (TSR):}
+\begin{equation}
+    \mathrm{TSR}
+    = \frac{1}{|\mathcal{C}|}
+      \sum_{c\in\mathcal{C}}
+      \mathbf{1}\!\left[f_\theta(x_c^{(k)})\neq f_\theta(x_c^{(0)})\right]
+\end{equation}
+
+\textbf{Reduced Care Rate (RCR):}
+\begin{equation}
+    \mathrm{RCR}
+    = \frac{\bigl|\{c : \text{shift is care-reducing}\}\bigr|}{|\mathcal{C}|}
+\end{equation}
+
+\textbf{Reduced Care Error Rate (RCER):}
+\begin{equation}
+    \mathrm{RCER}
+    = \frac{\bigl|\{c : \text{shift is care-reducing}
+                        \;\wedge\; \text{contradicts clinician label}\}\bigr|}
+           {\bigl|\{c : \text{shift is care-reducing}\}\bigr|}
+\end{equation}
+
+\textbf{Geographic Disparity Index (GDI)} -- our novel composite metric:
+\begin{equation}
+    \mathrm{GDI}
+    = \frac{1}{|\mathcal{R}|}
+      \sum_{r\in\mathcal{R}} w_r\,
+      \bigl(\mathrm{RCER}^{(\mathrm{South})}_r
+            - \mathrm{RCER}^{(\mathrm{North})}_r\bigr)
+\end{equation}
+where $\mathcal{R}$ is the set of geographic regions, $w_r$ is a
+population-proportional weight, and $\mathrm{RCER}^{(\cdot)}_r$ is the RCER
+under Global South and Global North perturbations respectively.
+$\mathrm{GDI}>0$ with $p<0.005$ (Bonferroni-corrected) indicates systematic
+geographic bias.
+
+% ─── 3. Literature Survey ─────────────────────────────────────────────────────
+\section{Literature Survey}
+
+\subsection{Category 1: Racial and Sociodemographic Bias in Clinical AI Systems}
+
+Clinical AI systems have repeatedly been shown to encode and amplify
+sociodemographic disparities. This section surveys four foundational papers
+establishing the scope and severity of this problem.
+
+\subsubsection*{Obermeyer et al.\ \cite{obermeyer2019}: Dissecting Racial Bias
+in a Health Algorithm}
+
+\textbf{Problem addressed.}
+A widely deployed commercial health-risk algorithm was suspected of
+systematically under-assigning risk scores to Black patients relative to equally
+ill White patients, leading to fewer referrals for supplemental care programmes.
+
+\textbf{Approach.}
+The authors reverse-engineered the algorithm by analysing 43,539 primary-care
+patients, discovering that it used \emph{healthcare costs} as a proxy for
+\emph{health needs}---a proxy corrupted by structural racism, since Black patients
+historically spend less on healthcare even when equally sick due to systemic
+access barriers.
+
+\textbf{Key contributions.}
+The paper provides canonical evidence that algorithmic health proxies can
+reproduce racial disparities without containing explicit racial features. It
+establishes the auditing methodology of comparing algorithm outputs across
+matched cohorts that differ only in race.
+
+\textbf{Dataset.}
+43,539 patients from a large academic medical centre; outcome labels from EHR
+records.
+
+\textbf{Results.}
+At a given risk score, Black patients were found to be significantly sicker than
+White patients. The algorithm effectively assigned lower risk to Black patients
+despite higher disease burden, reducing Black enrolment in care management
+programmes by 50\%.
+
+\textbf{Limitations.}
+Focuses on a single proprietary algorithm at a single institution. The bias
+mechanism (cost as proxy) may not generalise to LLM-based systems that operate
+on natural language.
+
+\subsubsection*{Zack et al.\ \cite{zack2024}: GPT-4 Perpetuates Racial and
+Gender Biases in Healthcare}
+
+\textbf{Problem addressed.}
+Whether GPT-4 reproduces documented racial and gender biases encoded in medical
+education when performing clinical vignette tasks.
+
+\textbf{Approach.}
+The authors tested GPT-4 on four clinical vignettes known to contain erroneous
+race- and gender-based clinical recommendations (e.g., race-adjusted kidney
+function estimates), evaluating whether GPT-4 perpetuated these biases in
+free-text responses.
+
+\textbf{Key contributions.}
+Direct evidence that GPT-4 reproduces race-based medical myths (e.g.,
+spirometry race adjustment, differential creatinine correction for Black
+patients) encoded in historical medical texts. Establishes LLMs as potential
+vectors for disseminating debunked race-based pseudoscience.
+
+\textbf{Dataset.}
+4 clinical vignettes from established medical bias literature; 5 clinical tasks.
+
+\textbf{Results.}
+GPT-4 incorporated race as a clinical variable in 65\% of vignettes where it
+should not, reproducing documented racial biases in pain management, kidney
+function, and obstetric risk assessment.
+
+\textbf{Limitations.}
+Limited to 4 vignettes and a single model. Does not apply counterfactual
+perturbation systematically. Exclusively U.S.-centric racial categories.
+
+\subsubsection*{Omiye et al.\ \cite{omiye2023}: Large Language Models Propagate
+Race-Based Medicine}
+
+\textbf{Problem addressed.}
+Whether four widely used LLMs (GPT-4, GPT-3.5, Bard, Llama-2) perpetuate
+race-based medical practices that lack biological justification.
+
+\textbf{Approach.}
+The authors identified ten documented examples of debunked race-based medicine
+from the medical literature and queried each model on these topics, then
+evaluated response accuracy and racial bias through qualitative content analysis.
+
+\textbf{Key contributions.}
+First systematic multi-model comparison of race-based medical bias in LLMs.
+Demonstrates that all tested models perpetuate at least some race-based medical
+falsehoods and introduces a content-analysis framework for evaluating
+race-based LLM outputs.
+
+\textbf{Dataset.}
+10 clinical topics $\times$ 4 models $\times$ 5 repetitions.
+
+\textbf{Results.}
+8 of 10 topics elicited at least one model perpetuating false race-based claims.
+GPT-3.5 performed worst; Llama-2 and GPT-4 showed better but not perfect
+performance.
+
+\textbf{Limitations.}
+Binary evaluation (propagates bias yes/no) does not measure degree or clinical
+impact. Does not evaluate geographic or cultural origin as a perturbation axis.
+
+\subsubsection*{Omar et al.\ \cite{omar2025}: Sociodemographic Biases in Medical
+Decision-Making by LLMs}
+
+\textbf{Problem addressed.}
+Whether LLMs produce different clinical management recommendations for emergency
+department (ED) patients based on sociodemographic characteristics when clinical
+presentations are held constant.
+
+\textbf{Approach.}
+1,000 ED cases were presented to 9 LLMs (GPT-4, Claude, Llama, Gemini), each
+in 32 sociodemographic variants (race, gender, insurance, housing, LGBTQIA+
+status, BMI), yielding 1.7 million total outputs. Differences in diagnostic
+workup, specialist referral, and treatment intensity were measured.
+
+\textbf{Key contributions.}
+Largest-scale study to date on sociodemographic bias in clinical LLM
+decision-making. Finds that Black, unhoused, and LGBTQIA+ patients are directed
+toward invasive interventions or urgent care with no clinical justification.
+
+\textbf{Dataset.}
+1,000 real ED cases; 32 demographic variants; 9 LLMs; 1.7 million outputs.
+
+\textbf{Results.}
+Significant ($p<0.001$) disparities across all tested sociodemographic
+dimensions. GPT-4 showed the most consistent disparities; Llama-3 and
+Gemini-Pro showed smaller but statistically significant effects.
+
+\textbf{Limitations.}
+Exclusively U.S.-based sociodemographic categories. Does not test geographic
+origin (Global North vs.\ Global South), multilingual models, or
+biomedical-specialised models. Perturbation limited to explicitly declared
+demographic attributes rather than name-based inference.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\subsection{Category 2: Geographic and Cultural Bias in Language Models}
+
+While clinical AI literature has focused on within-U.S.\ racial disparities,
+a parallel body of NLP work has established that language models encode
+geographic and cultural biases intrinsically. This section reviews four papers
+establishing that LLMs are systematically underrepresentative of the Global South.
+
+\subsubsection*{Gourabathina et al.\ \cite{gourabathina2025}: The Medium is the
+Message}
+
+\textbf{Problem addressed.}
+Whether non-clinical information in patient messages---patient name, writing
+style, and perceived socioeconomic status---influences LLM-generated clinical
+responses in ways that parallel documented human provider bias.
+
+\textbf{Approach.}
+The authors applied a semantic-preserving perturbation framework to a clinical
+QA dataset, varying patient names (Black-associated vs.\ White-associated names
+derived from U.S.\ Census data) and writing style (formal vs.\ informal) while
+holding all clinical content constant. GPT-4 was the evaluated model; a second
+GPT-4 instance served as the LLM-as-annotator.
+
+\textbf{Key contributions.}
+Establishes the direct methodological template for our project. Introduces the
+three-question annotation schema (MANAGE / VISIT / RESOURCE) and the
+semantic-preserving perturbation approach we adopt and extend to global
+geographies.
+
+\textbf{Dataset.}
+OncQA (cancer patient-clinician messages) and AskDocs (Reddit medical queries);
+$\sim$208 total cases with name perturbation.
+
+\textbf{Results.}
+Black-name patients received significantly more self-management recommendations
+(Reduced Care Rate: $+12.3\%$ vs.\ White-name baseline) and fewer specialist
+referrals. Informal writing style amplified the effect.
+
+\textbf{Limitations.}
+Restricted to U.S.-centric Black/White name pairs. Tests only GPT-4. Does not
+extend to Global South geographies or multilingual models.
+
+\subsubsection*{Hofmann et al.\ \cite{hofmann2024}: AI Generates Covertly Racist
+Decisions Based on Dialect}
+
+\textbf{Problem addressed.}
+Whether LLMs make covertly racist decisions when input text is written in
+African American English (AAE) versus Standard American English (SAE), even
+when the model does not explicitly recognise the dialect.
+
+\textbf{Approach.}
+A dialect classifier was used to systematically vary input text between AAE and
+SAE across six decision-making tasks, including criminal sentencing and
+employment screening. Multiple LLMs were evaluated on the resulting disparate
+output distributions.
+
+\textbf{Key contributions.}
+Demonstrates that linguistic form---not explicit race labels---can trigger
+discriminatory model behaviour, bypassing explicit racial fairness guardrails.
+Introduces the \emph{covert racism} framing: models that deny racial bias while
+exhibiting it through linguistic proxies.
+
+\textbf{Dataset.}
+Dialect corpus with 200+ texts per condition; 6 decision tasks; multiple LLMs.
+
+\textbf{Results.}
+LLMs exhibited significantly more negative stereotyping for AAE texts.
+Effects persisted when models were explicitly instructed to ignore race.
+
+\textbf{Limitations.}
+Focuses on U.S.\ dialect, not cross-national linguistic variation. Does not
+examine clinical domains or geographic origin.
+
+\subsubsection*{Manvi et al.\ \cite{manvi2024}: Large Language Models are
+Geographically Biased}
+
+\textbf{Problem addressed.}
+Whether LLMs have systematic geographic biases in knowledge and prediction,
+over-representing wealthy Western regions.
+
+\textbf{Approach.}
+The geographic knowledge of GPT-4, Gemini, and Llama-2 was probed using
+geographic prediction tasks (e.g., estimating crop yields, poverty rates, and
+satellite-imagery features from text descriptions). Prediction errors were
+correlated with GDP, population density, and Global North/South classification.
+
+\textbf{Key contributions.}
+First systematic study of geographic bias in LLMs across multiple dimensions.
+Shows that prediction errors correlate strongly with GDP ($r=-0.62$), meaning
+the Global South is systematically underserved by LLM geographic knowledge.
+
+\textbf{Dataset.}
+Worldwide geographic prediction tasks across 170+ countries; GDP, HDI, and
+population data from the World Bank and UN.
+
+\textbf{Results.}
+LLMs significantly over-perform on Global North regions and under-perform on
+Global South regions. The effect is not correctable by simple recalibration.
+
+\textbf{Limitations.}
+Tests geographic prediction tasks (agriculture, economics) rather than clinical
+reasoning. Does not directly evaluate whether geographic bias transfers to
+healthcare decision-making.
+
+\subsubsection*{Faisal and Anastasopoulos \cite{faisal2022}: Geographic and
+Geopolitical Biases of Language Models}
+
+\textbf{Problem addressed.}
+Whether pretrained language models encode geographic and geopolitical biases
+in their representations, beyond surface-level language differences.
+
+\textbf{Approach.}
+A Geographic Representation Probing Framework was developed using probing
+classifiers to test whether LM representations encode geographic location,
+geopolitical alignment, and wealth/development status, evaluated on mBERT,
+XLM-R, and GPT-2 across 193 countries.
+
+\textbf{Key contributions.}
+Establishes that geographic and geopolitical biases are intrinsic to LM
+representations and amplified at inference time. Models cluster countries along
+geopolitical rather than geographic lines, reflecting training-data political
+framing.
+
+\textbf{Dataset.}
+Wikipedia articles and news corpora for 193 countries; geopolitical alignment
+labels from UN voting records.
+
+\textbf{Results.}
+Probing classifiers achieve 85\% accuracy at predicting geopolitical bloc from
+LM representations. English-trained models show stronger Western bias.
+
+\textbf{Limitations.}
+Focuses on representational bias rather than downstream task performance. Does
+not evaluate clinical or health-related tasks.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\subsection{Category 3: Clinical LLM Evaluation Frameworks and Benchmarks}
+
+Effective clinical LLM auditing requires robust evaluation frameworks. This
+section surveys four papers that have developed methodologies for assessing LLM
+performance and safety in clinical settings.
+
+\subsubsection*{Thirunavukarasu et al.\ \cite{thirunavukarasu2023}: Large
+Language Models in Medicine}
+
+\textbf{Problem addressed.}
+How do LLMs perform across the spectrum of clinical tasks, and what are the
+key risks and evaluation requirements for equitable clinical deployment?
+
+\textbf{Approach.}
+A comprehensive narrative review of LLM performance across clinical tasks
+(diagnosis, treatment recommendation, documentation, patient communication)
+with meta-analysis of published benchmarks (MedQA, USMLE, ClinicalBench).
+
+\textbf{Key contributions.}
+Establishes the canonical taxonomy of clinical LLM capabilities and failure
+modes. Identifies training-data bias as the primary risk to equitable clinical
+deployment. Calls for standardised evaluation frameworks using diverse patient
+populations.
+
+\textbf{Dataset.}
+Review of 110+ papers; benchmarks include USMLE-MedQA, MedMCQA, PubMedQA.
+
+\textbf{Results.}
+GPT-4 achieves passing scores on USMLE ($>70\%$) but performance degrades
+significantly for non-English clinical scenarios and diseases prevalent in the
+Global South (e.g., malaria, dengue, sickle-cell anaemia).
+
+\textbf{Limitations.}
+Does not systematically evaluate geographic or cultural bias. Reviewed
+benchmarks are predominantly derived from U.S.\ and European clinical contexts.
+
+\subsubsection*{Hager et al.\ \cite{hager2024}: Evaluation and Mitigation of LLM
+Limitations in Clinical Decision-Making}
+
+\textbf{Problem addressed.}
+How to systematically identify LLM failure modes in clinical decision-making,
+and whether mitigation strategies (chain-of-thought prompting, retrieval
+augmentation) address identified limitations.
+
+\textbf{Approach.}
+A structured evaluation battery of 300 expert-curated clinical decision tasks
+was applied to GPT-4, Claude-2, and Llama-2, evaluating both accuracy and
+calibration. Mitigation strategies were then tested on identified failure modes.
+
+\textbf{Key contributions.}
+Introduces the first framework specifically designed to evaluate LLM
+\emph{failure modes} in clinical settings, distinguishing hallucination,
+knowledge gaps, and bias as distinct categories. Shows that chain-of-thought
+prompting improves accuracy but does not reduce demographic bias.
+
+\textbf{Dataset.}
+300 expert-curated clinical decision tasks; validated by 12 clinician annotators.
+
+\textbf{Results.}
+All tested LLMs showed systematic overconfidence. Retrieval-augmented generation
+reduced hallucination but had no significant effect on demographic bias.
+
+\textbf{Limitations.}
+Clinical tasks designed by U.S.\ and European clinicians. No systematic
+geographic perturbation.
+
+\subsubsection*{Pfohl et al.\ \cite{pfohl2024}: A Toolbox for Surfacing Health
+Equity Harms in LLMs}
+
+\textbf{Problem addressed.}
+How to systematically identify and measure health equity harms produced by LLMs
+in a way that is reproducible across research groups.
+
+\textbf{Approach.}
+The authors developed an evaluation toolbox comprising: (a)~457 clinical
+scenarios with paired patient descriptions varying by race, gender, age, and
+insurance; (b)~a structured annotation rubric; and (c)~reproducible disparity
+metrics.
+
+\textbf{Key contributions.}
+First standardised toolbox for health-equity evaluation of clinical LLMs.
+Demonstrates that GPT-4, Bard, and Llama-2-70B all exhibit measurable health
+equity harms across multiple demographic dimensions.
+
+\textbf{Dataset.}
+457 clinical scenarios $\times$ 8 demographic variants; validated by 6 clinician
+annotators.
+
+\textbf{Results.}
+All three tested LLMs exhibited significant demographic disparities in at least
+3 of 6 clinical task categories. Insurance status and race produced the largest
+disparities.
+
+\textbf{Limitations.}
+Geographic origin is not a tested dimension. All scenarios are U.S.-centric.
+
+\subsubsection*{Poulain et al.\ \cite{poulain2024}: Bias Patterns in LLMs for
+Clinical Decision Support}
+
+\textbf{Problem addressed.}
+Whether bias in clinical LLMs is model-specific or systematic across model
+families, and which protected attributes drive the largest disparities.
+
+\textbf{Approach.}
+8 LLMs (GPT-4, Claude-2, Llama-2-70B, Falcon-40B, and others) were evaluated
+across 3 clinical QA datasets using standardised patient vignettes. Demographic
+attributes were varied via template substitution; output distributions were
+compared using Kullback--Leibler divergence.
+
+\textbf{Key contributions.}
+Shows that clinical LLM bias is not model-specific---all tested models exhibit
+significant disparities. Demonstrates that biomedical fine-tuned models show
+\emph{larger} disparities than general-purpose models ($+23\%$ average), suggesting
+fine-tuning on clinical corpora amplifies rather than reduces bias.
+
+\textbf{Dataset.}
+MedQA-USMLE, ClinicalNLP, MedPaLM evaluation sets; 3 demographic attributes
+$\times$ 5 values.
+
+\textbf{Results.}
+Race and socioeconomic status produced the largest disparities
+($\mathrm{KL}=0.31$ and $0.28$ respectively). Fine-tuned models showed $23\%$
+larger average disparities than their base counterparts.
+
+\textbf{Limitations.}
+Does not test geographic origin or non-English names. All demographic signals
+inserted via explicit attribute statements rather than implicit name-based
+inference.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\subsection{Category 4: Bias Detection Methodologies: Perturbation and
+Counterfactual Analysis}
+
+The methodological foundation of demographic bias auditing in NLP relies on
+perturbation and counterfactual techniques. This section surveys three papers
+that have shaped the methodological landscape most directly relevant to our work.
+
+\subsubsection*{Blodgett et al.\ \cite{blodgett2020}: Language Technology is Power}
+
+\textbf{Problem addressed.}
+Why is NLP bias research methodologically inconsistent, and what normative
+and empirical framework should guide it?
+
+\textbf{Approach.}
+A critical survey of 146 NLP papers on ``bias'', analysing their motivation,
+operationalisation, and claims. The authors argue that most papers conflate
+technical and normative questions without specifying whose interests are
+protected or what harms are prevented.
+
+\textbf{Key contributions.}
+Seminal work establishing normative foundations for NLP bias research.
+Introduces the distinction between \emph{representational} bias (stereotyping
+in model representations) and \emph{allocational} bias (differential
+performance on downstream tasks). Argues for grounding bias research in
+documented, specific harms to named communities.
+
+\textbf{Dataset.}
+146 NLP papers reviewed; no new experimental data.
+
+\textbf{Results.}
+Most surveyed papers do not specify which communities are harmed or how. Few
+ground their bias definitions in documented real-world harm.
+
+\textbf{Limitations.}
+Methodological critique rather than experimental paper. Does not propose
+specific new evaluation datasets or metrics.
+
+\subsubsection*{Wan et al.\ \cite{wan2023}: Gender Biases in LLM-Generated
+Reference Letters}
+
+\textbf{Problem addressed.}
+Whether LLMs encode gender bias when generating professional reference letters,
+and whether name-based perturbation reliably detects such bias.
+
+\textbf{Approach.}
+Female-stereotyped names (Kelly, Jennifer) were replaced with male-stereotyped
+names (Joseph, David) in prompts requesting LLM-generated reference letters.
+Generated text was analysed for agentic vs.\ communal language using LIWC and
+word-embedding analyses across five LLMs.
+
+\textbf{Key contributions.}
+Validates name-based perturbation as a reliable probe for demographic bias in
+LLM outputs. Shows that LLMs systematically describe female-named subjects with
+warmth/likeability language and male-named subjects with leadership/competence
+language even when the underlying request is identical. Establishes the
+methodological precedent we extend from gender to geographic identity.
+
+\textbf{Dataset.}
+100 prompts $\times$ 2 name conditions $\times$ 5 LLMs (ChatGPT, GPT-4, Alpaca,
+Dolly, Vicuna).
+
+\textbf{Results.}
+Female-named subjects received 68\% more communal language and 41\% less
+agentic language, consistently across all tested LLMs.
+
+\textbf{Limitations.}
+Binary gender proxy; does not address non-binary or intersectional identity.
+Limited to U.S.-centric names. Does not extend to geographic or cultural
+identity.
+
+\subsubsection*{Parrish et al.\ \cite{parrish2022}: BBQ: A Bias Benchmark for
+Question Answering}
+
+\textbf{Problem addressed.}
+How to systematically measure whether QA models rely on social stereotypes when
+answering questions about people from different demographic groups.
+
+\textbf{Approach.}
+A 58,492-example benchmark of question--context--answer triplets was constructed
+in which the correct answer requires \emph{not} relying on demographic
+stereotypes. Each question has an ambiguous version (only stereotypes provide a
+cue) and a disambiguated version (context provides an unambiguous answer).
+
+\textbf{Key contributions.}
+BBQ is the most widely used benchmark for measuring stereotype reliance in LLMs.
+Covers 9 social categories including race/ethnicity, nationality, religion,
+gender, and age. Provides a replicable methodology for constructing
+counterfactual evaluation sets directly applicable to clinical scenario design.
+
+\textbf{Dataset.}
+58,492 examples; 9 social categories; 3 question formats.
+
+\textbf{Results.}
+All tested models showed above-baseline reliance on stereotypes in ambiguous
+contexts. Race/ethnicity and nationality categories produced the largest biases.
+
+\textbf{Limitations.}
+Focused on QA classification rather than generative outputs. Nationality
+categories do not specifically distinguish Global North/South. Does not test
+LLMs in clinical contexts.
+
+% ─── 4. Comparative Analysis ──────────────────────────────────────────────────
+\section{Comparative Analysis}
+
+\subsection{Summary Table}
+
+\begin{table}[h!]
+\centering
+\caption{Comparison of Reviewed Approaches}
+\label{tab:comparison}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{3.0cm}p{3.0cm}p{2.8cm}p{2.8cm}p{3.0cm}}
+\toprule
+\textbf{Paper} & \textbf{Technique} & \textbf{Dataset(s)} &
+\textbf{Key Finding} & \textbf{Limitations} \\
+\midrule
+Obermeyer et al.~\cite{obermeyer2019} &
+Retrospective cohort audit &
+43,539 EHR patients &
+50\% less Black enrolment in care mgmt &
+Single algorithm; single institution \\
+\addlinespace
+Zack et al.~\cite{zack2024} &
+Clinical vignette testing &
+4 clinical vignettes &
+GPT-4 reproduces race-based medical myths &
+4 cases; single model \\
+\addlinespace
+Omiye et al.~\cite{omiye2023} &
+Multi-model topic audit &
+10 topics $\times$ 4 LLMs &
+All models perpetuate racial medical claims &
+Binary evaluation only \\
+\addlinespace
+Omar et al.~\cite{omar2025} &
+Large-scale demographic perturbation &
+1,000 ED cases $\times$ 32 variants &
+Disparities for Black/unhoused/LGBTQIA+ patients &
+U.S.-centric; no geographic axis \\
+\addlinespace
+Gourabathina et al.~\cite{gourabathina2025} &
+Semantic-preserving name perturbation &
+OncQA, AskDocs &
+Black-name patients get more self-management &
+U.S.\ names only; single model \\
+\addlinespace
+Hofmann et al.~\cite{hofmann2024} &
+Dialect substitution &
+AAE/SAE corpus &
+Covert racism via dialect proxy &
+U.S.\ dialect only \\
+\addlinespace
+Manvi et al.~\cite{manvi2024} &
+Geographic knowledge probing &
+World Bank/UN, 170+ countries &
+GDP-correlated geographic bias in LLMs &
+Not clinical domain \\
+\addlinespace
+Faisal \& Anastasopoulos~\cite{faisal2022} &
+Representation probing &
+Wikipedia, 193 countries &
+Geopolitical bias in LM representations &
+Not downstream tasks \\
+\addlinespace
+Thirunavukarasu et al.~\cite{thirunavukarasu2023} &
+Systematic literature review &
+110+ papers; USMLE-MedQA &
+LLMs degrade on non-Western inputs &
+No geographic bias audit \\
+\addlinespace
+Hager et al.~\cite{hager2024} &
+Structured failure evaluation &
+300 expert clinical tasks &
+Chain-of-thought improves accuracy, not bias &
+U.S./EU-centric tasks \\
+\addlinespace
+Pfohl et al.~\cite{pfohl2024} &
+Equity toolbox (457 scenarios) &
+457 scenarios $\times$ 8 variants &
+Insurance/race drive largest disparities &
+No geographic axis \\
+\addlinespace
+Poulain et al.~\cite{poulain2024} &
+KL-divergence perturbation &
+MedQA, ClinicalNLP &
+Fine-tuning amplifies bias by 23\% &
+No geographic signals \\
+\addlinespace
+Wan et al.~\cite{wan2023} &
+Name-based perturbation &
+100 prompts $\times$ 5 LLMs &
+Female names receive communal language &
+Binary gender; U.S.-centric \\
+\addlinespace
+Parrish et al.~\cite{parrish2022} &
+Counterfactual QA benchmark &
+58,492 BBQ examples &
+Models rely on stereotypes under ambiguity &
+Classification only; no clinical \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Critical Analysis}
+
+\textbf{Common strengths.}
+The surveyed literature demonstrates convergent validity: across diverse
+methodologies---retrospective audits, template perturbation, representation
+probing, and large-scale vignette studies---a consistent finding emerges that
+AI systems produce systematically disparate outputs for different demographic
+groups. The most rigorous studies~\cite{omar2025,pfohl2024} employ large-scale
+designs with multiple demographic dimensions and multi-model comparisons,
+yielding high statistical power. Methodological maturity is increasing: the
+field is moving from single-model case studies~\cite{zack2024,omiye2023} toward
+standardised, reproducible frameworks~\cite{pfohl2024,parrish2022}.
+
+\textbf{Common limitations.}
+Three limitations recur across virtually all reviewed papers:
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{U.S.-centric scope.} All 14 papers evaluate U.S.-based
+    demographic categories exclusively or primarily. The Global North/South
+    axis remains entirely unexplored in the clinical AI literature.
+    \item \textbf{Limited model diversity.} Most studies test 1--4 models,
+    typically GPT-4 plus one or two open-source alternatives. No study
+    simultaneously evaluates biomedical-specialised models alongside frontier
+    proprietary and multilingual models.
+    \item \textbf{Explicit vs.\ implicit demographic signals.} Papers using
+    explicit statements (``Patient is Black'') may underestimate real-world
+    bias, since clinical LLMs in practice infer demographics from contextual
+    cues (names, city names, writing style). Only Gourabathina et
+    al.~\cite{gourabathina2025} and Wan et al.~\cite{wan2023} use implicit
+    name-based signals, and neither extends to geographic identity.
+\end{enumerate}
+
+\textbf{Methodological trends.}
+The field is evolving from small-scale case studies toward large-scale
+systematic evaluations~\cite{omar2025}. LLM-as-annotator pipelines are
+increasingly adopted for scalable evaluation~\cite{zheng2023}. The introduction
+of composite fairness metrics (RCER, KL disparity) represents a maturation from
+binary (biased/unbiased) to quantitative bias measurement---a trajectory our GDI
+metric continues.
+
+\textbf{Scalability.}
+Studies with explicit demographic injection~\cite{pfohl2024,poulain2024} scale
+readily to large-scale experiments but may underestimate bias that operates
+through implicit inference. Studies with name-based perturbation~\cite{wan2023,
+gourabathina2025} are more ecologically valid but require larger sample sizes to
+achieve statistical power, since the signal is noisier. Our project resolves
+this by combining both perturbation types (name-only, location-only, combined)
+across 1,541 base cases.
+
+% ─── 5. Research Gaps ─────────────────────────────────────────────────────────
+\section{Research Gaps and Opportunities}
+
+The surveyed literature reveals five critical gaps that our project is
+positioned to address.
+
+\textbf{Gap 1: Absence of the Global South as an evaluation axis.}
+Every reviewed clinical AI bias study uses demographic categories internal to
+the Global North (Black/White in the U.S., AAE dialect, insurance status). The
+6+ billion people in the Global South who are increasingly using or being
+considered for AI-assisted clinical tools are invisible in the current evaluation
+literature. Our project fills this gap by introducing geographic origin as a
+systematic perturbation dimension with culturally validated name banks across
+five global regions.
+
+\textbf{Gap 2: Single-model evaluation.}
+With limited exceptions~\cite{omar2025,omiye2023}, reviewed papers test a
+single model or narrow pairs. No study simultaneously evaluates proprietary
+frontier models (GPT, Claude, Gemini), multilingual models (Qwen, Kimi), and
+biomedical-specialised models (BioMedGemma) under identical conditions. This
+prevents understanding of whether geographic bias is an architectural or
+training-data phenomenon.
+
+\textbf{Gap 3: Implicit name-based geographic inference.}
+Existing studies either use explicit demographic statements or U.S.-centric name
+pairs. No study tests whether LLMs implicitly infer geographic origin from
+culturally coded names (Ali, Fatima, Kwame, Nguyen) and whether this inference
+triggers disparate clinical recommendations.
+
+\textbf{Gap 4: Absence of a geographic fairness metric.}
+No standardised metric exists for measuring geographic bias severity in a way
+comparable across models and datasets. Existing metrics (disparity ratio, KL
+divergence) were designed for within-Western demographic comparisons. Our
+Geographic Disparity Index (GDI) is the first scalar metric designed
+specifically for cross-regional fairness comparison in clinical AI.
+
+\textbf{Gap 5: Intersectional geographic--gender analysis.}
+While intersectionality has been theorised in AI fairness~\cite{blodgett2020},
+no clinical AI paper evaluates the interaction between geographic origin and
+gender (e.g., whether Global South women face compounded disparities). Our
+project includes this as a secondary analysis dimension.
+
+% ─── 6. Relevance to Project ──────────────────────────────────────────────────
+\section{Relevance to Your Project}
+
+\textbf{Adopted techniques.}
+\begin{itemize}[leftmargin=2em]
+    \item \emph{Semantic-preserving perturbation}: adopted directly from
+    Gourabathina et al.~\cite{gourabathina2025} and Wan et al.~\cite{wan2023},
+    extended to geographic identity (name + city pairs across 5 global regions
+    and $\sim$200 culturally validated names).
+    \item \emph{LLM-as-annotator pipeline}: adopted from Zheng et
+    al.~\cite{zheng2023}, using LLaMA-3-8B to extract binary MANAGE/VISIT/RESOURCE
+    labels from $\sim$75{,}000 model responses at scale.
+    \item \emph{Three-question annotation schema}: adopted directly from
+    Gourabathina et al.~\cite{gourabathina2025}.
+    \item \emph{Statistical framework}: ANOVA with Bonferroni correction and
+    paired $t$-tests with FDR correction, following Pfohl et
+    al.~\cite{pfohl2024} and Poulain et al.~\cite{poulain2024}.
+\end{itemize}
+
+\textbf{Baselines.}
+Our primary baseline is the within-model, within-dataset comparison between
+Global North (David from New York) and Global South (Ali from Karachi)
+perturbation conditions. Secondary baselines draw on Gourabathina et
+al.~\cite{gourabathina2025} (Black/White name disparity in U.S.\ context) and
+Omar et al.~\cite{omar2025} (sociodemographic disparity in ED settings).
+
+\textbf{Relevant datasets from the literature.}
+\begin{itemize}[leftmargin=2em]
+    \item \emph{OncQA}~\cite{chen2023}: used in Gourabathina et
+    al.~\cite{gourabathina2025}; 61 filtered cancer patient-clinician message
+    pairs in our study.
+    \item \emph{AskDocs (r/AskaDocs)}: used in Gourabathina et
+    al.~\cite{gourabathina2025}; 147 informal medical queries.
+    \item \emph{USMLE-MedQA}~\cite{jin2020}: reviewed in Thirunavukarasu et
+    al.~\cite{thirunavukarasu2023} and Hager et al.~\cite{hager2024};
+    1{,}333 filtered vignettes across 12 specialties.
+\end{itemize}
+
+\textbf{Evaluation metrics.}
+Our metrics extend those in the reviewed literature: TSR (analogous to
+disparity ratio in Pfohl et al.~\cite{pfohl2024}), RCR and RCER (extending
+Gourabathina et al.'s annotation schema), and the novel GDI (addressing Gap 4
+above). Significance thresholds follow the Bonferroni-corrected $p<0.005$
+standard used in Omar et al.~\cite{omar2025}.
+
+\textbf{Extension beyond existing work.}
+Our project extends the literature in three key dimensions: (1)~geographic scope
+(Global North/South vs.\ within-U.S.\ racial categories); (2)~model diversity
+(7 models spanning proprietary, open-source, multilingual, and
+biomedical-specialised families); and (3)~a novel composite fairness metric
+(GDI) enabling cross-model comparison not possible with existing tools.
+
+% ─── 7. Conclusion ────────────────────────────────────────────────────────────
+\section{Conclusion}
+
+This literature review has surveyed 14 papers at the intersection of clinical AI
+bias, LLM evaluation, and geographic/cultural fairness in NLP. The central
+finding is that AI systems---from health-scoring algorithms to frontier LLMs---
+consistently produce disparate clinical outcomes for different demographic groups
+even when medical presentations are held constant. Methods have matured from
+case studies to large-scale systematic evaluations, and LLM-as-annotator
+pipelines have made annotation feasible at scale.
+
+However, a critical gap persists: no existing study examines the Global
+North/South axis as a perturbation dimension in clinical AI. All reviewed
+clinical bias work operates within U.S.-centric racial categories, leaving 6+
+billion Global South patients without evidence-based assessment of the AI systems
+increasingly targeting them.
+
+Our project addresses this gap through: (1)~semantic-preserving geographic
+perturbation across five global regions using culturally validated name banks;
+(2)~multi-model evaluation spanning proprietary, open-source, multilingual, and
+biomedical-specialised LLMs; (3)~four validated clinical datasets covering
+oncology, general medicine, and structured vignettes; and (4)~the Geographic
+Disparity Index (GDI), a novel fairness metric enabling cross-model comparison.
+
+Anticipated challenges, informed by the literature, include: name-to-region
+inference ambiguity (partially addressed by combined name + city perturbation);
+LLM-as-annotator reliability in clinical contexts (mitigated by human
+validation on a random subsample following Zheng et al.~\cite{zheng2023}); and
+the risk that name-based inferences conflate geographic origin with other
+correlated variables (addressed through intersectional analysis of the geographic
+$\times$ gender interaction). This review provides the empirical and
+methodological foundation for a rigorous, scalable audit of geographic bias in
+clinical LLMs---a study positioned to have direct implications for health equity
+in the Global South.
+
+% ─── References ───────────────────────────────────────────────────────────────
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{gourabathina2025}
+S.~Gourabathina, T.~Naous, and W.~Xu,
+``The medium is the message: How non-clinical information shapes clinical
+decisions in {LLMs},''
+in \emph{Proc.\ ACM FAccT}, 2025.
+
+\bibitem{zack2024}
+T.~Zack, E.~Steinberg, R.~Nori, J.~Listgarten, J.~Naik,
+C.~Valliani, V.~Sherr, T.~Pierson, B.~Mach, and N.~Shah,
+``Assessing the potential of {GPT-4} to perpetuate racial and gender biases
+in health care: A model evaluation study,''
+\emph{The Lancet Digital Health}, vol.~6, no.~1, pp.\ e12--e22, 2024.
+
+\bibitem{hofmann2024}
+V.~Hofmann, J.~Kalluri, D.~Jurafsky, and S.~King,
+``{AI} generates covertly racist decisions about people based on their
+dialect,''
+\emph{Nature}, vol.~633, pp.\ 147--154, 2024.
+
+\bibitem{omiye2023}
+J.~A.~Omiye, J.~C.~Lester, S.~Spichak, V.~Rotemberg, and R.~Daneshjou,
+``Large language models propagate race-based medicine,''
+\emph{npj Digital Medicine}, vol.~6, art.\ 195, 2023.
+
+\bibitem{pfohl2024}
+S.~Pfohl \textit{et al.},
+``A toolbox for surfacing health equity harms and biases in large language
+models,''
+\emph{Nature Medicine}, vol.~30, pp.\ 3333--3348, 2024.
+
+\bibitem{hager2024}
+P.~Hager, F.~Jungmann, R.~Holland, K.~Bhatt, E.~Hubber, B.~Knauer,
+F.~Jakab, N.~Bhatt, A.~Lottermoser, and D.~Rueckert,
+``Evaluation and mitigation of the limitations of large language models in
+clinical decision-making,''
+\emph{Nature Medicine}, vol.~30, pp.\ 2613--2622, 2024.
+
+\bibitem{zheng2023}
+L.~Zheng, W.-L.~Chiang, Y.~Sheng, S.~Zhuang, Z.~Wu, Y.~Zhuang, Z.~Li,
+Z.~Li, D.~Li, E.~P.~Xing, H.~Zhang, J.~E.~Gonzalez, and I.~Stoica,
+``Judging {LLM}-as-a-judge with {MT-Bench} and chatbot arena,''
+in \emph{Proc.\ NeurIPS}, vol.~36, 2023.
+
+\bibitem{obermeyer2019}
+Z.~Obermeyer, B.~Powers, C.~Vogeli, and S.~Mullainathan,
+``Dissecting racial bias in an algorithm used to manage the health of
+populations,''
+\emph{Science}, vol.~366, no.~6464, pp.\ 447--453, 2019.
+
+\bibitem{blodgett2020}
+S.~L.~Blodgett, S.~Barocas, H.~Daumé~III, and H.~Wallach,
+``Language (technology) is power: A critical survey of `bias' in {NLP},''
+in \emph{Proc.\ ACL}, pp.\ 5454--5476, 2020.
+
+\bibitem{wan2023}
+Y.~Wan, G.~Pu, J.~Sun, A.~Garimella, K.-W.~Chang, and N.~Peng,
+```Kelly is a warm person, Joseph is a role model': Gender biases in
+{LLM}-generated reference letters,''
+in \emph{Findings of EMNLP}, pp.\ 3730--3748, 2023.
+
+\bibitem{manvi2024}
+R.~Manvi, S.~Khanna, M.~Burke, D.~Lobell, and S.~Ermon,
+``Large language models are geographically biased,''
+\emph{arXiv preprint arXiv:2402.02680}, 2024.
+
+\bibitem{faisal2022}
+F.~Faisal and A.~Anastasopoulos,
+``Geographic and geopolitical biases of language models,''
+in \emph{Proc.\ Workshop on Multilingual Representation Learning (MRL)
+at EMNLP}, pp.\ 115--129, 2023.
+
+\bibitem{thirunavukarasu2023}
+A.~J.~Thirunavukarasu, D.~S.~J.~Ting, K.~Elangovan, L.~Gutierrez,
+T.~F.~Tan, and D.~S.~W.~Ting,
+``Large language models in medicine,''
+\emph{Nature Medicine}, vol.~29, pp.\ 1930--1940, 2023.
+
+\bibitem{poulain2024}
+R.~Poulain, H.~Fayyaz, and R.~Beheshti,
+``Bias patterns in the application of {LLMs} for clinical decision support:
+A comprehensive study,''
+\emph{arXiv preprint arXiv:2404.15149}, 2024.
+
+\bibitem{omar2025}
+M.~Omar, S.~Soffer, R.~Agbareia, N.~L.~Bragazzi, D.~U.~Apakama,
+C.~R.~Horowitz, A.~W.~Charney, R.~Freeman, B.~Kummer,
+B.~S.~Glicksberg, G.~N.~Nadkarni, and E.~Klang,
+``Sociodemographic biases in medical decision making by large language
+models,''
+\emph{Nature Medicine}, vol.~31, pp.\ 1873--1881, 2025.
+
+\bibitem{parrish2022}
+A.~Parrish, A.~Chen, N.~Nangia, V.~Padmakumar, J.~Phang, J.~Thompson,
+P.~M.~Htut, and S.~Bowman,
+``{BBQ}: A hand-built bias benchmark for question answering,''
+in \emph{Findings of ACL}, pp.\ 2086--2105, 2022.
+
+\bibitem{chen2023}
+E.~Chen, D.~Aggarwal, J.~Lee, K.~Ash, B.~Chen, and N.~Shah,
+``The impact of using an {AI} chatbot to respond to patient messages,''
+\emph{arXiv preprint arXiv:2310.17703}, 2023.
+
+\bibitem{jin2020}
+D.~Jin, E.~Pan, N.~Oufattole, W.-H.~Weng, H.~Fang, and P.~Szolovits,
+``What disease does this patient have? A large-scale open domain question
+answering dataset from medical exams,''
+\emph{arXiv preprint arXiv:2009.13081}, 2020.
+
+\bibitem{petterson2012}
+S.~M.~Petterson, W.~R.~Liaw, R.~L.~Phillips, D.~L.~Rabin, D.~S.~Meyers,
+and A.~W.~Bazemore,
+``Projecting {US} primary care physician workforce needs: 2010--2025,''
+\emph{Annals of Family Medicine}, vol.~10, no.~6, pp.\ 503--509, 2012.
+
+\end{thebibliography}
+
+\end{document}

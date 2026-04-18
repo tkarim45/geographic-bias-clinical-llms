@@ -1,0 +1,17 @@
+cases_path: configs/cases.jsonl
+name_bank_path: configs/name_bank.json
+run_dir_parent: runs
+
+perturb_mode: combined
+
+conditions:
+  - global_north
+  - south_asia
+  - subsaharan_africa
+  - latin_america
+
+models:
+  - {"provider": "openai", "model_id": "gpt-4o-mini", "display_name": "GPT-4o-mini (OpenAI)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": true}
+  - {"provider": "groq",   "model_id": "openai/gpt-oss-20b", "display_name": "GPT-OSS-20B (OpenAI OSS)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false}
+  - {"provider": "groq",   "model_id": "llama-3.3-70b-versatile", "display_name": "Llama-3.3-70B (Meta)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": true}
+  - {"provider": "groq",   "model_id": "qwen/qwen3-32b", "display_name": "Qwen3-32B (Alibaba)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false}

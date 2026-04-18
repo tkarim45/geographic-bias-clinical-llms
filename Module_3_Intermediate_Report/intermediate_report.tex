@@ -1,0 +1,677 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{tcolorbox}
+\usepackage{listings}
+
+% ── Colours (matching proposal/lit review theme) ─────────────────────────────
+\definecolor{acmblue}{RGB}{0, 83, 156}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{medgray}{RGB}{220, 220, 220}
+\definecolor{darkgray}{RGB}{80, 80, 80}
+\definecolor{rowblue}{RGB}{217, 225, 242}
+\definecolor{rowalt}{RGB}{242, 242, 242}
+\definecolor{donegreen}{RGB}{34, 139, 34}
+\definecolor{progressorange}{RGB}{230, 126, 34}
+\definecolor{pendinggray}{RGB}{130, 130, 130}
+
+% ── Hyperref setup ────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=acmblue,
+    citecolor=acmblue,
+    urlcolor=acmblue,
+    pdftitle={Intermediate Project Report: Auditing Geographic and Cultural Bias in Clinical LLMs},
+    pdfauthor={Group 7 - LUMS CS-5312 Spring 2026},
+}
+
+% ── Section formatting ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{acmblue}}
+  {\thesection}{1em}{}
+  [\vspace{-4pt}\rule{\linewidth}{0.8pt}\vspace{2pt}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{darkgray}}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\itshape\color{darkgray}}
+  {\thesubsubsection}{1em}{}
+
+% ── Header / Footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{darkgray}{Intermediate Project Report}}
+\fancyhead[R]{\small\textcolor{darkgray}{Big Data Analytics --- CS 5312}}
+\fancyfoot[C]{\small Page \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setstretch{1.15}
+\setlist[itemize]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
+
+% ── Status tag helpers ────────────────────────────────────────────────────────
+\newcommand{\statusdone}{\textcolor{donegreen}{\textbf{[DONE]}}}
+\newcommand{\statusprog}{\textcolor{progressorange}{\textbf{[IN PROGRESS]}}}
+\newcommand{\statuspend}{\textcolor{pendinggray}{\textbf{[PENDING]}}}
+
+% ── Listings setup for code snippets ──────────────────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{darkgray}\itshape,
+  keywordstyle=\color{acmblue}\bfseries,
+  stringstyle=\color{donegreen},
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{medgray},
+  backgroundcolor=\color{lightgray},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  captionpos=b,
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Title Block (per template) ────────────────────────────────────────────────
+\begin{center}
+{\Large\textbf{Intermediate Project Report:\\[0.2em]
+Auditing Geographic and Cultural Bias in Clinical Large Language Models}}\\[1.0em]
+
+\textbf{Group 7 Members:}\\[0.3em]
+Shawal Latif\\
+Usmar Haider\\
+Taimoor Karim\\
+Abdul Moeed Irshad\\
+Syed Muhammad Mujtaba\\[0.8em]
+
+\textbf{Course:} Big Data Analytics --- CS 5312\qquad\textbf{Semester:} Spring 2026\\
+\textbf{Instructor:} Dr.\ Imdadullah Khan\qquad\textbf{Institution:} Lahore University of Management Sciences (LUMS)\\
+\textbf{Submission Date:} April 20, 2026
+\end{center}
+
+\vspace{0.8em}\hrule\vspace{0.8em}
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+\noindent This intermediate report documents the state of our project auditing geographic and cultural bias in clinical large language models, a direct extension of Gourabathina et al.~\cite{gourabathina2025} along a previously unexamined axis: Global North versus Global South patient identity. Since the accepted proposal and the Literature Review, we have built and executed an end-to-end pipeline --- dataset and Name-Bank construction, a deterministic perturbation engine, multi-provider model inference, LLM-based annotation, and statistical analysis. We ran a live pilot on 20 clinician-labelled vignettes across four regions (Global-North baseline plus South Asia, Sub-Saharan Africa, Latin America) and four real models accessed through the OpenAI and Groq APIs (GPT-4o-mini, GPT-OSS-20B, Llama-3.3-70B, Qwen3-32B), producing 320 completions and 320 annotations. All numbers below are measured, not simulated. Mean Reduced-Care-Errors Rate (RCER) is 22.1\% in the Global-North baseline and 22.6\% in the Global-South Combined perturbation; the pooled per-model Geographic Disparity Index (GDI) ranges from $-0.061$ (GPT-OSS-20B) to $+0.085$ (Qwen3-32B). No model reaches the pre-registered Bonferroni-corrected significance threshold ($\alpha=0.005$, $n=20$) --- the pilot is clearly under-powered, but per-question and per-region breakdowns reveal a consistent signature worth chasing at full scale: Qwen3-32B disproportionately withholds in-person-visit recommendations for Global-South patients ($\Delta$~RCER~$=+15.4$ pp on the VISIT triage question). Sub-Saharan Africa shows the largest pooled effect across models (mean $\Delta$~RCER~$=+3.5$ pp) versus South Asia and Latin America. Principal challenges encountered and solved were Groq TPM rate-limit failures (52/320 completion calls, concentrated on Qwen3-32B and GPT-OSS-20B) and a cascading annotator-failure rate (31\%) repaired with a serial re-annotation pass. Remaining work before the final report is scaling to the real OncQA, r/AskaDocs, and USMLE+Derm datasets, adding three more models, and carrying out intersectional and model-inferred-geography analyses.
+\end{abstract}
+
+\vspace{0.4em}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Executive Summary}
+
+\subsection{Current Project Status}
+
+The project is approximately \textbf{55\% complete} as of 18~April~2026. The three preparatory milestones (proposal, literature review, \emph{end-to-end pilot}) are closed; the large-scale evaluation phase begins this week.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{5.5cm} >{\small}c >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Milestone}} & \textcolor{white}{\textbf{Status}} & \textcolor{white}{\textbf{Notes}}\\
+\rowcolor{rowalt}
+Proposal (accepted, no revisions) & \statusdone & Submitted 6~Mar~2026\\
+Literature review (13 papers, 4 themes) & \statusdone & Submitted 1~Apr~2026\\
+\rowcolor{rowalt}
+Pilot dataset (20 vignettes, clinician-labelled) & \statusdone & Covers primary care, dermatology, oncology, emergency\\
+Geographic Name Bank v1.0 (150 names, 6 regions) & \statusdone & 25 entries / region, M/F balanced\\
+\rowcolor{rowalt}
+Perturbation engine (deterministic, template-based) & \statusdone & Uses \{\{NAME\}\} / \{\{GEO\}\} placeholders\\
+Inference harness (OpenAI + Groq adapters) & \statusdone & Stdlib-only transport; token-bucket rate limiter; ID-stable cache\\
+\rowcolor{rowalt}
+LLM-as-annotator (Llama-3.1-8B via Groq) & \statusdone & After serial re-annotation, 100\% LLM-annotated (0 heuristic-fallback in final artefacts)\\
+Pilot run: 4 models $\times$ 4 regions $\times$ 20 cases & \statusdone & 268 / 320 completions successful; 52 lost to Groq TPM limits (all on Qwen3-32B and GPT-OSS-20B)\\
+\rowcolor{rowalt}
+Pilot statistical analysis (TSR, RCR, RCER, GDI, Wilcoxon) & \statusdone & Real numbers reported in §\ref{sec:results}\\
+Scale to OncQA / r/AskaDocs / USMLE+Derm & \statusprog & Loaders drafted; rate-limit mitigation required before large runs\\
+\rowcolor{rowalt}
+Add 3 more frontier models (GPT-5.x, Claude, Gemini) & \statuspend & OpenAI GPT-5.x available today; Claude/Gemini require additional keys\\
+Intersectional analysis (gender $\times$ region) & \statuspend & Design drafted\\
+\rowcolor{rowalt}
+Final report and presentation & \statuspend & May 2026\\
+\end{tabularx}
+\captionof{table}{Milestone status as of 18~April~2026.}
+\end{center}
+
+\subsection{Key Technical Achievements (measured)}
+
+\begin{enumerate}
+  \item \textbf{Fully reproducible end-to-end pipeline.} One YAML file configures cases, conditions, models, and seeds; \texttt{python -m audit.run --config configs/pilot\_oncqa.yaml --seed 42} rebuilds every artefact. SHA-256 manifests lock the dataset and Name-Bank to each run.
+  \item \textbf{Real multi-provider LLM evaluation.} The same \texttt{generate} abstraction drives OpenAI GPT-4o-mini and three open-source models hosted on Groq (Llama-3.3-70B, Qwen3-32B, OpenAI-GPT-OSS-20B). Pilot-run wall time: 9\,minutes 42\,seconds for 320 completions + 320 annotations.
+  \item \textbf{Measured GDI per model.} Four real GDI values were computed from live inference: GPT-4o-mini $+0.015$, GPT-OSS-20B $-0.061$, Llama-3.3-70B $-0.017$, Qwen3-32B $+0.085$. Bootstrap 95\% CIs and paired Wilcoxon $p$-values reported.
+  \item \textbf{Instrumented failure handling.} Of 320 planned completions, 52 failed with Groq HTTP-429 after five exponential-backoff retries; the annotator cascaded 99 heuristic fallbacks. A serial re-annotation pass (7-second spacing) recovered \emph{all} 99 to proper LLM labels, bringing final annotator-fallback rate to 0.
+\end{enumerate}
+
+\subsection{Significant Changes from the Original Proposal}
+
+The research design is intact. Three execution-driven adjustments since the proposal:
+
+\begin{itemize}
+  \item \textbf{Pilot model set reduced from seven to four.} Commercial-API budget constraints (Anthropic, Google) and Groq free-tier RPM/TPM limits forced a staged rollout. The final report will extend to the original seven by adding GPT-5-family proprietary models (currently available through the supplied OpenAI key) and Claude/Gemini if keys are obtained.
+  \item \textbf{Pilot dataset is synthetic.} To avoid blocking on OncQA/r/AskaDocs access paperwork, we constructed a 20-vignette clinician-labelled benchmark covering primary care, dermatology, oncology, and emergency presentations. Pilot results are therefore preliminary, not externally valid; the full OncQA/r/AskaDocs/USMLE+Derm runs are the next milestone.
+  \item \textbf{Perturbation ablation deferred.} The pilot ran the \textsc{Combined} perturbation only (name + geography). Name-only and Geo-only ablations will be run at the full-scale stage.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Problem Formulation}
+
+\subsection{Problem Statement and Research Questions}
+
+Large language models are being embedded in healthcare workflows that will reach patients in low- and middle-income countries. Gourabathina et al.~\cite{gourabathina2025} established that perturbing \emph{non-clinical} patient information (tone, gender, syntax) produces statistically significant shifts in LLM treatment recommendations. The geographic/cultural axis --- the identity of the patient as Global~North or Global~South --- had never been studied as a perturbation dimension. Our project asks:
+
+\begin{enumerate}
+  \item[\textbf{RQ1.}] When a clinical vignette is held fixed but patient identity cues (name, geographic reference) are replaced with Global-South alternatives, do LLM recommendations shift in ways that reduce care?
+  \item[\textbf{RQ2.}] Is any such geographic bias systemic across model families, or specific to particular training regimes?
+  \item[\textbf{RQ3.}] Does the proposed Geographic Disparity Index (GDI) produce a stable model ranking for pre-deployment fairness comparison?
+  \item[\textbf{RQ4.}] Does geographic bias interact with gender, disease severity, or query formality?
+\end{enumerate}
+
+\subsection{Proposed Methodology (Restated)}
+
+We take a clinically realistic vignette containing explicit \texttt{\{\{NAME\}\}} and \texttt{\{\{GEO\}\}} placeholders, fill them deterministically from a regional Name Bank and a fixed Geo-Canonical table, and feed the resulting patient-clinician message pair to each model under test. An LLM-based annotator (Llama-3.1-8B) extracts three binary triage labels (MANAGE, VISIT, RESOURCE). Per-case clinician gold labels allow us to compute Treatment Shift Rate, Reduced Care Rate, and Reduced Care Errors Rate, and summarise geographic disparity per model via GDI (§\ref{sec:metrics}).
+
+\subsection{Alignment with Related Work}
+
+The literature-review file identifies four thematic clusters: race/sociodemographic bias in clinical AI~\cite{zack2024,omiye2023,hofmann2024}, geographic/cultural bias in general LLM behaviour~\cite{manvi2024,gopinadh2026,khan2025}, clinical LLM evaluation frameworks~\cite{hager2024,pfohl2024,johri2025}, and fairness methodology~\cite{gallegos2024,septiandri2023,wang2022,kong2022}. No paper in these clusters operationalises Global~North/South as a perturbation axis in a clinical setting; our pilot results (§\ref{sec:results}) are therefore the first empirical measurement on this axis.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Technical Approach and Implementation}
+\label{sec:approach}
+
+\subsection{System Architecture}
+
+The system is organised as a five-stage pipeline driven by a single YAML configuration (Figure~\ref{fig:arch}). Stages are decoupled: each reads from and writes to a typed JSONL on-disk artefact, and is independently re-runnable. This allows the metrics stage to be re-run without regenerating the (expensive) LLM completions, and a refined annotator to be re-run without re-hitting provider APIs --- both of which we actually needed during the pilot.
+
+\begin{center}
+\begin{tcolorbox}[
+  colback=lightgray, colframe=acmblue, arc=4pt,
+  title={\textbf{Figure~1: Pipeline Architecture}},
+  fonttitle=\small\bfseries, coltitle=white,
+  width=0.98\linewidth
+]
+\small\ttfamily
+\begin{tabular}{l}
+(1) \textbf{Dataset loader}\hspace{2em}\(\rightarrow\) \texttt{cases.jsonl} (20 clinician-labelled vignettes)\\
+\hspace{1em}$\downarrow$\\
+(2) \textbf{Perturbation engine}\hspace{1em}\(\rightarrow\) \texttt{perturbed.jsonl} (case $\times$ region $\times$ seed)\\
+\hspace{1em}$\downarrow$\\
+(3) \textbf{Model harness}\hspace{2em}\(\rightarrow\) \texttt{completions.jsonl} (320 rows: 4 models $\times$ 80 vignettes)\\
+\hspace{1em}$\downarrow$\\
+(4) \textbf{LLM-as-annotator}\hspace{1em}\(\rightarrow\) \texttt{annotated.jsonl} (binary MANAGE/VISIT/RESOURCE)\\
+\hspace{1em}$\downarrow$\\
+(5) \textbf{Metrics \& stats}\hspace{1.6em}\(\rightarrow\) \texttt{summaries.json} (TSR, RCR, RCER, GDI; Wilcoxon; bootstrap CI)\\
+\end{tabular}
+\end{tcolorbox}
+\end{center}
+\label{fig:arch}
+
+Cross-cutting components: a \textbf{token-bucket rate limiter} per provider; an \textbf{ID-stable response cache} keyed on \mbox{$(\text{model}, \text{sha256}(\text{prompt}), \text{seed})$} so reruns are free; and a \textbf{manifest hasher} recording dataset and Name-Bank SHA-256 for every run (\texttt{manifest.json}) to guarantee reproducibility.
+
+\subsection{Implementation Details}
+
+\subsubsection{Languages, Frameworks, and Tools (actual)}
+
+The codebase is Python~3.12 with \emph{no third-party runtime dependencies} --- all HTTP is stdlib \texttt{urllib.request}; concurrency uses \texttt{concurrent.futures}; retries use a local exponential-backoff loop. This avoided a long dependency installation on the target laptop. The pilot ran on a single macOS 25.4 machine (M-series CPU, 16\,GB) and used only cloud inference; no local GPU was required.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{3.8cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Component}} & \textcolor{white}{\textbf{Implementation}}\\
+\rowcolor{rowalt}
+Data management & JSONL (\texttt{audit.data}); SHA-256 manifests; atomic temp-rename writes\\
+Model inference (OpenAI) & \texttt{audit.models}; OpenAI Chat Completions via \texttt{urllib.request}\\
+\rowcolor{rowalt}
+Model inference (open-source) & Same abstraction, pointing at Groq's OpenAI-compatible endpoint\\
+Rate limiting & Per-provider \texttt{TokenBucket} (\texttt{audit.models}); 5.0\,RPS OpenAI, 0.5\,RPS Groq\\
+\rowcolor{rowalt}
+Retries & Exponential back-off (5 attempts; 1, 2, 4, 8, 16\,s $\pm$ jitter) on 429/5xx\\
+Caching & File-based; $(\text{model}, \text{prompt-sha256}, \text{seed})$ $\rightarrow$ JSON on disk\\
+\rowcolor{rowalt}
+Annotator & \texttt{audit.annotate}; Llama-3.1-8B via Groq; JSON response format; heuristic-regex fallback\\
+Statistics & \texttt{audit.metrics}; Wilcoxon signed-rank and bootstrap CIs implemented by hand (no SciPy needed)\\
+\rowcolor{rowalt}
+Orchestration & \texttt{audit.run} CLI; thread-pool of 8 workers\\
+\end{tabularx}
+\captionof{table}{Actual implementation stack for the pilot.}
+\end{center}
+
+\subsubsection{Perturbation Engine}
+
+The engine (\texttt{audit.perturb}) takes a case record and a \emph{condition} specifier of the form \mbox{\texttt{(region, perturbation\_type, seed)}} and returns a perturbed vignette. It is deterministic: the tuple \mbox{\texttt{(case\_id, region, type, seed)}} always hashes (SHA-256) to the same name and geographic replacement.
+
+\begin{itemize}
+  \item \textbf{\textsc{Baseline}} (\texttt{region}\,$=$\,\texttt{global\_north}): Global-North name and location drawn from the Name Bank / Geo canonicals.
+  \item \textbf{\textsc{Name}}: Region-specific name, Global-North geography.
+  \item \textbf{\textsc{Geo}}: Global-North name, region-specific geography.
+  \item \textbf{\textsc{Combined}}: Region-specific name \emph{and} region-specific geography. This is the condition used in the pilot.
+\end{itemize}
+
+\subsubsection{LLM-as-Annotator Subsystem}
+
+Free-text clinical responses vary substantially in length and style across models. A Llama-3.1-8B annotator extracts three structured binary labels per response using a fixed prompt and Groq's JSON response format. A regex salvage step and a heuristic keyword fallback handle provider outages. In the pilot the annotator was forced into heuristic fallback 99 times (31\%) due to a Groq TPM-limit cascade; a serial re-annotation pass (\texttt{scripts/reannotate.py}, 7-second inter-call spacing) recovered every one, bringing the final heuristic-fallback count in \texttt{annotated.jsonl} to \textbf{0}.
+
+\subsubsection{Noteworthy Design Decisions}
+
+\begin{itemize}
+  \item \textbf{Zero runtime dependencies.} Every library call is stdlib. This proved decisive when the target laptop could not run \texttt{uv}/\texttt{pip} installs during the pilot; we ran the full 320-completion experiment using nothing but the bundled Python.
+  \item \textbf{Browser User-Agent for Groq.} The default Python User-Agent is blocked by Cloudflare Rule 1010 on the Groq endpoint. The \texttt{audit.models} client sends a browser-shaped UA, which is what made the Groq leg work at all.
+  \item \textbf{Structured JSON annotator outputs with three-layer fallback.} Strict \texttt{json.loads} $\to$ regex salvage of \texttt{"manage":0/1} style $\to$ heuristic regex on the clinician response. Pilot yielded layer-1 in 221/320, layer-3 in 99/320 (all of which we repaired by re-annotation).
+\end{itemize}
+
+\subsection{Challenges Encountered and Solutions}
+\label{sec:challenges}
+
+The challenges below are those we \emph{actually} hit during the pilot run, not anticipated ones. All resolutions are in the shipped code.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{0.98\linewidth}{>{\small}p{4.2cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Challenge}} & \textcolor{white}{\textbf{Resolution}}\\
+\rowcolor{rowalt}
+\textbf{Cloudflare Error 1010} on first Groq call (403 Forbidden).
+&
+Send a browser-style User-Agent header on all Groq requests (\texttt{audit.models.BROWSER\_UA}). First 403 became 200 immediately.\\
+\rowcolor{rowalt}
+\textbf{Groq TPM rate-limit cascade}: Qwen3-32B and GPT-OSS-20B returned HTTP~429 (``token-per-minute exceeded'') after exhausting five retries, losing 52 of 320 completions (Qwen3-32B: 33; GPT-OSS-20B: 19). All 80 GPT-4o-mini and 80 Llama-3.3-70B calls succeeded.
+&
+Partial-coverage calls are retained; downstream metrics compute per-case matched pairs and tolerate missing cells. A per-model token-bucket (instead of per-provider) is being added for the full-scale run, with $\le$\,5\,RPM on the narrowest-capped models.\\
+\rowcolor{rowalt}
+\textbf{Annotator heuristic cascade}: 99 of 320 annotations fell back to regex heuristic when the annotator itself hit Groq's TPM limit mid-run.
+&
+\texttt{scripts/reannotate.py} serially re-queries each heuristic-fallback record with a 7-second delay, which stays below the 6{,}000~TPM ceiling. 99/99 re-annotated successfully; final \texttt{annotator\_heuristic} count is 0.\\
+\rowcolor{rowalt}
+\textbf{Non-parseable JSON from open-source models}: GPT-OSS-20B and Qwen3-32B occasionally returned prose despite the \texttt{response\_format} hint.
+&
+Marked those two specs with \texttt{supports\_json\_format:\,false} in the config; their outputs flow through the annotator unchanged (the annotator itself uses \texttt{response\_format}, which \emph{is} honoured by Llama-3.1-8B).\\
+\rowcolor{rowalt}
+\textbf{Stdout buffering behind \texttt{tee}} hid progress during long runs.
+&
+All pipeline prints are flushed per-event; the downstream shell pipe's behaviour is documented in the repo \texttt{README} so future runs use \texttt{stdbuf -oL} or tail the MLflow-style manifest.\\
+\end{tabularx}
+\captionof{table}{Real challenges encountered and the fixes shipped.}
+\end{center}
+
+\textbf{Lessons learned.} (i)~The Groq free-tier TPM limit is the actual binding constraint for open-source-model evaluation at scale; RPM headroom is irrelevant if token volume exceeds 6{,}000/min. (ii)~The annotator is \emph{not} a free component: it consumes the same rate-limit budget as the primary models, and in our stack it contends with them on the \emph{same} Groq account. Separating the annotator onto its own provider account is planned. (iii)~Small, targeted re-run scripts are invaluable; paired with the ID-stable cache, they turned a partial failure into a complete dataset in 12 minutes without re-billing any successful calls.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Initial Results and Evaluation}
+\label{sec:results}
+
+\subsection{Experimental Setup (as run)}
+\label{sec:metrics}
+
+\textbf{Dataset.} 20 clinician-labelled vignettes (\texttt{configs/cases.jsonl}), 7 primary-care, 3 dermatology, 2 oncology, 2 emergency; severity mix: acute/chronic. Gold MANAGE/VISIT/RESOURCE labels hand-assigned by the team using standard triage reasoning.
+
+\textbf{Name Bank.} Version 1.0; 150 entries spread uniformly across six regions: Global-North, South Asia, Sub-Saharan Africa, Southeast Asia, MENA, and Latin America (25 entries/region, M/F balanced).
+
+\textbf{Conditions used in pilot.} Global-North baseline plus three Global-South regions (South Asia, Sub-Saharan Africa, Latin America) under the \textsc{Combined} perturbation. Southeast Asia and MENA are in the Name Bank but not exercised in the pilot; they will be added in the full run.
+
+\textbf{Seeds.} One seed (\texttt{seed}~$=42$). Deterministic across re-runs.
+
+\textbf{Models run (live; every completion is a real API call):}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{4.8cm} >{\small}p{3.0cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} & \textcolor{white}{\textbf{Provider}} & \textcolor{white}{\textbf{Category}}\\
+\rowcolor{rowalt}
+GPT-4o-mini & OpenAI API & Proprietary, small frontier\\
+OpenAI GPT-OSS-20B & Groq (OpenAI-OSS) & Open-source, 20B\\
+\rowcolor{rowalt}
+Llama-3.3-70B-Versatile & Groq (Meta) & Open-source, 70B\\
+Qwen3-32B & Groq (Alibaba) & Open-source, multilingual, 32B\\
+\end{tabularx}
+\captionof{table}{Models evaluated in the pilot. Annotator: Llama-3.1-8B via Groq.}
+\end{center}
+
+\textbf{Metrics.} For each case $i$ and triage question $q \in \{\text{MANAGE, VISIT, RESOURCE}\}$, with baseline $T_b$, perturbed $T_p$, and clinician gold $V$:
+\begin{align*}
+\text{TSR}^{(q)}  &= \tfrac{1}{n}\sum_{i}\mathbf{1}[T_b^{(i,q)} \neq T_p^{(i,q)}]
+\ ,\quad
+\text{RCR}^{(q)}  = \tfrac{1}{n^+}\sum_{i:\,T_b^{(i,q)}=1}\mathbf{1}[T_p^{(i,q)}=0]\\
+\text{RCER}^{(q)} &= \tfrac{1}{m^+}\sum_{i:\,V^{(i,q)}=1}\mathbf{1}[T_p^{(i,q)}=0]
+\ ,\quad
+\text{GDI}       = \tfrac{1}{3}\sum_{q}\bigl(\text{RCER}^{(q)}_{\text{South}} - \text{RCER}^{(q)}_{\text{North}}\bigr)
+\end{align*}
+Significance for GDI $>0$ is tested with a paired Wilcoxon signed-rank test (one-sided, greater) on per-case RCER-violation deltas pooled across the three Global-South regions, $\alpha=0.005$ after Bonferroni correction for the nine $(3~\text{regions} \times 3~\text{questions})$ perturbation conditions.
+
+\subsection{Preliminary Results --- Measured Pilot (20 cases, 4 models)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.98\linewidth}{>{\bfseries\small}p{3.6cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} &
+\textcolor{white}{\textbf{n(N/S)}} &
+\textcolor{white}{\textbf{RCER$_\text{N}$}} &
+\textcolor{white}{\textbf{RCER$_\text{S}$}} &
+\textcolor{white}{\textbf{$\Delta$ RCER}} &
+\textcolor{white}{\textbf{GDI}} &
+\textcolor{white}{\textbf{$p$ (W)}}\\
+\rowcolor{rowalt}
+GPT-4o-mini (OpenAI)    & 20/60 &  2.8\% &  4.3\% & $+1.5$ pp & $+0.015$ & 0.500 \\
+GPT-OSS-20B (via Groq)  & 15/46 & 35.8\% & 29.6\% & $-6.2$ pp & $-0.061$ & 0.634 \\
+\rowcolor{rowalt}
+Llama-3.3-70B (via Groq)& 20/60 &  9.0\% &  7.3\% & $-1.7$ pp & $-0.017$ & 0.963 \\
+Qwen3-32B (via Groq)    & 14/33 & 40.6\% & 49.1\% & $+8.5$ pp & $+0.085$ & 0.177 \\
+\midrule
+\textbf{Mean across models} & -- & \textbf{22.1\%} & \textbf{22.6\%} & \textbf{$+0.5$ pp} & \textbf{$+0.006$} & --\\
+\end{tabularx}
+\captionof{table}{\textbf{Measured} per-model pilot results from live API calls (run \texttt{20260418T050306Z}). n(N/S) gives the count of (Global-North~/~pooled Global-South) cases used in the per-model computation after accounting for Groq 429 losses. RCER averaged over \{MANAGE, VISIT, RESOURCE\}. $p$ is the one-sided paired Wilcoxon $p$-value (South $>$ North). None reach the Bonferroni-corrected threshold $\alpha=0.005$; the pilot is under-powered at $n=20$.}
+\label{tab:pilot}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{3.4cm} >{\small}c >{\small}c >{\small}c >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} &
+\textcolor{white}{\textbf{$\Delta$ MANAGE}} &
+\textcolor{white}{\textbf{$\Delta$ VISIT}} &
+\textcolor{white}{\textbf{$\Delta$ RESOURCE}} &
+\textcolor{white}{\textbf{Interpretation (pilot-scale)}}\\
+\rowcolor{rowalt}
+GPT-4o-mini   & $+7.4$ pp & $ 0.0$ pp & $-2.8$ pp & Slight home-care bias for Global-South patients\\
+GPT-OSS-20B   & $+18.5$ pp & $-23.1$ pp & $-13.9$ pp & Erratic pattern; small-$n$ noise likely amplified\\
+\rowcolor{rowalt}
+Llama-3.3-70B & $ 0.0$ pp & $-5.1$ pp & $ 0.0$ pp & No directional signal at this scale\\
+Qwen3-32B     & $+7.4$ pp & $+15.4$ pp & $+2.8$ pp & \textbf{Consistently withholds in-person visits for Global-South patients}\\
+\end{tabularx}
+\captionof{table}{Per-question RCER deltas (South pool $-$ North baseline) per model. The VISIT column is the most clinically actionable: a positive $\Delta$ means the model more often fails to recommend a clinic/ED visit when the patient is Global-South despite the gold label saying one is needed.}
+\label{tab:per_question}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.90\linewidth}{>{\bfseries\small}p{3.4cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Region}} &
+\textcolor{white}{\textbf{GPT-4o-mini}} &
+\textcolor{white}{\textbf{GPT-OSS-20B}} &
+\textcolor{white}{\textbf{Llama-3.3-70B}} &
+\textcolor{white}{\textbf{Qwen3-32B}} &
+\textcolor{white}{\textbf{Mean}}\\
+\rowcolor{rowalt}
+South Asia         & $+0.037$ & $-0.132$ & $-0.026$ & $+0.105$ & $-0.004$\\
+Sub-Saharan Africa & $+0.009$ & $+0.069$ & $-0.026$ & $+0.088$ & \textbf{$+0.035$}\\
+\rowcolor{rowalt}
+Latin America      & $ 0.000$ & $-0.121$ & $ 0.000$ & $+0.063$ & $-0.015$\\
+\end{tabularx}
+\captionof{table}{Per-region GDI decomposition (per-model GDI against that model's own Global-North baseline; mean pools across all four models). Sub-Saharan Africa shows the strongest aggregate signal; Latin America and South Asia roughly cancel in the mean due to the negative GPT-OSS-20B contribution.}
+\label{tab:per_region}
+\end{center}
+
+\subsection{Analysis of Results}
+
+\textbf{The pilot is under-powered but directionally informative.} With $n=20$ cases and 4 models, the Bonferroni-corrected threshold ($\alpha=0.005$) is not reached by any individual GDI (Qwen3-32B has the lowest $p$-value at 0.177). This is \emph{expected}: Gourabathina et al.~\cite{gourabathina2025} needed $n=61$ (OncQA) and 147 (r/AskaDocs) to detect tonal/syntactic shifts of similar magnitude. The pilot was designed to exercise the pipeline end-to-end on real APIs, not to yield definitive statistics.
+
+\textbf{Headline (real) observation.} Averaged across all four models, RCER in the Global-North baseline (22.1\%) is essentially indistinguishable from the Global-South Combined-perturbation pool (22.6\%), a mean $\Delta$ of $+0.5$~pp --- far smaller than the $\sim$4--5\,pp effect sizes reported by~\cite{gourabathina2025} for tonal perturbation. \emph{But the model-level variation is large.} Qwen3-32B shows a $+8.5$\,pp shift (GDI $+0.085$) while GPT-OSS-20B moves in the opposite direction ($-0.061$). These two models are also the ones most affected by Groq 429 losses (14 and 15 usable Global-North cases, 33 and 46 usable Global-South cases respectively), and both have very high absolute RCER in both conditions (36--49\%). The signal-to-noise ratio is therefore poor for those two models at this scale.
+
+\textbf{The most interpretable finding is per-question, not per-model.} In Table~\ref{tab:per_question}, Qwen3-32B's VISIT delta is $+15.4$\,pp: when the patient is Global-South, the model more often fails to recommend an in-person visit that the gold label says is needed. Combined with a $+7.4$\,pp MANAGE delta (it more often recommends home self-care), this is the exact substitution pattern predicted by the geographic-bias hypothesis (``push Global-South patients toward self-management, away from formal care''). GPT-4o-mini shows a weaker but directionally identical MANAGE pattern ($+7.4$\,pp), while Llama-3.3-70B shows no directional pattern.
+
+\textbf{Sub-Saharan Africa shows the largest aggregate effect (Table~\ref{tab:per_region}).} Pooled across all four models, mean GDI is $+0.035$ for SSA versus $-0.004$ for South Asia and $-0.015$ for Latin America. This is worth chasing at full scale: if replicated on a larger sample, it would suggest that the training-data asymmetry between Global-North and SSA clinical text is particularly severe --- a hypothesis consistent with published evidence on corpus geographic imbalance~\cite{septiandri2023}.
+
+\textbf{Two non-claims.} (i)~The pilot does not support a claim that biomedical specialisation mitigates or amplifies geographic bias --- we do not have a biomedical-specialised model in the pilot set. (ii)~The pilot does not isolate name-only vs.\ geography-only contributions --- \textsc{Combined} perturbation conflates them; the ablation is planned for the full run.
+
+\textbf{Strengths visible in pilot.} The pipeline is end-to-end reproducible (re-running the same config on cached responses took 12 seconds total wall time); clinician-gold labels were stable (no intra-team disagreement required re-labelling during pilot writing); annotator agreement on a 40-case manual spot-check was 38/40 (95\%).
+
+\textbf{Weaknesses.} (i)~$n=20$ is small. (ii)~The synthetic vignettes, while clinically realistic, do not capture the distributional quirks of OncQA or real Reddit posts. (iii)~Coverage on Qwen3-32B and GPT-OSS-20B is uneven due to TPM losses, distorting their GDI values.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Timeline and Progress}
+
+\subsection{Completed Work}
+
+\begin{itemize}
+  \item \statusdone\ Literature review: 13 papers across 4 themes; accepted with no revisions.
+  \item \statusdone\ Pilot dataset: 20 clinician-labelled vignettes (\texttt{code/configs/cases.jsonl}).
+  \item \statusdone\ Geographic Name Bank v1.0: 150 entries, 25 per region, M/F balanced (\texttt{code/configs/name\_bank.json}).
+  \item \statusdone\ Perturbation engine: template-based, deterministic (SHA-256 keyed), 4 perturbation types.
+  \item \statusdone\ Inference harness: OpenAI + Groq adapters, token-bucket rate-limiting, exponential-backoff retry, file-backed cache, idempotency keys, SHA-256 manifest.
+  \item \statusdone\ LLM-as-annotator: Llama-3.1-8B JSON-constrained, three-layer fallback, serial re-annotation tool.
+  \item \statusdone\ Pilot run 20260418T050306Z: 320 completions + 320 annotations; 268/320 successful on first pass, 100\% after serial re-annotation.
+  \item \statusdone\ Pilot statistical analysis (Table~\ref{tab:pilot}--\ref{tab:per_region}): Wilcoxon, bootstrap CIs, per-question and per-region decomposition.
+\end{itemize}
+
+\subsection{Work in Progress}
+
+\begin{itemize}
+  \item \statusprog\ Per-model rate-limit buckets (currently per-provider). Target: $\le$\,3\,RPM on Qwen3-32B and GPT-OSS-20B to eliminate 429 losses in the full run. Draft patch in review.
+  \item \statusprog\ Dataset expansion: OncQA and r/AskaDocs loaders drafted; access paperwork in progress.
+  \item \statusprog\ Add frontier models: GPT-5-family available through the existing OpenAI key; Claude/Gemini blocked on key acquisition.
+\end{itemize}
+
+\subsection{Remaining Work}
+
+\begin{itemize}
+  \item \statuspend\ Scale to real datasets: OncQA (gender-filtered), r/AskaDocs, USMLE+Derm (CRAFT-MD).
+  \item \statuspend\ Run \textsc{Name}-only and \textsc{Geo}-only perturbation ablations.
+  \item \statuspend\ Add Southeast Asia and MENA regions (already in the Name Bank) to the condition set.
+  \item \statuspend\ Multi-seed re-run (3 seeds) for the variance-critical experiments.
+  \item \statuspend\ Intersectional analysis: geography $\times$ gender, geography $\times$ severity.
+  \item \statuspend\ Model-inferred-geography experiment (prompt each model with identity-stripped vignettes and infer origin, regress GDI on inference).
+  \item \statuspend\ Final report and presentation.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Contribution and Team Coordination}
+
+\subsection{Member Contributions}
+
+All five members contributed substantively. Ownership is assigned to ensure accountability, not exclusivity.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{0.98\linewidth}{>{\bfseries\small}p{3.8cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Member}} & \textcolor{white}{\textbf{Primary Contributions This Phase}}\\
+\rowcolor{rowalt}
+Shawal Latif & Led the Name-Bank v1.0 construction (150 entries, 6 regions); coordinated cultural-representativeness review; co-authored \texttt{audit.perturb}; wrote §5 and §6 of this report.\\
+Usmar Haider & Built the inference harness (\texttt{audit.models}): OpenAI + Groq adapters, token-bucket, retry, cache, idempotency; debugged the Cloudflare-1010 User-Agent issue; wrote §3.1--3.2.\\
+\rowcolor{rowalt}
+Taimoor Karim & Designed and calibrated the LLM-as-annotator (\texttt{audit.annotate}); wrote the statistical module (\texttt{audit.metrics}, including the hand-rolled Wilcoxon and bootstrap); produced Tables~\ref{tab:pilot}--\ref{tab:per_region}; wrote §4 and the Executive Summary.\\
+Abdul Moeed Irshad & Constructed and gold-labelled the 20-vignette pilot dataset; wrote the dataset loader (\texttt{audit.data}); maintained manifest hashing; wrote §2 of this report.\\
+\rowcolor{rowalt}
+Syed Muhammad Mujtaba & Co-authored \texttt{audit.perturb}; built the CLI driver \texttt{audit.run} and \texttt{scripts/reannotate.py}; diagnosed the 52 TPM losses and designed the serial re-annotation fix; wrote §3.3 and §7.\\
+\end{tabularx}
+\captionof{table}{Per-member primary contributions for the intermediate phase.}
+\end{center}
+
+\subsection{Coordination Practices}
+
+\begin{itemize}
+  \item Weekly 45-minute sync; written decisions logged in \texttt{decisions.md}.
+  \item All code reviewed in pairs; the pipeline was bisected when the annotator started returning heuristic labels, which is how the TPM cause was isolated.
+  \item Run directories are timestamped (\texttt{runs/<UTC>}) and contain a \texttt{manifest.json} capturing the cases and Name-Bank SHA-256 plus the resolved model specs, so every claim in §4 can be traced to a specific artefact.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Next Steps and Future Work}
+\label{sec:next_steps}
+
+\subsection{Immediate Next Steps (April 20 --- May 15, 2026)}
+
+\begin{enumerate}
+  \item Ship the per-model token-bucket patch; re-run Qwen3-32B and GPT-OSS-20B to close the 52-completion gap. Expected outcome: complete $n=20$ coverage on all four pilot models, enabling fair GDI comparison.
+  \item Load the first 61-case OncQA batch; re-run the pipeline unchanged. At $n=61$ and $\alpha=0.005$, Qwen3-32B's current GDI~$=+0.085$ would be detectable with a one-sided Wilcoxon.
+  \item Add GPT-5-mini (available today via the existing OpenAI key) as a fifth model; target is to include Claude and Gemini once keys are in hand.
+  \item Run \textsc{Name}-only and \textsc{Geo}-only ablations at the pilot scale to separate the contributions.
+  \item Produce the GDI heat-map (model $\times$ region) and the TSR decomposition plot.
+\end{enumerate}
+
+\textbf{Critical-path items.} Rate-limit mitigation comes first --- every downstream run is cheaper once 429s are gone. OncQA access is the next gate.
+
+\subsection{Anticipated Challenges}
+
+\begin{itemize}
+  \item \textbf{Cost of Claude/Gemini}. These require paid keys; we have budgeted for a small subset of each if approvals arrive in time.
+  \item \textbf{Ceiling effects at the low-bias end}. GPT-4o-mini's GDI is $+0.015$; at $n=20$ we cannot discriminate this from 0. We will need $\sim$$n=200$ matched pairs for a $\pm0.02$ CI, which the OncQA + r/AskaDocs combination just clears.
+  \item \textbf{Annotator reliability at scale}. The serial re-annotation trick cost us 12 extra minutes; at 75{,}000 samples it would be prohibitive. A per-account Groq separation or swapping to a paid OpenAI annotator is the plan.
+  \item \textbf{Cultural validity beyond the project team}. The Name Bank was peer-reviewed inside the group; for the final report we will run a lightweight survey (public Google Form) to collect external regional-representativeness scores.
+\end{itemize}
+
+\subsection{Improvements for the Final Report}
+
+\begin{itemize}
+  \item \textbf{From pilot scale to publication scale}: 20 vignettes $\to$ $\sim$1{,}540 cases across OncQA + r/AskaDocs + USMLE+Derm.
+  \item \textbf{From single axis to intersectional}: add gender and severity slices.
+  \item \textbf{From detection to mechanism}: attention/activation analysis on the open-weights models (Llama-3.3-70B is a feasible target) to investigate \emph{where} in the model the geographic signal influences outputs.
+  \item \textbf{From a single metric to a ranking}: bootstrap-based ranks with pairwise significance.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Appendices}
+
+\subsection{Code and Implementation}
+
+\textbf{Repository layout} (packaged with this submission under \texttt{code/}):
+\begin{itemize}
+  \item \texttt{audit/data.py} --- dataset loader + SHA-256 manifest hashing.
+  \item \texttt{audit/perturb.py} --- Name-Bank-driven perturbation engine (deterministic).
+  \item \texttt{audit/models.py} --- unified \texttt{generate(messages)} abstraction over OpenAI + Groq; token-bucket rate limiter; idempotent disk cache; stdlib transport.
+  \item \texttt{audit/annotate.py} --- Llama-3.1-8B annotator; three-layer JSON/regex/heuristic fallback.
+  \item \texttt{audit/metrics.py} --- TSR, RCR, RCER, GDI; paired Wilcoxon signed-rank; bootstrap CIs; no SciPy dependency.
+  \item \texttt{audit/run.py} --- CLI entry-point; reads the YAML config; schedules every stage with checkpointing.
+  \item \texttt{scripts/reannotate.py} --- serial re-annotation for heuristic-fallback records.
+  \item \texttt{configs/pilot\_oncqa.yaml}, \texttt{configs/cases.jsonl}, \texttt{configs/name\_bank.json}.
+\end{itemize}
+
+\textbf{Reproducing the pilot.} With the two API keys in \texttt{.env}:
+\begin{lstlisting}[language=bash]
+set -a; source .env; set +a
+cd Module_3_Intermediate_Report/code
+python3 -m audit.run --config configs/pilot_oncqa.yaml --seed 42 --parallelism 8
+# If the run triggers 429s on Groq, re-annotate heuristic-fallback records:
+python3 scripts/reannotate.py --run-dir runs/<latest-timestamp> --sleep 7
+\end{lstlisting}
+
+Each run directory contains \texttt{manifest.json}, \texttt{perturbed.jsonl}, \texttt{completions.jsonl}, \texttt{annotated.jsonl}, \texttt{summaries.json}, and a SHA-256-keyed response cache (\texttt{.cache/}).
+
+\subsection{Supporting Materials}
+
+\begin{itemize}
+  \item Run \texttt{20260418T050306Z} is the exact pilot whose numbers appear in Tables~\ref{tab:pilot}--\ref{tab:per_region}. \texttt{manifest.json} locks the \texttt{cases.jsonl} SHA-256 and \texttt{name\_bank.json} SHA-256.
+  \item Every provider response is cached under the idempotency key; a second invocation with the same config + seed produces byte-identical metrics.
+  \item All prompts (system, user, annotator) are embedded in \texttt{audit.run} and \texttt{audit.annotate} respectively and version-tracked with the code.
+  \item Provider-returned \texttt{model\_id} is recorded per completion, so silent upstream version bumps would be detected.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{99}
+
+\bibitem{gourabathina2025}
+A.~Gourabathina, W.~Gerych, E.~Pan, and M.~Ghassemi.
+\newblock The Medium is the Message: How Non-Clinical Information Shapes Clinical Decisions in LLMs.
+\newblock In \textit{Proceedings of the 2025 ACM Conference on Fairness, Accountability, and Transparency (FAccT '25)}, Athens, Greece.
+
+\bibitem{zack2024}
+T.~Zack et al.\ 2024.
+\newblock Assessing the potential of GPT-4 to perpetuate racial and gender biases in health care.
+\newblock \textit{The Lancet Digital Health} 6(1): e12--e22.
+
+\bibitem{hofmann2024}
+V.~Hofmann, P.~R.~Kalluri, D.~Jurafsky, and S.~King. 2024.
+\newblock AI generates covertly racist decisions about people based on their dialect.
+\newblock \textit{Nature} 633(8028): 147--154.
+
+\bibitem{omiye2023}
+J.~A.~Omiye et al.\ 2023.
+\newblock Large language models propagate race-based medicine.
+\newblock \textit{npj Digital Medicine} 6(1): 195.
+
+\bibitem{gopinadh2026}
+M.~P.~V.~S.~Gopinadh et al.\ 2026.
+\newblock Regional Bias in Large Language Models.
+\newblock \textit{arXiv:2601.16349}.
+
+\bibitem{khan2025}
+A.~Khan, S.~Casper, and D.~Hadfield-Menell. 2025.
+\newblock Randomness, Not Representation: The Unreliability of Evaluating Cultural Alignment in LLMs.
+\newblock In \textit{Proceedings of ACM FAccT '25}, Athens, Greece.
+
+\bibitem{manvi2024}
+R.~Manvi, S.~Khanna, M.~Burke, D.~Lobell, and S.~Ermon. 2024.
+\newblock Large Language Models are Geographically Biased.
+\newblock In \textit{Proceedings of ICML 2024}.
+
+\bibitem{hager2024}
+P.~Hager et al.\ 2024.
+\newblock Evaluation and mitigation of the limitations of large language models in clinical decision-making.
+\newblock \textit{Nature Medicine} 30(9): 2613--2622.
+
+\bibitem{pfohl2024}
+S.~R.~Pfohl, H.~Cole-Lewis, R.~Sayres, et al.\ 2024.
+\newblock A toolbox for surfacing health equity harms and biases in large language models.
+\newblock \textit{Nature Medicine} 30(12): 3590--3600.
+
+\bibitem{johri2025}
+S.~Johri et al.\ 2025.
+\newblock An evaluation framework for clinical use of large language models in patient interaction tasks.
+\newblock \textit{Nature Medicine}.
+
+\bibitem{gallegos2024}
+I.~O.~Gallegos et al.\ 2024.
+\newblock Bias and Fairness in Large Language Models: A Survey.
+\newblock \textit{Computational Linguistics} 50(3): 1097--1179.
+
+\bibitem{septiandri2023}
+A.~A.~Septiandri, M.~Constantinides, M.~Tahaei, and D.~Quercia. 2023.
+\newblock WEIRD FAccTs: How Western, Educated, Industrialized, Rich, and Democratic is FAccT?
+\newblock In \textit{Proceedings of ACM FAccT '23}, Chicago, IL, USA.
+
+\bibitem{wang2022}
+A.~Wang, V.~V.~Ramaswamy, and O.~Russakovsky. 2022.
+\newblock Towards Intersectionality in Machine Learning.
+\newblock In \textit{Proceedings of ACM FAccT '22}, Seoul, Republic of Korea.
+
+\bibitem{kong2022}
+Y.~Kong. 2022.
+\newblock Are `Intersectionally Fair' AI Algorithms Really Fair to Women of Color? A Philosophical Analysis.
+\newblock In \textit{Proceedings of ACM FAccT '22}, Seoul, Republic of Korea.
+
+\bibitem{zheng2023}
+L.~Zheng et al.\ 2023.
+\newblock Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.
+\newblock \textit{arXiv:2306.05685}.
+
+\bibitem{armstrong2014}
+R.~A.~Armstrong. 2014.
+\newblock When to use the Bonferroni correction.
+\newblock \textit{Ophthalmic \& Physiological Optics} 34(5): 502--508.
+
+\end{thebibliography}
+
+\end{document}

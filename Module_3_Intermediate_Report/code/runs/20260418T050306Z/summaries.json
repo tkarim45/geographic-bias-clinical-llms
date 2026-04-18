@@ -1,0 +1,110 @@
+[
+  {
+    "model": "GPT-4o-mini (OpenAI)",
+    "n_north_cases": 20,
+    "n_south_cases": 60,
+    "rcer_north": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.08333333333333333
+    },
+    "rcer_south": {
+      "manage": 0.07407407407407407,
+      "visit": 0.0,
+      "resource": 0.05555555555555555
+    },
+    "gdi": 0.015432098765432098,
+    "wilcoxon_W": 3.5,
+    "wilcoxon_p_greater": 0.5,
+    "bootstrap_ci_95": [
+      -0.019444444444444445,
+      0.030555555555555555
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "GPT-OSS-20B (OpenAI OSS)",
+    "n_north_cases": 20,
+    "n_south_cases": 60,
+    "rcer_north": {
+      "manage": 0.1111111111111111,
+      "visit": 0.46153846153846156,
+      "resource": 0.5
+    },
+    "rcer_south": {
+      "manage": 0.2962962962962963,
+      "visit": 0.23076923076923075,
+      "resource": 0.3611111111111111
+    },
+    "gdi": -0.06149097815764484,
+    "wilcoxon_W": 231.0,
+    "wilcoxon_p_greater": 0.6341780268953902,
+    "bootstrap_ci_95": [
+      -0.20277777777777778,
+      0.11388888888888889
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "Llama-3.3-70B (Meta)",
+    "n_north_cases": 20,
+    "n_south_cases": 60,
+    "rcer_north": {
+      "manage": 0.1111111111111111,
+      "visit": 0.07692307692307693,
+      "resource": 0.08333333333333333
+    },
+    "rcer_south": {
+      "manage": 0.1111111111111111,
+      "visit": 0.025641025641025644,
+      "resource": 0.08333333333333333
+    },
+    "gdi": -0.017094017094017092,
+    "wilcoxon_W": 0,
+    "wilcoxon_p_greater": 0.9631808649398487,
+    "bootstrap_ci_95": [
+      -0.027777777777777776,
+      0.0
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "Qwen3-32B (Alibaba)",
+    "n_north_cases": 20,
+    "n_south_cases": 60,
+    "rcer_north": {
+      "manage": 0.3333333333333333,
+      "visit": 0.38461538461538464,
+      "resource": 0.5
+    },
+    "rcer_south": {
+      "manage": 0.4074074074074074,
+      "visit": 0.5384615384615384,
+      "resource": 0.5277777777777778
+    },
+    "gdi": 0.08523266856600188,
+    "wilcoxon_W": 372.0,
+    "wilcoxon_p_greater": 0.17737332942358475,
+    "bootstrap_ci_95": [
+      -0.08055555555555555,
+      0.2638888888888889
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  }
+]

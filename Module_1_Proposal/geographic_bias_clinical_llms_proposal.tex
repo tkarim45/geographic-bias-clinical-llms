@@ -1,0 +1,615 @@
+\documentclass[12pt, a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{fontenc}
+\usepackage{inputenc}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{mdframed}
+\usepackage{tcolorbox}
+
+% ── Colours ───────────────────────────────────────────────────────────────────
+\definecolor{acmblue}{RGB}{0, 83, 156}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{medgray}{RGB}{220, 220, 220}
+\definecolor{darkgray}{RGB}{80, 80, 80}
+\definecolor{headerblue}{RGB}{0, 83, 156}
+\definecolor{rowblue}{RGB}{217, 225, 242}
+\definecolor{rowalt}{RGB}{242, 242, 242}
+
+% ── Hyperref setup ────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=acmblue,
+    citecolor=acmblue,
+    urlcolor=acmblue,
+    pdftitle={Where Are You From? Auditing Geographic and Cultural Bias in Clinical LLMs},
+    pdfauthor={Research Proposal},
+}
+
+% ── Section formatting ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{acmblue}}
+  {\thesection}{1em}{}
+  [\vspace{-4pt}\rule{\linewidth}{0.8pt}\vspace{2pt}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\itshape\color{darkgray}}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{darkgray}}
+  {\thesubsubsection}{1em}{}
+
+% ── Header / Footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{darkgray}{CS-5312 Big Data Analytics --- Project Proposal}}
+\fancyhead[R]{\small\textcolor{darkgray}{\textit{Geographic Bias in Clinical LLMs}}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ── Line spacing ──────────────────────────────────────────────────────────────
+\setstretch{1.15}
+
+% ── List settings ─────────────────────────────────────────────────────────────
+\setlist[itemize]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
+
+% ── tcolorbox styles ──────────────────────────────────────────────────────────
+\tcbuselibrary{skins, breakable}
+\newtcolorbox{researchbox}[1]{
+  enhanced,
+  breakable,
+  title=#1,
+  fonttitle=\bfseries\small,
+  colback=lightgray,
+  colframe=acmblue,
+  coltitle=white,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=acmblue, rounded corners},
+  top=6pt, bottom=6pt, left=8pt, right=8pt,
+}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Title Page ────────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1.2cm}
+
+  {\small\textcolor{darkgray}{\textsc{CS-5312 Big Data Analytics}}}\\[0.4cm]
+  {\small\textcolor{darkgray}{\textsc{Project Proposal}}}\\[1.2cm]
+
+  \rule{\linewidth}{1.5pt}\\[0.3cm]
+  {\LARGE\bfseries\color{acmblue}
+    Auditing Geographic and Cultural Bias\\[0.3cm]
+    in Clinical Large Language Models
+  }\\[0.3cm]
+  \rule{\linewidth}{1.5pt}\\[1.2cm]
+
+  \textbf{Shawal Latif}\\[0.4cm]
+  \textbf{Usmar Haider}\\[0.4cm]
+  \textbf{Taimoor Karim}\\[0.4cm]
+  \textbf{Abdul Moeed Irshad}\\[0.4cm]
+  \textbf{Syed Muhammad Mujtaba}\\[1.0cm]
+
+  \textbf{Instructor: Dr.\ Imdadullah Khan}\\[0.3cm]
+  Department of Computer Science\\[0.1cm]
+  Lahore University of Management Sciences (LUMS)\\[0.1cm]
+  \today
+
+  \vfill
+
+  \begin{tcolorbox}[
+    colback=rowblue!30,
+    colframe=acmblue,
+    width=0.88\linewidth,
+    boxrule=0.6pt,
+    arc=4pt,
+    halign=center
+  ]
+    \small\textit{``The same symptoms. Two names. Two worlds. Does the AI treat them the same?''}
+  \end{tcolorbox}
+
+\end{titlepage}
+
+% ── Table of Contents ─────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Problem Description}
+
+\subsection{What Problem Are We Addressing?}
+
+Large language models (LLMs) are increasingly being embedded in healthcare workflows --- answering patient queries, supporting triage decisions, suggesting diagnoses, and recommending treatment pathways. While extensive prior work has evaluated these systems for clinical accuracy, a largely overlooked dimension of their behaviour concerns \textit{non-clinical} inputs: information that is medically irrelevant yet nonetheless shapes the model's output.
+
+Gourabathina et al.~\cite{gourabathina2025} established in their landmark FAccT 2025 study that perturbing \textit{tonal}, \textit{gender}, and \textit{syntactic} features of otherwise identical patient messages produces statistically significant shifts in LLM treatment recommendations --- including erroneous reductions in care allocation. Their core finding is that LLMs are not reasoning purely on clinical content; they are sensitive to social signals embedded in the way patients communicate.
+
+\textbf{This project extends that framework along a new and globally consequential axis: geographic and cultural origin.} Specifically, we ask: \textit{does an LLM recommend different clinical care for a patient named Ali from Karachi compared to a patient named David from New York, when their symptoms, medical history, and clinical context are identical?}
+
+\subsection{Why Is This Problem Important?}
+
+\begin{itemize}
+  \item \textbf{Scale of impact.} The Global South --- including South Asia, Sub-Saharan Africa, Southeast Asia, the Middle East, and Latin America --- is home to over six billion people, many of whom live in healthcare-constrained environments where AI-assisted clinical tools are being actively piloted or considered as cost-effective supplements to physician shortages~\cite{agarwal2020,petterson2015}.
+
+  \item \textbf{Training data asymmetry.} State-of-the-art LLMs are predominantly trained on English-language text generated in Western, high-income contexts. If a model has seen the name ``David'' attached to high-quality clinical narratives thousands of times more than ``Ali'' or ``Kwame'', the model's prior over clinical reasoning may be implicitly conditioned on geographic identity.
+
+  \item \textbf{Compounding existing health inequities.} If deployed clinical AI systems recommend fewer specialist referrals, less diagnostic workup, or greater self-management for patients perceived as originating from the Global South, they would reproduce and amplify the structural inequities already present in global healthcare --- at scale, and with an appearance of algorithmic neutrality.
+
+  \item \textbf{High stakes.} Unlike bias in product recommendations or search rankings, geographic bias in clinical LLMs directly impacts patient health outcomes, potentially contributing to delayed diagnoses, missed treatments, and preventable deterioration.
+\end{itemize}
+
+\subsection{Is This Problem Already Addressed?}
+
+The problem is substantially \textbf{un-addressed}. Prior auditing work on clinical LLM bias has concentrated on:
+\begin{itemize}
+  \item \textit{Race and ethnicity} within Western contexts (e.g., Black vs.\ White patients in the US)~\cite{zack2024,omiye2023},
+  \item \textit{Gender} and gendered language~\cite{gourabathina2025},
+  \item \textit{Dialect and linguistic style} (e.g., African American English)~\cite{hofmann2024}.
+\end{itemize}
+
+\noindent None of these studies systematically evaluate the \textit{Global North / Global South} dimension, nor do they compare effects across diverse model families (proprietary, open-source general, small language models, and biomedical-specialised LLMs). This project fills that gap directly.
+
+\subsection{Source of the Idea}
+
+This project is directly motivated by the ``Medium is the Message'' paper~\cite{gourabathina2025}. Reading their perturbation framework --- which showed that even adding whitespace characters or changing pronouns significantly shifts clinical recommendations --- prompted the question: \textit{if syntax changes recommendations, what does a patient's name or country of origin do?} The global deployment trajectory of clinical LLMs, combined with the absence of any systematic audit of geographic bias, makes this a timely and necessary study.
+
+\subsection{Input and Output as a Final Product}
+
+\begin{center}
+\begin{tcolorbox}[
+  colback=lightgray, colframe=acmblue, arc=4pt,
+  title={\textbf{End-User View: Input \textrightarrow\ Output}},
+  fonttitle=\small\bfseries, coltitle=white,
+  width=0.95\linewidth
+]
+\textbf{Input:} A clinical patient vignette (symptoms, diagnosis, medication history, patient query) paired with patient identity information (name and/or geographic location), submitted to one or more LLMs.\\[6pt]
+\textbf{Output:} A structured audit report quantifying whether, and by how much, the LLM's clinical treatment recommendations differ across Global North versus Global South patient identities --- broken down by model, perturbation type, clinical question, and geographic region.
+\end{tcolorbox}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Motivation}
+
+\subsection{Core Motivation}
+
+The motivation for this project is rooted in the intersection of \textbf{health equity} and \textbf{responsible AI}. As LLMs become increasingly accessible and inexpensive, healthcare systems in LMICs (Low- and Middle-Income Countries) are exploring their use to offset physician shortages and expand access to clinical guidance. If the very tools deployed to expand health access are biased against the populations they are meant to serve, they become instruments of inequity disguised as democratisation.
+
+Beyond the direct harm, there is a \textbf{scientific motivation}: understanding the mechanism by which geographic signals influence LLM reasoning --- whether through name-based priors, geographic associations with healthcare quality, or implicit socioeconomic stereotypes --- will advance our broader understanding of LLM decision-making and provide a reproducible audit methodology applicable to any new model or dataset.
+
+\subsection{Potential Audience and End-Users}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{0.95\linewidth}{>{\bfseries\small}p{3.5cm} X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Audience}} & \textcolor{white}{\textbf{How They Use the Outcome}} \\
+\rowcolor{rowalt}
+Hospitals \& Health Systems & Evaluate clinical AI vendors for geographic fairness before deployment \\
+Global Health Organisations & Identify models safe for LMIC deployment programmes \\
+\rowcolor{rowalt}
+AI Developers \& Labs & Use audit findings to de-bias pretraining and fine-tuning pipelines \\
+Government Health Regulators & Establish evidence-based standards for clinical AI certification \\
+\rowcolor{rowalt}
+Academic Researchers & Build on audit methodology for downstream fairness studies \\
+NGOs \& Civil Society & Advocate for equitable AI procurement using empirical evidence \\
+\rowcolor{rowalt}
+Insurance \& Policy Makers & Understand AI-driven disparities in care recommendation patterns \\
+\end{tabularx}
+\end{center}
+
+\subsection{Potential Applications}
+
+\begin{enumerate}
+  \item \textbf{Clinical AI Certification:} Our Geographic Disparity Index (GDI) metric could become a standard fairness criterion in pre-deployment certification of clinical LLMs, alongside accuracy benchmarks.
+  \item \textbf{Model Selection for Global Health Deployments:} Organisations deploying AI health tools in LMICs can use our comparative model audit to select the least-biased model for their context.
+  \item \textbf{Bias Mitigation Research:} Our perturbation dataset and findings will provide a benchmark for researchers developing de-biasing techniques such as counterfactual data augmentation, instruction tuning, and RLHF-based fairness alignment.
+  \item \textbf{Patient Advocacy and Legal Accountability:} Empirical evidence of geographic bias supports advocacy for algorithmic accountability in healthcare AI regulation.
+  \item \textbf{Medical Education:} Findings can be incorporated into curricula on AI literacy for clinicians, helping healthcare providers critically evaluate AI-generated recommendations.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{(Potential) Tools and Techniques}
+
+\subsection{Programming Languages and Frameworks}
+
+\begin{itemize}
+  \item \textbf{Python 3.11+:} Primary language for all data processing, perturbation generation, API querying, annotation pipelines, and statistical analysis.
+  \item \textbf{PyTorch / HuggingFace Transformers:} For loading, running, and prompting open-source models (LLaMA-3-70B, Qwen2.5, Kimi, BioMedGemma).
+  \item \textbf{OpenAI Python SDK:} For GPT-5.2 API access.
+  \item \textbf{Google Generative AI SDK:} For Gemini 3.1 and BioMedGemma access.
+  \item \textbf{Anthropic Python SDK:} For Claude 4.6 API access.
+  \item \textbf{SciPy / Statsmodels:} For ANOVA, t-tests, and Bonferroni-corrected significance testing.
+  \item \textbf{Pandas / NumPy:} Data management, aggregation, and numerical computation.
+  \item \textbf{Matplotlib / Seaborn:} Visualisation of results, heatmaps, and bar charts.
+\end{itemize}
+
+\subsection{Models Under Evaluation}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{0.95\linewidth}{>{\bfseries\small}p{3.2cm} >{\small}p{2.6cm} >{\small}p{2.2cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} & \textcolor{white}{\textbf{Category}} & \textcolor{white}{\textbf{Scale}} & \textcolor{white}{\textbf{Domain Focus}} \\
+\rowcolor{rowalt}
+GPT-5.2 (OpenAI) & Proprietary & Very Large & General \\
+Gemini 3.1 Pro (Google) & Proprietary & Very Large & General \\
+\rowcolor{rowalt}
+Claude 4.6 (Anthropic) & Proprietary & Large & General \\
+LLaMA-3-70B (Meta) & Open-Source & Large (70B) & General \\
+\rowcolor{rowalt}
+Qwen2.5-72B (Alibaba) & Open-Source & Large (72B) & General \\
+Kimi (Moonshot AI) & Proprietary/Open & Large & General (multilingual) \\
+\rowcolor{rowalt}
+BioMedGemma (Google) & Open-Source & Medium & Biomedical \\
+\end{tabularx}
+\captionof{table}{Models evaluated in this study, spanning proprietary, open-source, general, and biomedical-specialised categories.}
+\end{center}
+
+This selection is deliberately diverse: it includes the three dominant proprietary frontier models (GPT-5.2, Gemini 3.1, Claude 4.6), a multilingual model with strong Global South language exposure (Kimi, Qwen), and a biomedical-specialised model (BioMedGemma) to test whether domain fine-tuning mitigates or compounds geographic bias.
+
+\subsection{Key Techniques}
+
+\subsubsection{Semantic-Preserving Geographic Perturbation}
+The core technical technique is the construction of \textit{semantic-preserving perturbations}~\cite{gourabathina2025}: transformations of patient identity fields that alter geographic or cultural signals while leaving all clinical information (symptoms, diagnoses, medications, lab values, treatment history) strictly unchanged. Three perturbation types are defined:
+
+\begin{itemize}
+  \item \textbf{Name Perturbation:} Replace patient name with culturally representative alternatives from Global North (David, Emily, James) or Global South (Ali, Fatima, Kwame, Priya, Nguyen, Carlos) name banks.
+  \item \textbf{Geographic Reference Perturbation:} Replace city/country of presentation (e.g., ``presenting at a clinic in Boston, MA'' $\rightarrow$ ``presenting at a clinic in Lahore, Pakistan'').
+  \item \textbf{Combined Perturbation:} Apply both name and geographic reference substitutions simultaneously.
+\end{itemize}
+
+\subsubsection{LLM-as-Annotator Pipeline}
+Following established methodology~\cite{gourabathina2025,zheng2023}, we use a smaller LLM (LLaMA-3-8B) as an automated annotator to extract structured answers to three triage-relevant binary clinical questions from each model's free-form response:
+\begin{itemize}
+  \item \textbf{MANAGE:} Does the response recommend self-management at home?
+  \item \textbf{VISIT:} Does the response recommend a clinic, urgent care, or ED visit?
+  \item \textbf{RESOURCE:} Does the response recommend a diagnostic resource (lab, imaging, specialist referral)?
+\end{itemize}
+
+\subsubsection{Statistical Testing}
+We use \textbf{ANOVA with Bonferroni correction} for multi-group comparisons and \textbf{paired t-tests with FDR correction} for pairwise regional comparisons, with significance threshold $p < 0.005$ (Bonferroni-corrected over 9 perturbation conditions).
+
+\subsubsection{Why These Techniques Are Well-Suited}
+The perturbation-then-evaluate methodology is directly validated for this problem class by Gourabathina et al.~\cite{gourabathina2025}, who showed it successfully detects non-clinical bias in clinical LLM reasoning. The LLM-as-annotator approach is validated by its adoption as standard practice in the NLP evaluation community~\cite{zheng2023}. ANOVA with Bonferroni correction is the established statistical framework for multi-condition clinical AI evaluation~\cite{armstrong2014}.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Related / Background Work}
+
+\subsection{The Medium is the Message (Gourabathina et al., FAccT 2025)}
+
+\textbf{Summary:} This is the most directly foundational work. Gourabathina et al.\ perturb patient messages along tonal, syntactic, and gender axes and find statistically significant increases in treatment shift rates ($\sim$7--9\%, $p < 0.005$) and erroneous care reductions across nine perturbation types and four LLMs (GPT-4, LLaMA-3-70B, LLaMA-3-8B, Palmyra-Med)~\cite{gourabathina2025}.
+
+\textbf{Limitation relevant to our work:} The study does not examine geographic or cultural origin as a perturbation axis. Its model selection predates current frontier models (GPT-5.2, Gemini 3.1, Claude 4.6) and does not include multilingual models with Global South language exposure (Qwen, Kimi). We directly extend this work.
+
+\subsection{GPT-4 Racial and Gender Bias in Healthcare (Zack et al., Lancet Digital Health 2024)}
+
+\textbf{Summary:} Evaluates GPT-4's encoding of racial and gender biases across medical education, diagnosis, and treatment planning. Finds that GPT-4 associates African American patients with race-based clinical myths (e.g., lower pain sensitivity) and exhibits gender-differential procedure recommendations~\cite{zack2024}.
+
+\textbf{Limitation:} Focuses on US racial categories; does not examine Global South vs.\ Global North dynamics. Does not compare across multiple model families.
+
+\subsection{Dialect Bias in AI (Hofmann et al., Nature 2024)}
+
+\textbf{Summary:} Demonstrates that LLMs make covertly racist decisions based solely on African American English dialect features, associating speakers with negative stereotypes even in non-clinical tasks~\cite{hofmann2024}.
+
+\textbf{Limitation:} Addresses dialect, not geographic name or location. Focuses on a single language variety. Our work extends the \textit{implicit cue} insight to geographic identity signals.
+
+\subsection{Race-Based Medicine Propagation (Omiye et al., npj Digital Medicine 2023)}
+
+\textbf{Summary:} Tests four LLMs (Bard, ChatGPT, Claude, GPT-4) on race-sensitive medical questions and finds that all models propagate outdated race-based clinical norms (e.g., race-adjusted kidney function equations)~\cite{omiye2023}.
+
+\textbf{Limitation:} Examines race as an explicit clinical variable, not as an implicit signal from patient identity. Does not test geographic origin as a separate dimension.
+
+\subsection{Health Equity Harms Toolbox (Pfohl et al., Nature Medicine 2024)}
+
+\textbf{Summary:} Provides a comprehensive framework for surfacing health equity harms in LLMs, including demographic parity metrics and subgroup performance evaluation~\cite{pfohl2024}.
+
+\textbf{Limitation:} Framework is general and does not provide specific findings on geographic or cultural bias. Does not address the Global South population specifically.
+
+\subsection{LLM Clinical Reasoning Evaluation (Hager et al., Nature Medicine 2024)}
+
+\textbf{Summary:} Systematically evaluates state-of-the-art LLMs on clinical reasoning tasks and finds significant gaps: models fail to follow treatment guidelines, cannot interpret lab results, and show inconsistencies across pathologies~\cite{hager2024}.
+
+\textbf{Limitation:} Evaluates clinical accuracy in isolation, without examining how non-clinical patient identity signals modulate performance.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Your Idea and Approach}
+
+\subsection{Core Idea}
+
+Our core idea is to \textbf{treat geographic and cultural identity as a non-clinical perturbation variable} and measure its effect on clinical LLM outputs with the same rigour applied to tonal and syntactic perturbations in prior work. The key insight is that an LLM reading a patient vignette does not receive only clinical signals --- it also receives a rich set of social and demographic cues from patient names, geographic references, and contextual framing. We hypothesise that these cues activate learned associations from pretraining that systematically disadvantage patients perceived as originating from the Global South.
+
+\subsection{Novel Contributions Beyond Related Work}
+
+\begin{enumerate}
+  \item \textbf{New perturbation dimension:} Geographic and cultural origin has not been studied as a perturbation axis in clinical AI evaluation. We introduce a validated name bank spanning five Global South regions and a systematic geographic reference substitution protocol.
+
+  \item \textbf{Broadest model comparison to date:} No prior study simultaneously compares geographic bias across proprietary frontier models (GPT-5.2, Gemini 3.1, Claude 4.6), open-source large models (LLaMA-3-70B, Qwen2.5), multilingual models (Kimi), and biomedical specialised models (BioMedGemma). This comparative scope allows us to determine whether geographic bias is systemic or model-specific.
+
+  \item \textbf{Novel Geographic Disparity Index (GDI):} We introduce a composite metric defined as the weighted average difference in Reduced Care Errors Rate (RCER) between Global North and Global South conditions, enabling single-number model comparisons.
+
+  \item \textbf{Intersectional analysis:} We study the interaction of geographic bias with gender (Global South female patients), disease severity (acute vs.\ chronic), and query formality (clinical vs.\ informal patient messages).
+
+  \item \textbf{Model-inferred geography:} Following the model-inferred gender methodology of Gourabathina et al., we prompt each model to infer patient geographic origin from context-stripped vignettes and test whether inferred geography predicts recommendation differences even without explicit identity signals.
+\end{enumerate}
+
+\subsection{Limitations and Extensions of Related Work We Address}
+
+\begin{itemize}
+  \item Gourabathina et al.\ did not test geographic axes, newer frontier models, or multilingual models --- we address all three.
+  \item Prior race/ethnicity bias work did not examine the Global North/South axis as a continuous spectrum or test across diverse world regions simultaneously --- we do.
+  \item No prior work has defined a scalar summary metric (GDI) enabling direct model-to-model fairness comparison on geographic bias --- we introduce one.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Datasets}
+
+\subsection{Dataset 1: OncQA}
+
+\begin{researchbox}{OncQA Dataset}
+\textbf{Source:} Chen et al.~\cite{chen2023} \\
+\textbf{Type:} Synthetic clinical dataset \\
+\textbf{Original Size:} 100 GPT-4-generated cancer patient summaries paired with patient questions \\
+\textbf{Filtered Size:} 61 cases (after removing gendered cancer types: ovarian, cervical, prostate) \\
+\textbf{Dimensions:} Each case contains structured EHR context (age, gender, cancer diagnosis, PMH, treatments, medications, oncology visit summary) + patient message \\
+\textbf{Format:} JSON / plain text \\
+\textbf{Gold Standard:} Clinician-validated annotations available for 80\% of cases \\
+\textbf{Data Cleanliness:} Pre-cleaned; no preprocessing required beyond gender-filtering \\
+\textbf{Suitability:} Represents formal clinical portal communication; enables evaluation in structured high-stakes oncology settings
+\end{researchbox}
+
+\subsection{Dataset 2: r/AskaDocs}
+
+\begin{researchbox}{r/AskaDocs Dataset}
+\textbf{Source:} Gomes~\cite{gomes2020}; public Reddit dataset \\
+\textbf{Type:} Real patient-generated health queries \\
+\textbf{Original Size:} 175 Reddit posts \\
+\textbf{Filtered Size:} 147 cases (ungendered cases only) \\
+\textbf{Dimensions:} Free-text patient message including inline demographic cues; variable length (avg.\ $\sim$175 tokens) \\
+\textbf{Format:} Plain text / CSV \\
+\textbf{Gold Standard:} Clinician-validated annotations for 60\% of cases \\
+\textbf{Data Cleanliness:} Requires light preprocessing (removal of Reddit-specific formatting, hyperlinks); patient privacy already handled by the original dataset authors~\cite{benton2017} \\
+\textbf{Suitability:} Represents informal, patient-generated queries typical of AI health assistant interactions
+\end{researchbox}
+
+\subsection{Dataset 3: USMLE and Dermatology (CRAFT-MD Framework)}
+
+\begin{researchbox}{USMLE + Derm Dataset}
+\textbf{Source:} Jin et al.~\cite{jin2020}; Johri et al.~\cite{johri2025} (CRAFT-MD framework) \\
+\textbf{Type:} Clinical vignettes from US medical licensing examinations + dermatology cases \\
+\textbf{Original Size:} 2,000 cases (1,800 USMLE-MedQA spanning 12 specialties + 100 public Derm + 100 private Derm) \\
+\textbf{Filtered Size:} 1,333 cases (after removing gendered conditions) \\
+\textbf{Disk Size:} $\sim$15 MB \\
+\textbf{Dimensions:} Structured clinical vignette + multi-turn conversational variants (vignette, single-turn, multiturn, summarised) \\
+\textbf{Format:} JSON \\
+\textbf{Gold Standard:} Clinician-annotated diagnoses for all cases \\
+\textbf{Data Cleanliness:} Pre-processed; no additional cleaning required \\
+\textbf{Suitability:} Enables evaluation in conversational AI settings across 12 medical specialties, most closely resembling real-world patient-AI interaction
+\end{researchbox}
+
+\subsection{Dataset 4: Geographic Name Bank (Self-Constructed)}
+
+\begin{researchbox}{Geographic Name Bank (Novel Contribution)}
+\textbf{Type:} Synthetic lookup table \\
+\textbf{Construction Method:} Curated from census data, social science naming corpora, and cultural informant review \\
+\textbf{Coverage:}
+\begin{itemize}
+  \item Global North: English/Western European names (e.g., David, Emily, James, Sarah)
+  \item South Asia: Pakistani, Indian, Bangladeshi names (e.g., Ali, Fatima, Raj, Priya)
+  \item Sub-Saharan Africa: West/East/Southern African names (e.g., Kwame, Amina, Chidi, Ngozi)
+  \item Southeast Asia: Vietnamese, Indonesian, Filipino names (e.g., Nguyen, Siti, Dang)
+  \item Middle East / North Africa: Arabic names (e.g., Omar, Layla, Hassan, Yasmin)
+  \item Latin America: Spanish/Portuguese names (e.g., Carlos, Maria, Javier, Sofia)
+\end{itemize}
+\textbf{Size:} $\sim$200 names across 6 regions (male/female balanced) \\
+\textbf{Validation:} Reviewed by cultural consultants; validated for regional representativeness \\
+\textbf{Cleanliness:} Constructed clean; no preprocessing required
+\end{researchbox}
+
+\subsection{Summary Statistics}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{0.95\linewidth}{>{\bfseries\small}p{3.3cm} >{\small}c >{\small}c >{\small}c >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Dataset}} & \textcolor{white}{\textbf{Cases}} & \textcolor{white}{\textbf{Perturbations}} & \textcolor{white}{\textbf{Models}} & \textcolor{white}{\textbf{Est.\ Total Samples}} \\
+\rowcolor{rowalt}
+OncQA & 61 & 7 & 7 & $\sim$2,990 \\
+r/AskaDocs & 147 & 7 & 7 & $\sim$7,203 \\
+\rowcolor{rowalt}
+USMLE + Derm & 1,333 & 7 & 7 & $\sim$65,317 \\
+\textbf{Total} & \textbf{1,541} & \textbf{7} & \textbf{7} & $\mathbf{\sim}$\textbf{75,510} \\
+\end{tabularx}
+\captionof{table}{Estimated total samples across datasets, perturbations (3 seeds each), and models.}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Evaluation Criteria / Metrics}
+
+\subsection{Primary Metrics}
+
+We adopt and extend the evaluation framework of Gourabathina et al.~\cite{gourabathina2025}:
+
+\subsubsection{Treatment Shift Rate (TSR)}
+Measures overall recommendation instability between Global North (baseline) and Global South (perturbed) conditions:
+\[
+\text{TSR} = \frac{\sum_{i=1}^{n} \left(T_b^{(i)} - T_p^{(i)}\right)}{n}
+\]
+where $T_b^{(i)}$ is the baseline treatment label and $T_p^{(i)}$ is the perturbed treatment label for case $i$.
+
+\subsubsection{Reduced Care Rate (RCR)}
+Captures the proportion of cases where treatment shifts from \textit{care-augmenting} to \textit{care-reducing} upon perturbation:
+\[
+\text{RCR} = \frac{\sum_{i=1}^{n} \mathbf{1}\left[T_b^{(i)} = c^+\right] \cdot \left(T_b^{(i)} - T_p^{(i)}\right)}{\sum_{i=1}^{n} \mathbf{1}\left[T_b^{(i)} = c^+\right]}
+\]
+
+\subsubsection{Reduced Care Errors Rate (RCER)}
+Among care-reducing shifts, the proportion that contradict gold-standard clinician labels:
+\[
+\text{RCER} = \frac{\sum_{i=1}^{m} \mathbf{1}\left[V^{(i)} = c^+\right] \cdot \left(V^{(i)} - T_p^{(i)}\right)}{\sum_{i=1}^{m} \mathbf{1}\left[V^{(i)} = c^+\right]}
+\]
+
+\subsubsection{Geographic Disparity Index (GDI) --- Novel Metric}
+A composite scalar summarising geographic bias severity for a given model:
+\[
+\text{GDI} = \frac{1}{3} \sum_{q \in \{\text{MANAGE, VISIT, RESOURCE}\}} \left(\text{RCER}_{\text{South}}^{(q)} - \text{RCER}_{\text{North}}^{(q)}\right)
+\]
+A GDI significantly greater than zero (one-sample t-test, $p < 0.005$) indicates systematic geographic bias for that model.
+
+\subsection{Secondary Metrics}
+
+\begin{itemize}
+  \item \textbf{Model Agreement Score:} Proportion of cases where any two models agree on a treatment recommendation, computed for all 21 model pairs --- decreasing agreement under perturbation indicates instability.
+  \item \textbf{Diagnostic Accuracy (Conversational Dataset):} LLM disease diagnostic accuracy against clinician-annotated diagnoses in the CRAFT-MD framework.
+  \item \textbf{Intersectional Disparity Score:} GDI disaggregated by gender, disease severity, and query formality.
+\end{itemize}
+
+\subsection{Comparison with Existing Work}
+
+Our evaluation will be directly compared with Gourabathina et al.~\cite{gourabathina2025} using the same TSR, RCR, and RCER metrics on the same datasets (OncQA, r/AskaDocs, USMLE+Derm), enabling cross-study comparison. We will report whether geographic perturbations produce \textit{larger or smaller} effects than tonal/syntactic perturbations studied in the reference paper --- a key comparative finding. The GDI metric enables direct cross-model ranking, which prior work did not provide.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Potential Conference / Publication}
+
+\subsection{Target Venues}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabularx}{0.95\linewidth}{>{\bfseries\small}p{3.0cm} >{\small}p{3.2cm} >{\small}p{2.2cm} >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Conference}} & \textcolor{white}{\textbf{Full Name}} & \textcolor{white}{\textbf{Est.\ Deadline}} & \textcolor{white}{\textbf{Relevance}} \\
+\rowcolor{rowalt}
+ACM FAccT 2027 & ACM Conference on Fairness, Accountability, and Transparency & Jan 2027 & \textbf{Primary target.} The reference paper was published at FAccT 2025; this is the top venue for AI fairness audits, algorithmic accountability, and healthcare AI equity. \\
+EMNLP 2027 & Empirical Methods in Natural Language Processing & Jun 2027 & Strong NLP and bias track; directly suited for our perturbation-based LLM evaluation methodology and text-level clinical language model analysis. \\
+\rowcolor{rowalt}
+ACM CHI 2027 & ACM Conference on Human Factors in Computing Systems & Sep 2026 & Highly relevant for the human-centred and patient-facing dimensions of our work; CHI actively solicits research on AI fairness, health technology, and cross-cultural computing. \\
+\end{tabularx}
+\captionof{table}{Target publication venues with estimated submission deadlines and relevance justification.}
+\end{center}
+
+\subsection{Why These Venues Are Well-Suited}
+
+\begin{itemize}
+  \item \textbf{ACM FAccT 2027} is the natural primary target for this work. The foundational reference paper by Gourabathina et al.\ was published at FAccT 2025, establishing the venue as the premier destination for clinical AI fairness audits. FAccT specifically solicits contributions on fairness evaluation, algorithmic bias, and AI accountability in high-stakes domains --- all of which precisely describe this project. Our work is a direct, methodologically compatible extension of the reference paper and would be highly legible to the FAccT community.
+
+  \item \textbf{EMNLP 2027} is well-suited given the NLP-centric methodology at the heart of this study: semantic-preserving text perturbation, LLM-as-annotator pipelines, and the analysis of how language model behaviour changes under controlled textual modifications. EMNLP has an established track record of publishing LLM evaluation and bias work, and the demographic bias sub-community within NLP is an important secondary audience for our findings.
+
+  \item \textbf{ACM CHI 2027} is appropriate for the human-centred dimensions of our work. CHI actively publishes research on AI fairness in healthcare, cross-cultural computing, and the design of equitable patient-facing systems. Our findings on how patient identity signals (names, geographic references) alter clinical AI recommendations have direct implications for the design of health interfaces and the deployment of AI tools in global health contexts --- both core CHI concerns. CHI's global reach and policy-aware audience also makes it an effective venue for communicating our findings to practitioners and policymakers.
+\end{itemize}
+
+\subsection{Preliminary Assessment of Novelty}
+
+A search of ACL Anthology, Semantic Scholar, and PubMed confirms no existing publication examining the Global North / Global South axis as a perturbation dimension in clinical LLM evaluation. The combination of (1) novel perturbation type, (2) broadest model comparison to date, and (3) novel GDI metric constitutes sufficient novelty for a top-tier venue contribution.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{99}
+
+\bibitem{gourabathina2025}
+Abinitha Gourabathina, Walter Gerych, Eileen Pan, and Marzyeh Ghassemi. 2025.
+\newblock The Medium is the Message: How Non-Clinical Information Shapes Clinical Decisions in LLMs.
+\newblock In \textit{Proceedings of the 2025 ACM Conference on Fairness, Accountability, and Transparency (FAccT '25)}, ACM, Athens, Greece. \url{https://doi.org/10.1145/3715275.3732121}
+
+\bibitem{zack2024}
+Travis Zack, Eric Lehman, Mirac Suzgun, Jorge A Rodriguez, Leo Anthony Celi, Judy Gichoya, Dan Jurafsky, Peter Szolovits, David W Bates, Raja-Elie E Abdulnour, Atul J Butte, and Emily Alsentzer. 2024.
+\newblock Assessing the potential of GPT-4 to perpetuate racial and gender biases in health care: a model evaluation study.
+\newblock \textit{The Lancet Digital Health} 6, 1, e12--e22.
+
+\bibitem{hofmann2024}
+Valentin Hofmann, Pratyusha Ria Kalluri, Dan Jurafsky, and Sharese King. 2024.
+\newblock AI generates covertly racist decisions about people based on their dialect.
+\newblock \textit{Nature} 633, 8028, 147--154.
+
+\bibitem{omiye2023}
+Jesutofunmi A.\ Omiye, Jenna C.\ Lester, Simon Spichak, Veronica Rotemberg, and Roxana Daneshjou. 2023.
+\newblock Large language models propagate race-based medicine.
+\newblock \textit{npj Digital Medicine} 6, 1, 195.
+
+\bibitem{hager2024}
+Paul Hager, Friederike Jungmann, Robbie Holland, Kunal Bhagat, Inga Hubrecht, Manuel Knauer, Jakob Vielhauer, Marcus Makowski, Rickmer Braren, Georgios Kaissis, and Daniel Rueckert. 2024.
+\newblock Evaluation and mitigation of the limitations of large language models in clinical decision-making.
+\newblock \textit{Nature Medicine} 30, 9, 2613--2622.
+
+\bibitem{pfohl2024}
+Stephen R.\ Pfohl, Heather Cole-Lewis, Rory Sayres, et al.\ 2024.
+\newblock A toolbox for surfacing health equity harms and biases in large language models.
+\newblock \textit{Nature Medicine} 30, 12, 3590--3600.
+
+\bibitem{chen2023}
+Shan Chen, Marco Guevara, Shalini Moningi, et al.\ 2023.
+\newblock The impact of using an AI chatbot to respond to patient messages.
+\newblock arXiv:2310.17703.
+
+\bibitem{gomes2020}
+Juliana R.\ S.\ Gomes. 2020.
+\newblock AskDocs: A medical QA dataset.
+\newblock \url{https://github.com/juresplande/askD}
+
+\bibitem{jin2020}
+Di Jin, Eileen Pan, Nassim Oufattole, Wei-Hung Weng, Hanyi Fang, and Peter Szolovits. 2020.
+\newblock What Disease does this Patient Have? A Large-scale Open Domain Question Answering Dataset from Medical Exams.
+\newblock arXiv:2009.13081.
+
+\bibitem{johri2025}
+Shreya Johri, Jaehwan Jeong, Benjamin A.\ Tran, Daniel I.\ Schlessinger, Shannon Wongvibulsin, Leandra A.\ Barnes, Hong-Yu Zhou, Zhuo Ran Cai, Eliezer M.\ Van Allen, David Kim, Roxana Daneshjou, and Pranav Rajpurkar. 2025.
+\newblock An evaluation framework for clinical use of large language models in patient interaction tasks.
+\newblock \textit{Nature Medicine}. \url{https://doi.org/10.1038/s41591-024-03328-5}
+
+\bibitem{gabriel2024}
+Saadia Gabriel, Isha Puri, Xuhai Xu, Matteo Malgaroli, and Marzyeh Ghassemi. 2024.
+\newblock Can AI Relate: Testing Large Language Model Response for Mental Health Support.
+\newblock arXiv:2405.12021.
+
+\bibitem{zheng2023}
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, et al.\ 2023.
+\newblock Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.
+\newblock arXiv:2306.05685.
+
+\bibitem{armstrong2014}
+Richard A.\ Armstrong. 2014.
+\newblock When to use the Bonferroni correction.
+\newblock \textit{Ophthalmic \& Physiological Optics} 34, 5, 502--508.
+
+\bibitem{benton2017}
+Adrian Benton, Glen Coppersmith, and Mark Dredze. 2017.
+\newblock Ethical research protocols for social media health research.
+\newblock In \textit{Proceedings of the First ACL Workshop on Ethics in NLP}, 94--102.
+
+\bibitem{agarwal2020}
+Sumit D Agarwal, Erika Pabo, Ronen Rozenblum, and Karen M Sherritt. 2020.
+\newblock Professional dissonance and burnout in primary care: a qualitative study.
+\newblock \textit{JAMA Internal Medicine} 180, 3, 395--401.
+
+\bibitem{petterson2015}
+Stephen M Petterson, Winston R Liaw, Carol Tran, and Andrew W Bazemore. 2015.
+\newblock Estimating the residency expansion required to avoid projected primary care physician shortages by 2035.
+\newblock \textit{The Annals of Family Medicine} 13, 2, 107--114.
+
+\end{thebibliography}
+
+\end{document}

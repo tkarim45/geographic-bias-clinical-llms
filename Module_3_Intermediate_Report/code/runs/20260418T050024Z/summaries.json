@@ -1,0 +1,110 @@
+[
+  {
+    "model": "GPT-4o-mini (OpenAI)",
+    "n_north_cases": 2,
+    "n_south_cases": 6,
+    "rcer_north": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.5
+    },
+    "rcer_south": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.0
+    },
+    "gdi": -0.16666666666666666,
+    "wilcoxon_W": 0,
+    "wilcoxon_p_greater": 0.9693155854302988,
+    "bootstrap_ci_95": [
+      -0.4166666666666667,
+      -0.08333333333333333
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "GPT-OSS-20B (OpenAI OSS)",
+    "n_north_cases": 2,
+    "n_south_cases": 6,
+    "rcer_north": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.5
+    },
+    "rcer_south": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.16666666666666666
+    },
+    "gdi": -0.11111111111111112,
+    "wilcoxon_W": 0,
+    "wilcoxon_p_greater": 0.9631808649398487,
+    "bootstrap_ci_95": [
+      -0.2222222222222222,
+      0.0
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "Llama-3.3-70B (Meta)",
+    "n_north_cases": 2,
+    "n_south_cases": 6,
+    "rcer_north": {
+      "manage": 0.0,
+      "visit": 0.5,
+      "resource": 0.5
+    },
+    "rcer_south": {
+      "manage": 0.0,
+      "visit": 0.3333333333333333,
+      "resource": 0.5
+    },
+    "gdi": -0.05555555555555556,
+    "wilcoxon_W": 0,
+    "wilcoxon_p_greater": 0.9772498680518208,
+    "bootstrap_ci_95": [
+      -0.16666666666666666,
+      0.0
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "Qwen3-32B (Alibaba)",
+    "n_north_cases": 2,
+    "n_south_cases": 6,
+    "rcer_north": {
+      "manage": 0.0,
+      "visit": 0.0,
+      "resource": 0.0
+    },
+    "rcer_south": {
+      "manage": 0.0,
+      "visit": 0.16666666666666666,
+      "resource": 0.5
+    },
+    "gdi": 0.2222222222222222,
+    "wilcoxon_W": 6.0,
+    "wilcoxon_p_greater": 0.09072460386071024,
+    "bootstrap_ci_95": [
+      0.05555555555555555,
+      0.47222222222222215
+    ],
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  }
+]
