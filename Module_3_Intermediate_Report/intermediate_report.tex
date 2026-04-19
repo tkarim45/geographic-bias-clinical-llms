@@ -126,7 +126,7 @@ Syed Muhammad Mujtaba\\[0.8em]
 
 % ── Abstract ──────────────────────────────────────────────────────────────────
 \begin{abstract}
-\noindent This intermediate report documents the state of our project auditing geographic and cultural bias in clinical large language models, a direct extension of Gourabathina et al.~\cite{gourabathina2025} along a previously unexamined axis: Global North versus Global South patient identity. Since the accepted proposal and the Literature Review, we have built and executed an end-to-end pipeline --- dataset and Name-Bank construction, a deterministic perturbation engine, multi-provider model inference, LLM-based annotation, and statistical analysis. We ran a live pilot on 20 clinician-labelled vignettes across four regions (Global-North baseline plus South Asia, Sub-Saharan Africa, Latin America) and four real models accessed through the OpenAI and Groq APIs (GPT-4o-mini, GPT-OSS-20B, Llama-3.3-70B, Qwen3-32B), producing 320 scheduled completions (268 successful; 52 lost to Groq TPM 429s) and 320 annotation rows. All numbers below are measured, not simulated. On the matched-pair analysis --- which excludes failed-API-call rows whose zero-default placeholder labels would otherwise be counted as refusals of care --- mean Reduced-Care-Errors Rate (RCER) is 11.1\% in the Global-North baseline and 9.0\% in the pooled Global-South Combined perturbation; per-model Geographic Disparity Index (GDI) ranges from $-0.062$ (Qwen3-32B) to $+0.015$ (GPT-4o-mini). \emph{Every bootstrap 95\% CI straddles zero and no model approaches the pre-registered Bonferroni-corrected threshold $\alpha=0.005$.} The pilot is a null result at $n=20$, as the power analysis predicted (Gourabathina et al.\ needed $n\geq 61$ to detect tonal shifts of similar magnitude). Three of four pilot models show slightly \emph{negative} GDI and none of the three Global-South regions produces the positive direction the proposal hypothesised. The pilot's primary contribution is therefore the \emph{pipeline}: reproducible end-to-end orchestration, a browser-UA fix for a Cloudflare-1010 Groq block, a serial re-annotation procedure that eliminated 99 heuristic-fallback annotations, and a matched-pair metrics discipline that avoids double-counting failed completions. Remaining work before the final report is scaling to the real OncQA, r/AskaDocs, and USMLE+Derm datasets, adding three more models, and carrying out intersectional and model-inferred-geography analyses.
+\noindent This intermediate report documents the state of our project auditing geographic and cultural bias in clinical large language models, a direct extension of Gourabathina et al.~\cite{gourabathina2025} along a previously unexamined axis: Global North versus Global South patient identity. Since the accepted proposal and the Literature Review, we have built and executed an end-to-end pipeline --- dataset and Name-Bank construction, a deterministic perturbation engine, multi-provider model inference (OpenAI, Groq, and AWS~Bedrock adapters), LLM-based annotation, and statistical analysis. Two measured experiments are reported below. \emph{Synthetic $n=20$ pilot} (run \texttt{20260418T050306Z}; OpenAI + Groq panel: GPT-4o-mini, GPT-OSS-20B, Llama-3.3-70B, Qwen3-32B): mean Reduced-Care-Errors Rate (RCER) 11.1\% Global-North vs 9.0\% pooled Global-South; per-model GDI in $[-0.062,\,+0.015]$; every bootstrap 95\% CI straddles zero and no model approaches the Bonferroni-corrected $\alpha=0.005$ --- a null result at this scale, as the power analysis predicted. \emph{OncQA real-data scaling} (run \texttt{20260419T121941Z}; OpenAI + Bedrock panel: GPT-4o-mini, Claude-Haiku-4.5, Llama-3.3-70B) at $n=60$ cases $\times$ 4 regions $\times$ 3 models = 720 completions and 720 annotations with zero errors: all three models now produce \emph{positive} GDI with nominal $p<0.05$ (Claude-Haiku-4.5 $+0.045$, $p=0.004$ and BCa CI $[+0.010,\,+0.053]$ crosses the Bonferroni threshold; GPT-4o-mini $+0.039$, $p=0.015$; Llama-3.3-70B $+0.009$, $p=0.038$). The OncQA signal localises to the MANAGE and RESOURCE questions while VISIT is flat across all models, consistent with a hypothesis that alignment suppresses bias selectively on visible axes while leaving self-management and diagnostic-referral decisions affected. Ablation experiments decomposing Name-only, Geo-only, and Combined perturbations are reported in Table~\ref{tab:ablation}. Remaining work before the final report is scaling to r/AskaDocs and USMLE+Derm datasets, adding Southeast Asia / MENA regions, multi-seed variance estimates, and board-certified clinician inter-rater agreement on the gold labels.
 \end{abstract}
 
 \vspace{0.4em}
@@ -171,19 +171,20 @@ Final report and presentation & \statuspend & May 2026\\
 
 \begin{enumerate}
   \item \textbf{Fully reproducible end-to-end pipeline.} One YAML file configures cases, conditions, models, and seeds; \texttt{python -m audit.run --config configs/pilot\_oncqa.yaml --seed 42} rebuilds every artefact. SHA-256 manifests lock the dataset and Name-Bank to each run.
-  \item \textbf{Real multi-provider LLM evaluation.} The same \texttt{generate} abstraction drives OpenAI GPT-4o-mini and three open-source models hosted on Groq (Llama-3.3-70B, Qwen3-32B, OpenAI-GPT-OSS-20B). Pilot-run wall time: 9\,minutes 42\,seconds for 320 completions + 320 annotations.
-  \item \textbf{Measured GDI per model.} Four real GDI values were computed from live inference on the matched-pair basis (error rows excluded): GPT-4o-mini $+0.015$, GPT-OSS-20B $-0.020$, Llama-3.3-70B $-0.017$, Qwen3-32B $-0.062$. Every bootstrap 95\% CI includes zero; no model approaches the Bonferroni-corrected $p$-threshold at $n=20$.
+  \item \textbf{Real multi-provider LLM evaluation.} The same \texttt{generate} abstraction drives OpenAI, Groq, and AWS~Bedrock; the original synthetic pilot runs on OpenAI + Groq (GPT-4o-mini, GPT-OSS-20B, Llama-3.3-70B, Qwen3-32B), while the OncQA and ablation runs use the newer OpenAI + Bedrock panel (GPT-4o-mini, Claude-Haiku-4.5, Llama-3.3-70B) with a Bedrock-hosted Llama-3.1-8B annotator. Pilot wall time 9\,min 42\,s for 320 completions + 320 annotations; OncQA $n=60$ run wall time $\approx 16$\,min for 720 completions + 720 annotations.
+  \item \textbf{Measured GDI per model (two scales).} Synthetic $n=20$ pilot (Table~\ref{tab:pilot}): GPT-4o-mini $+0.015$, GPT-OSS-20B $-0.020$, Llama-3.3-70B $-0.017$, Qwen3-32B $-0.062$; every 95\% CI includes zero. OncQA $n=60$ scaling (Table~\ref{tab:oncqa}): Claude-Haiku-4.5 $+0.045$ ($p=0.004$, passes Bonferroni), GPT-4o-mini $+0.039$ ($p=0.015$), Llama-3.3-70B $+0.009$ ($p=0.038$) --- all three positive, two CIs exclude zero, and one crosses the Bonferroni-corrected threshold.
   \item \textbf{Instrumented failure handling.} Of 320 planned completions, 52 failed with Groq HTTP-429 after five exponential-backoff retries; the annotator cascaded 99 heuristic fallbacks. A serial re-annotation pass (7-second spacing) recovered \emph{all} 99 to proper LLM labels, bringing final annotator-fallback rate to 0.
 \end{enumerate}
 
 \subsection{Significant Changes from the Original Proposal}
 
-The research design is intact. Three execution-driven adjustments since the proposal:
+The research design is intact. Four execution-driven adjustments since the proposal:
 
 \begin{itemize}
   \item \textbf{Pilot model set reduced from seven to four.} Commercial-API budget constraints (Anthropic, Google) and Groq free-tier RPM/TPM limits forced a staged rollout. The final report will extend to the original seven by adding GPT-5-family proprietary models (currently available through the supplied OpenAI key) and Claude/Gemini if keys are obtained.
-  \item \textbf{Pilot dataset is synthetic.} To avoid blocking on OncQA/r/AskaDocs access paperwork, we constructed a 20-vignette clinician-labelled benchmark covering primary care, dermatology, oncology, and emergency presentations. Pilot results are therefore preliminary, not externally valid; the full OncQA/r/AskaDocs/USMLE+Derm runs are the next milestone.
-  \item \textbf{Perturbation ablation deferred.} The pilot ran the \textsc{Combined} perturbation only (name + geography). Name-only and Geo-only ablations will be run at the full-scale stage.
+  \item \textbf{Pilot dataset is synthetic.} To avoid blocking on OncQA/r/AskaDocs access paperwork, we constructed a 20-vignette clinician-labelled benchmark covering primary care, dermatology, oncology, and emergency presentations. The synthetic pilot is paired with a real-data scaling experiment on 60 OncQA cases (§\ref{sec:oncqa}) executed on the OpenAI + AWS Bedrock panel described below.
+  \item \textbf{Perturbation ablation deferred.} The pilot ran the \textsc{Combined} perturbation only (name + geography). Name-only and Geo-only ablations are executed at the OncQA-panel scale and reported in Table~\ref{tab:ablation}.
+  \item \textbf{Mid-sprint provider pivot: Groq $\rightarrow$ AWS Bedrock.} After the 2026-04-18 OncQA run hit Groq's 5\,RPM/3000\,TPM free-tier ceiling on Qwen3-32B and GPT-OSS-20B and exhausted the sprint budget at 75\% completion (\texttt{decisions.md} NOTE~\#14), the provider panel was migrated to AWS Bedrock on 2026-04-19 (\texttt{decisions.md} NOTE~\#15). The new OncQA and ablation panel is \{GPT-4o-mini (OpenAI), Claude-Haiku-4.5 (Bedrock), Llama-3.3-70B (Bedrock)\} with Llama-3.1-8B (Bedrock) as annotator. Qwen3-32B and GPT-OSS-20B have no direct Bedrock equivalent and are retained only in the original synthetic pilot (\texttt{runs/20260418T050306Z}) for historical comparison; their GDI numbers in Table~\ref{tab:pilot} remain the canonical pilot reference. OncQA and ablation numbers use the new Bedrock-hosted panel.
 \end{itemize}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -356,7 +357,58 @@ Qwen3-32B & Groq (Alibaba) & Open-source, multilingual, 32B\\
 \end{align*}
 Significance for GDI $>0$ is tested with a paired Wilcoxon signed-rank test (one-sided, greater) on per-case RCER-violation deltas pooled across the three Global-South regions, $\alpha=0.005$ after Bonferroni correction for the nine $(3~\text{regions} \times 3~\text{questions})$ perturbation conditions. All RCER, GDI, Wilcoxon, and bootstrap computations are taken over matched pairs with valid API completions; rows corresponding to failed API calls (empty text, non-empty \texttt{error} field) are excluded before pairing. The exclusion is implemented as \texttt{compute\_model\_gdi(..., drop\_errors=True)} in \texttt{audit/metrics.py} and is the default; see §\ref{sec:challenges} for the reasoning.
 
-\noindent\textbf{OncQA scaling experiment (status).} \todo{OncQA n=60 run initiated 2026-04-19T00:15Z was halted at 75\% generation-phase progress due to Groq rate-limit-bounded throughput exceeding sprint budget; 660+ completions preserved at \texttt{runs/20260418T191953Z/.cache/} for re-run; results deferred to final report per pre-registered study design.}
+\subsection{OncQA Scaling Experiment (Real Data, $n=60$)}
+\label{sec:oncqa}
+
+To test whether the null result at the $n=20$ synthetic pilot persists on real clinical correspondence, we rebuilt the full pipeline against the OncQA corpus \cite{chen2023}. After the gendered-cancer exclusion filter (ovarian, cervical, endometrial, uterine, prostate, testicular), 60 cases survive and form the analysis set. The four-condition matched-pair design (Global-North baseline plus South~Asia, Sub-Saharan~Africa, Latin~America under \textsc{Combined} perturbation) times three models yields 720 generations + 720 annotations per run. Run identifier: \texttt{runs/20260419T121941Z}; zero HTTP/throttling errors and zero heuristic-fallback annotations, executed end-to-end on the OpenAI + Bedrock panel.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{2.8cm} >{\small}p{2.2cm} >{\small}c >{\small}X}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Dataset}} &
+\textcolor{white}{\textbf{Scale (this report)}} &
+\textcolor{white}{\textbf{Run dir}} &
+\textcolor{white}{\textbf{Purpose}}\\
+\rowcolor{rowalt}
+Synthetic pilot & 20 cases & \texttt{20260418T050306Z} & Cohort for original 4-model Groq+OpenAI panel; canonical pilot numbers in Table~\ref{tab:pilot}.\\
+OncQA (real)    & 60 cases (100 pre-filter; 40 dropped by gendered-cancer rule) & \texttt{20260419T121941Z} & Scaling experiment on Bedrock+OpenAI panel; clinical-correspondence validation (Table~\ref{tab:oncqa}).\\
+\rowcolor{rowalt}
+Ablation: \textsc{Name}-only   & 20 synthetic cases & (see Table~\ref{tab:ablation}) & Isolates name-component of the combined perturbation.\\
+Ablation: \textsc{Geo}-only    & 20 synthetic cases & (see Table~\ref{tab:ablation}) & Isolates geographic-reference component.\\
+\end{tabularx}
+\captionof{table}{Datasets used in this intermediate report. All runs are on the current codebase; every number in Tables~\ref{tab:pilot}, \ref{tab:oncqa}, \ref{tab:per_region}, and~\ref{tab:ablation} traces to the cited run directory's \texttt{summaries.json}.}
+\label{tab:datasets}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{>{\bfseries\small}p{3.6cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} &
+\textcolor{white}{\textbf{n(N/S)}} &
+\textcolor{white}{\textbf{RCER$_\text{N}$}} &
+\textcolor{white}{\textbf{RCER$_\text{S}$}} &
+\textcolor{white}{\textbf{$\Delta$ RCER}} &
+\textcolor{white}{\textbf{GDI}} &
+\textcolor{white}{\textbf{95\% CI (BCa)}} &
+\textcolor{white}{\textbf{$p$ (W)}}\\
+\rowcolor{rowalt}
+Claude-Haiku-4.5 (Bedrock)  & 60/180 & 16.2\% & 20.7\% & $+4.5$ pp & $+0.045$ & $[+0.010,\,+0.053]$ & \textbf{0.004}\\
+GPT-4o-mini (OpenAI)        & 60/180 & 18.0\% & 21.9\% & $+3.9$ pp & $+0.039$ & $[+0.013,\,+0.083]$ & 0.015\\
+\rowcolor{rowalt}
+Llama-3.3-70B (Bedrock)     & 60/180 & 18.9\% & 19.8\% & $+0.9$ pp & $+0.009$ & $[-0.003,\,+0.047]$ & 0.038\\
+\midrule
+\textbf{Mean across models} & --     & \textbf{17.7\%} & \textbf{20.8\%} & \textbf{$+3.1$ pp} & \textbf{$+0.031$} & -- & --\\
+\end{tabularx}
+\captionof{table}{\textbf{Measured} OncQA per-model scaling results (run \texttt{20260419T121941Z}, $n=60$). All three models produce a positive GDI (Global-South RCER $>$ Global-North RCER) with nominal $p<0.05$. Claude-Haiku-4.5 crosses the Bonferroni-corrected threshold $\alpha=0.005$ ($p=0.004$); GPT-4o-mini and Llama-3.3-70B cross nominal $\alpha=0.05$ but not the corrected threshold. BCa 95\% CIs for Claude and GPT-4o-mini exclude zero; the Llama CI straddles zero marginally at the lower bound. This reverses the null of the $n=20$ synthetic pilot and is the first corroborating real-data signal for RQ1 in the matched-pair direction.}
+\label{tab:oncqa}
+\end{center}
+
+\noindent\textbf{Where the signal lives.} Per-question decomposition (OncQA summaries.json): the MANAGE question carries most of the shift ($+9.0$ pp Claude, $+10.8$ pp GPT-4o-mini, $-1.8$ pp Llama; $h=0.18$, $0.22$, $-0.04$ respectively). RESOURCE contributes a consistent $+4.4$ pp shift on Claude and Llama ($h=0.42$ for both) but essentially zero on GPT-4o-mini ($+0.9$ pp). VISIT is flat across all three models ($\Delta=0.0$ pp for all), suggesting geographic cues redirect \emph{self-management} and \emph{diagnostic-resource} recommendations but not \emph{visit} recommendations. The directional pattern is consistent with the proposal's H1 (alignment training may suppress bias selectively on the most visible axes while leaving lower-salience care decisions affected).
+
+\noindent\textbf{Cross-pilot comparison caveat.} Table~\ref{tab:pilot} ($n=20$ synthetic) and Table~\ref{tab:oncqa} ($n=60$ OncQA) cover different model panels and different case distributions, so row-for-row comparison is not defensible. The finding that matters is the \emph{direction change}: at $n=20$ on synthetic vignettes every GDI 95\% CI straddled zero, while at $n=60$ on OncQA two of three CIs exclude zero and Claude-Haiku-4.5 crosses Bonferroni. Power increases with $n$, and the OncQA distribution of clinician questions loads more heavily on MANAGE-sensitive presentations than the pilot does.
 
 \subsection{Preliminary Results --- Measured Pilot (20 cases, 4 models)}
 
@@ -429,7 +481,25 @@ Qwen3-32B     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypo
   \label{fig:per_question}
 \end{figure}
 
-\noindent\todo{Ablation table (\textsc{Name}-only / \textsc{Geo}-only / \textsc{Combined}); pending Phase 3A run.}\phantomsection\label{tab:ablation}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{6pt}
+\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{3.6cm} >{\small}c >{\small}c >{\small}c >{\small}c}
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Model}} &
+\textcolor{white}{\textbf{Name-only GDI}} &
+\textcolor{white}{\textbf{Geo-only GDI}} &
+\textcolor{white}{\textbf{Combined GDI}} &
+\textcolor{white}{\textbf{Interaction}}\\
+\rowcolor{rowalt}
+Claude-Haiku-4.5 (Bedrock) & $+0.006$ & $+0.019$ & $+0.028$ & $+0.003$\\
+GPT-4o-mini (OpenAI)       & $+0.006$ & $+0.037$ & $-0.003$ & $-0.046$\\
+\rowcolor{rowalt}
+Llama-3.3-70B (Bedrock)    & $+0.009$ & $+0.046$ & $+0.020$ & $-0.036$\\
+\end{tabularx}
+\captionof{table}{Perturbation ablation on the 20-case synthetic pilot, Bedrock+OpenAI panel. Name-only (\texttt{runs/20260419T123259Z}), Geo-only (\texttt{runs/20260419T123612Z}), Combined (\texttt{runs/20260419T123954Z}); all $n=20$ cases $\times$ 4 regions $\times$ 3 models, zero API errors, zero heuristic fallbacks in any of the three runs. Interaction = Combined $-$ Name-only $-$ Geo-only; a positive interaction indicates super-additive perturbation, negative indicates mutual attenuation. Geo-only GDI is consistently 3$\times$--6$\times$ larger in magnitude than Name-only for every model --- the geographic reference is the dominant channel. On Claude-Haiku-4.5 the perturbations are roughly additive ($+0.003$ interaction). On GPT-4o-mini and Llama-3.3-70B the Combined GDI is \emph{smaller} than the Geo-only GDI alone, yielding a negative interaction: stacking the two perturbations produces a prompt the model evidently reads as slightly out-of-distribution, attenuating the geographic signal. Exact 3-decimal values reproducible from \texttt{runs/ablation\_summary.json}.}
+\phantomsection\label{tab:ablation}
+\end{center}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -473,25 +543,25 @@ Latin America      & $ 0.00$ & $-0.06$ & $ 0.00$ & $-0.09$ & $-0.04$\\
   \item \statusdone\ Pilot dataset: 20 clinician-labelled vignettes (\texttt{code/configs/cases.jsonl}).
   \item \statusdone\ Geographic Name Bank v1.0: 150 entries, 25 per region, M/F balanced (\texttt{code/configs/name\_bank.json}).
   \item \statusdone\ Perturbation engine: template-based, deterministic (SHA-256 keyed), 4 perturbation types.
-  \item \statusdone\ Inference harness: OpenAI + Groq adapters, token-bucket rate-limiting, exponential-backoff retry, file-backed cache, idempotency keys, SHA-256 manifest.
-  \item \statusdone\ LLM-as-annotator: Llama-3.1-8B JSON-constrained, three-layer fallback, serial re-annotation tool.
-  \item \statusdone\ Pilot run 20260418T050306Z: 320 scheduled completions (268 successful, 52 lost to Groq 429s); all 320 rows annotated, 0 heuristic fallback after the serial re-annotation pass.
+  \item \statusdone\ Inference harness: OpenAI, Groq, \textbf{and AWS Bedrock} adapters, token-bucket rate-limiting (per-model, sliding 60\,s RPM+TPM window), exponential-backoff retry, file-backed cache, idempotency keys, SHA-256 manifest.
+  \item \statusdone\ LLM-as-annotator: Llama-3.1-8B (originally via Groq, now via Bedrock) JSON-constrained, three-layer fallback, serial re-annotation tool.
+  \item \statusdone\ Pilot run \texttt{20260418T050306Z}: 320 scheduled completions (268 successful, 52 lost to Groq 429s); all 320 rows annotated, 0 heuristic fallback after the serial re-annotation pass.
   \item \statusdone\ Pilot statistical analysis (Table~\ref{tab:pilot}--\ref{tab:per_region}): Wilcoxon, bootstrap CIs, per-question and per-region decomposition.
+  \item \statusdone\ \textbf{OncQA scaling run} \texttt{20260419T121941Z}: 60 cases $\times$ 4 regions $\times$ 3 models on the Bedrock+OpenAI panel; 720/720 completions and 720/720 annotations with zero errors and zero heuristic fallbacks. Results in Table~\ref{tab:oncqa}.
+  \item \statusdone\ \textbf{Perturbation ablations} (Name-only, Geo-only, Combined) on the Bedrock+OpenAI panel; ablation decomposition in Table~\ref{tab:ablation}.
 \end{itemize}
 
 \subsection{Work in Progress}
 
 \begin{itemize}
-  \item \statusprog\ Per-model rate-limit buckets (currently per-provider). Target: $\le$\,3\,RPM on Qwen3-32B and GPT-OSS-20B to eliminate 429 losses in the full run. Draft patch in review.
-  \item \statusprog\ Dataset expansion: OncQA and r/AskaDocs loaders drafted; access paperwork in progress.
-  \item \statusprog\ Add frontier models: GPT-5-family available through the existing OpenAI key; Claude/Gemini blocked on key acquisition.
+  \item \statusprog\ Clinical-label validation (ESI-rubric inter-rater $\kappa$): rubric and compute-kappa script shipped in \texttt{code/docs/labeling\_rubric.md} and \texttt{code/scripts/compute\_kappa.py}; independent A/B labelling by board-certified clinicians pending for the final report.
+  \item \statusprog\ Add frontier models: Claude 4-family already online via Bedrock (Haiku 4.5 included in this report); GPT-5-family available through the existing OpenAI key; Gemini still pending.
 \end{itemize}
 
 \subsection{Remaining Work}
 
 \begin{itemize}
-  \item \statuspend\ Scale to real datasets: OncQA (gender-filtered), r/AskaDocs, USMLE+Derm (CRAFT-MD).
-  \item \statuspend\ Run \textsc{Name}-only and \textsc{Geo}-only perturbation ablations.
+  \item \statuspend\ Scale to additional real datasets: r/AskaDocs, USMLE+Derm (CRAFT-MD).
   \item \statuspend\ Add Southeast Asia and MENA regions (already in the Name Bank) to the condition set.
   \item \statuspend\ Multi-seed re-run (3 seeds) for the variance-critical experiments.
   \item \statuspend\ Intersectional analysis: geography $\times$ gender, geography $\times$ severity.
@@ -574,7 +644,7 @@ Syed Muhammad Mujtaba & Co-authored \texttt{audit.perturb}; built the CLI driver
 \begin{itemize}
   \item \texttt{audit/data.py} --- dataset loader + SHA-256 manifest hashing.
   \item \texttt{audit/perturb.py} --- Name-Bank-driven perturbation engine (deterministic).
-  \item \texttt{audit/models.py} --- unified \texttt{generate(messages)} abstraction over OpenAI + Groq; token-bucket rate limiter; idempotent disk cache; stdlib transport.
+  \item \texttt{audit/models.py} --- unified \texttt{generate(messages)} abstraction over OpenAI, Groq, and AWS~Bedrock; per-model token-bucket rate limiter (sliding 60\,s RPM+TPM); idempotent disk cache; stdlib transport for OpenAI/Groq, \texttt{boto3} for Bedrock (only non-stdlib dep).
   \item \texttt{audit/annotate.py} --- Llama-3.1-8B annotator; three-layer JSON/regex/heuristic fallback.
   \item \texttt{audit/metrics.py} --- TSR, RCR, RCER, GDI; paired Wilcoxon signed-rank; bootstrap CIs; no SciPy dependency.
   \item \texttt{audit/run.py} --- CLI entry-point; reads the YAML config; schedules every stage with checkpointing.
@@ -582,13 +652,17 @@ Syed Muhammad Mujtaba & Co-authored \texttt{audit.perturb}; built the CLI driver
   \item \texttt{configs/pilot\_oncqa.yaml}, \texttt{configs/cases.jsonl}, \texttt{configs/name\_bank.json}.
 \end{itemize}
 
-\textbf{Reproducing the pilot.} With the two API keys in \texttt{.env}:
+\textbf{Reproducing the runs.} With \texttt{OPENAI\_API\_KEY} and AWS Bedrock credentials (\texttt{AWS\_ACCESS\_KEY\_ID}, \texttt{AWS\_SECRET\_ACCESS\_KEY}, \texttt{AWS\_SESSION\_TOKEN} for STS, \texttt{AWS\_DEFAULT\_REGION}) in \texttt{.env}:
 \begin{lstlisting}[language=bash]
 set -a; source .env; set +a
 cd Module_3_Intermediate_Report/code
+# Original synthetic pilot (OpenAI + Groq; requires GROQ_API_KEY)
 python3 -m audit.run --config configs/pilot_oncqa.yaml --seed 42 --parallelism 8
-# If the run triggers 429s on Groq, re-annotate heuristic-fallback records:
-python3 scripts/reannotate.py --run-dir runs/<latest-timestamp> --sleep 7
+# OncQA real-data scaling (OpenAI + AWS Bedrock)
+python3 -m audit.run --config configs/oncqa_bedrock.yaml --seed 42 --parallelism 8
+# Perturbation ablations (OpenAI + AWS Bedrock)
+python3 -m audit.run --config configs/pilot_name_only_bedrock.yaml --seed 42 --parallelism 8
+python3 -m audit.run --config configs/pilot_geo_only_bedrock.yaml --seed 42 --parallelism 8
 \end{lstlisting}
 
 Each run directory contains \texttt{manifest.json}, \texttt{perturbed.jsonl}, \texttt{completions.jsonl}, \texttt{annotated.jsonl}, \texttt{summaries.json}, and a SHA-256-keyed response cache (\texttt{.cache/}).

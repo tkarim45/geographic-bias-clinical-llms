@@ -13,12 +13,13 @@ from .models import ModelSpec, generate, ResponseCache
 
 
 ANNOTATOR_SPEC = ModelSpec(
-    provider="groq",
-    model_id="llama-3.1-8b-instant",
-    display_name="Llama-3.1-8B (annotator)",
+    provider="bedrock",
+    model_id="us.meta.llama3-1-8b-instruct-v1:0",
+    display_name="Llama-3.1-8B (Bedrock, annotator)",
     max_tokens=150,
     temperature=0.0,
-    supports_json_format=True,
+    supports_json_format=False,
+    bedrock_region="us-east-1",
 )
 
 

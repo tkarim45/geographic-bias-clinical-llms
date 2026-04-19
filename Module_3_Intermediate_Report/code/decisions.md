@@ -1797,3 +1797,97 @@ Three deliberate phrasing choices:
 USD 0.2617 (pre-billing SSL fail $0.00 + smoke $0.0417 + partial OncQA $0.22).
 Well under USD 20 ceiling. USD 19.74 of budget remains for any future
 sprint-internal retry.
+
+---
+
+## 2026-04-19T12:19Z — NOTE #15: Pivot from Groq to AWS Bedrock + OpenAI (panel reshuffle)
+
+**Recorded by:** Lead orchestration agent per lead user direction
+("remove grok use bedrock and openai api key").
+
+### Decision
+
+Replace Groq as a provider for the remainder of Module 3. New panel:
+
+| Slot | Old (Groq/OpenAI) | New (Bedrock/OpenAI) |
+|---|---|---|
+| Frontier proprietary (A) | `openai/gpt-4o-mini` | `openai/gpt-4o-mini` (unchanged) |
+| Frontier proprietary (B) | `groq/openai/gpt-oss-20b` | `bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Open-weights large | `groq/llama-3.3-70b-versatile` | `bedrock/us.meta.llama3-3-70b-instruct-v1:0` |
+| Open-weights medium | `groq/qwen/qwen3-32b` | — (dropped; no direct Bedrock equivalent) |
+| Annotator | `groq/llama-3.1-8b-instant` | `bedrock/us.meta.llama3-1-8b-instruct-v1:0` |
+
+Panel is now 3 generator models + 1 annotator across 2 providers
+(OpenAI direct + AWS Bedrock). Qwen3-32B and GPT-OSS-20B are dropped; the
+proposal's fourth-model slot is filled by Claude-Haiku-4.5.
+
+### Rationale
+
+Three reasons converging:
+
+1. **Throughput ceiling.** Groq's free-tier 5 RPM / 3000 TPM on Qwen3-32B
+   and GPT-OSS-20B caused the OncQA full run on 2026-04-18 to hit the
+   sprint-budget wall at 75% (NOTE #14). Bedrock's on-demand quotas
+   (~100–200 RPM per model, inference-profile routed) remove that
+   bottleneck — smoke test this session completed 24 generations in <2 min.
+2. **`.cache/` drift.** The OncQA and name-only ablation `.cache/`
+   directories that NOTE #14 relied on for resume are not present on this
+   checkout (they were gitignored and did not travel with the initial
+   commit). Resume-from-cache is therefore not available; a cold re-run
+   is required either way. Bedrock's higher throughput makes the cold
+   re-run tractable in the remaining sprint window.
+3. **User has AWS credits.** No cost constraint. Hybrid (Groq +
+   Bedrock) is no longer needed.
+
+### Code changes this session
+
+- `audit/models.py`: added `provider="bedrock"` branch via `boto3`; added
+  `bedrock_region` field to `ModelSpec`; added `_bedrock_client`,
+  `_render_llama_prompt`, `_bedrock_body`, `_bedrock_extract`,
+  `_invoke_bedrock`; retry loop now distinguishes `ThrottlingException` /
+  `ModelErrorException` / `ServiceUnavailableException` from permanent
+  errors and drains the rate-limit bucket on throttles. `_RATE_LIMITS`
+  seeded with conservative RPM for Bedrock Claude-Haiku-4.5, Llama-3.3-70B,
+  Llama-3.1-8B (all via inference-profile IDs). Groq/OpenAI branches
+  unchanged; migration is strictly additive.
+- `audit/annotate.py`: `ANNOTATOR_SPEC` switched to
+  `bedrock/us.meta.llama3-1-8b-instruct-v1:0`.
+- `configs/oncqa_bedrock.yaml`, `configs/pilot_name_only_bedrock.yaml`,
+  `configs/pilot_geo_only_bedrock.yaml`: new configs with the 3-model
+  Bedrock-heavy panel.
+- `.env`: removed `GROQ_API_KEY`; added `AWS_ACCESS_KEY_ID`,
+  `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (temp STS), and
+  `AWS_DEFAULT_REGION=us-east-1`.
+- `.env.example`: updated accordingly.
+- `requirements.txt`: new file pinning `boto3>=1.34`, `botocore>=1.34`
+  (first non-stdlib dep; previously stdlib-only was a G6 nicety, not a
+  hard requirement).
+
+### Model-ID quirk worth flagging
+
+Bedrock's on-demand `InvokeModel` rejects raw foundation-model IDs for
+newer Anthropic and newer Llama models in this account; it requires
+**inference-profile IDs** (prefixed `us.`). Raw IDs like
+`anthropic.claude-haiku-4-5-20251001-v1:0` return a `ValidationException`
+instructing the caller to retry with a profile ID. Resolved by using
+`us.anthropic.claude-haiku-4-5-20251001-v1:0`,
+`us.meta.llama3-3-70b-instruct-v1:0`,
+`us.meta.llama3-1-8b-instruct-v1:0` throughout. Documented here so future
+config migrations don't rediscover it.
+
+### Smoke test (2026-04-19T12:19Z)
+
+`python3 -m audit.run --config configs/oncqa_bedrock.yaml --limit 2
+--parallelism 4` → `runs/20260419T121906Z/` with full
+`summaries.json`. 24/24 generations, 0 errors, 0 heuristic-fallback
+annotations. n=2 so the GDI numbers themselves are not informative, but
+the pipeline is end-to-end live on Bedrock.
+
+### Honesty caveat for the report
+
+The model panel has shifted. §1.3 ("Significant Changes from the Original
+Proposal") will note the Qwen3-32B / GPT-OSS-20B drops and the Claude +
+Bedrock substitutions openly. GDI numbers from the new runs are not
+comparable to the 2026-04-18 Groq pilot numbers row-for-row, because the
+models themselves changed — cross-run comparisons will be qualified in
+the Analysis section.

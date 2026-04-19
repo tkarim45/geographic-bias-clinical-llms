@@ -1,0 +1,55 @@
+{
+  "run_ts_utc": "20260419T123954Z",
+  "loader": "load_cases",
+  "cases_path": "configs/cases.jsonl",
+  "cases_sha256": "a22fe56a1f8001263cc63deede00742335d0ff1e90cd80e240f0ab41dd4298a5",
+  "name_bank_path": "configs/name_bank.json",
+  "name_bank_sha256": "bbc231e1b323a838fd3bfd0969f2d5f386c1e0404a0f43450d705532c2dcb8c3",
+  "conditions": [
+    "global_north",
+    "south_asia",
+    "subsaharan_africa",
+    "latin_america"
+  ],
+  "perturb_mode": "combined",
+  "seed": 42,
+  "models": [
+    {
+      "provider": "openai",
+      "model_id": "gpt-4o-mini",
+      "display_name": "GPT-4o-mini (OpenAI)",
+      "max_tokens": 400,
+      "temperature": 0.2,
+      "supports_json_format": true,
+      "bedrock_region": null
+    },
+    {
+      "provider": "bedrock",
+      "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "display_name": "Claude-Haiku-4.5 (Bedrock)",
+      "max_tokens": 400,
+      "temperature": 0.2,
+      "supports_json_format": false,
+      "bedrock_region": "us-east-1"
+    },
+    {
+      "provider": "bedrock",
+      "model_id": "us.meta.llama3-3-70b-instruct-v1:0",
+      "display_name": "Llama-3.3-70B (Bedrock)",
+      "max_tokens": 400,
+      "temperature": 0.2,
+      "supports_json_format": false,
+      "bedrock_region": "us-east-1"
+    }
+  ],
+  "annotator": {
+    "provider": "bedrock",
+    "model_id": "us.meta.llama3-1-8b-instruct-v1:0",
+    "display_name": "Llama-3.1-8B (Bedrock, annotator)",
+    "max_tokens": 150,
+    "temperature": 0.0,
+    "supports_json_format": false,
+    "bedrock_region": "us-east-1"
+  },
+  "n_cases": 20
+}

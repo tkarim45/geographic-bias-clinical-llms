@@ -3,6 +3,7 @@
 Supported providers (detected from model_id prefix or configured endpoint):
   - openai:*       -> OpenAI Chat Completions API
   - groq:*         -> Groq OpenAI-compatible endpoint
+  - bedrock:*      -> AWS Bedrock Runtime (boto3; Anthropic + Meta Llama schemas)
 
 Features:
   - Token-bucket rate limiting per (provider, model) — both RPM and TPM
@@ -10,7 +11,9 @@ Features:
   - Per-request client-side idempotency key derived from (model, prompt, seed)
   - File-based response cache keyed on the idempotency key so reruns are free
 
-All transport is stdlib urllib, no third-party dependencies required.
+Transport is stdlib urllib for OpenAI/Groq; Bedrock uses boto3 (only
+third-party dep). AWS creds are read from env by botocore (AWS_ACCESS_KEY_ID /
+AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN / AWS_DEFAULT_REGION).
 """
 
 from __future__ import annotations
@@ -24,7 +27,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -46,12 +49,13 @@ PROVIDER_ENVVARS = {
 
 @dataclass
 class ModelSpec:
-    provider: str          # "openai" | "groq"
-    model_id: str          # e.g. "gpt-4o-mini", "llama-3.3-70b-versatile"
+    provider: str          # "openai" | "groq" | "bedrock"
+    model_id: str          # e.g. "gpt-4o-mini", "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     display_name: str      # pretty label for reports
     max_tokens: int = 512
     temperature: float = 0.2
     supports_json_format: bool = True
+    bedrock_region: str | None = None  # required when provider=="bedrock"
 
 
 # -----------------------------------------------------------------------------
@@ -128,6 +132,10 @@ class TokenBucket:
 
 # Free-tier limits per (provider, model). Verified against Groq's
 # rate-limit page as of April 2026; conservative where the tier wobbles.
+# Bedrock entries use account-level per-model RPM quotas (Service Quotas →
+# Amazon Bedrock → "On-demand InvokeModel requests per minute for model X").
+# These defaults are conservative; request quota bumps on the console if a
+# run plans to exceed them.
 _RATE_LIMITS: dict[str, dict[str, int | None]] = {
     # OpenAI direct
     "openai/gpt-4o-mini":                 {"rpm": 60,  "tpm": None},
@@ -138,6 +146,12 @@ _RATE_LIMITS: dict[str, dict[str, int | None]] = {
     "groq/qwen/qwen3-32b":                {"rpm": 5,   "tpm": 3000},  # 33 losses in pilot
     # Groq annotator — reserved bucket so re-annotation cannot starve generation
     "groq/llama-3.1-8b-instant":          {"rpm": 15,  "tpm": 6000},
+    # Bedrock (cross-region inference profiles; us-east-1 defaults)
+    "bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0":   {"rpm": 200, "tpm": None},
+    "bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0":   {"rpm": 200, "tpm": None},
+    "bedrock/us.meta.llama3-3-70b-instruct-v1:0":            {"rpm": 100, "tpm": None},
+    "bedrock/us.meta.llama3-1-70b-instruct-v1:0":            {"rpm": 100, "tpm": None},
+    "bedrock/us.meta.llama3-1-8b-instruct-v1:0":             {"rpm": 200, "tpm": None},
 }
 
 # Safe fallback for any model not in the table above.
@@ -254,6 +268,115 @@ def _post_json(provider: str, payload: dict, timeout: int = 120) -> dict:
         return json.loads(r.read())
 
 
+# -----------------------------------------------------------------------------
+# Bedrock
+# -----------------------------------------------------------------------------
+
+_BEDROCK_CLIENTS: dict[str, object] = {}
+_BEDROCK_LOCK = threading.Lock()
+
+
+def _bedrock_client(region: str):
+    """Lazily import boto3 and cache one bedrock-runtime client per region."""
+    with _BEDROCK_LOCK:
+        c = _BEDROCK_CLIENTS.get(region)
+        if c is None:
+            import boto3  # local import keeps stdlib-only for non-bedrock runs
+            c = boto3.client("bedrock-runtime", region_name=region)
+            _BEDROCK_CLIENTS[region] = c
+        return c
+
+
+_LLAMA_TEMPLATE = (
+    "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+    "{system}<|eot_id|>{turns}<|start_header_id|>assistant<|end_header_id|>\n\n"
+)
+_LLAMA_TURN = (
+    "<|start_header_id|>{role}<|end_header_id|>\n\n{content}<|eot_id|>"
+)
+
+
+def _render_llama_prompt(messages: list[dict]) -> str:
+    """Render OpenAI-style chat messages into a Llama-3 instruct prompt.
+
+    Bedrock's Meta Llama 3.x endpoint expects the raw prompt text with
+    Llama's chat-template tokens, not a `messages` list.
+    """
+    system = ""
+    turns: list[str] = []
+    for m in messages:
+        role = m.get("role", "user")
+        content = m.get("content", "") or ""
+        if role == "system":
+            system = content
+            continue
+        turns.append(_LLAMA_TURN.format(role=role, content=content))
+    return _LLAMA_TEMPLATE.format(system=system, turns="".join(turns))
+
+
+def _bedrock_body(spec: "ModelSpec", messages: list[dict]) -> tuple[dict, str]:
+    """Return (request_body, family) for a Bedrock InvokeModel call.
+
+    `family` is "anthropic" or "llama" — used for response decoding.
+    """
+    mid = spec.model_id
+    # Inference-profile IDs carry a region prefix (e.g. "us.") before the vendor token.
+    base = mid.split(".", 1)[1] if mid[:3] in ("us.", "eu.") or mid.startswith("global.") else mid
+    if base.startswith("anthropic."):
+        system_msgs = [m["content"] for m in messages if m.get("role") == "system"]
+        user_turns = [m for m in messages if m.get("role") != "system"]
+        body: dict = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": spec.max_tokens,
+            "temperature": spec.temperature,
+            "messages": user_turns,
+        }
+        if system_msgs:
+            body["system"] = "\n\n".join(system_msgs)
+        return body, "anthropic"
+    if base.startswith("meta.llama"):
+        return {
+            "prompt": _render_llama_prompt(messages),
+            "max_gen_len": spec.max_tokens,
+            "temperature": spec.temperature,
+        }, "llama"
+    raise LLMError(f"Unsupported Bedrock modelId: {mid}")
+
+
+def _bedrock_extract(family: str, payload: dict) -> tuple[str, dict]:
+    """Return (text, usage_dict) from a Bedrock response payload."""
+    if family == "anthropic":
+        parts = payload.get("content") or []
+        text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
+        u = payload.get("usage", {}) or {}
+        usage = {
+            "prompt_tokens":     int(u.get("input_tokens", 0) or 0),
+            "completion_tokens": int(u.get("output_tokens", 0) or 0),
+            "total_tokens":      int(u.get("input_tokens", 0) or 0) + int(u.get("output_tokens", 0) or 0),
+        }
+        return text, usage
+    if family == "llama":
+        text = payload.get("generation", "") or ""
+        usage = {
+            "prompt_tokens":     int(payload.get("prompt_token_count", 0) or 0),
+            "completion_tokens": int(payload.get("generation_token_count", 0) or 0),
+            "total_tokens":      int(payload.get("prompt_token_count", 0) or 0) + int(payload.get("generation_token_count", 0) or 0),
+        }
+        return text, usage
+    raise LLMError(f"Unknown Bedrock family: {family}")
+
+
+def _invoke_bedrock(spec: "ModelSpec", messages: list[dict]) -> dict:
+    """Single Bedrock invocation. Raises LLMError on failure with a .throttled flag."""
+    region = spec.bedrock_region or os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+    client = _bedrock_client(region)
+    body, family = _bedrock_body(spec, messages)
+    resp = client.invoke_model(modelId=spec.model_id, body=json.dumps(body))
+    payload = json.loads(resp["body"].read())
+    text, usage = _bedrock_extract(family, payload)
+    return {"text": text, "model_id": spec.model_id, "usage": usage}
+
+
 def _http_error_parts(e: urllib.error.HTTPError) -> tuple[str, dict]:
     body = ""
     try:
@@ -307,9 +430,13 @@ def generate(
     bucket.acquire(expected_tokens=expected_tokens)
 
     err: Exception | None = None
+    bedrock_result: dict | None = None
     for attempt in range(max_retries):
         try:
-            resp = _post_json(spec.provider, payload)
+            if spec.provider == "bedrock":
+                bedrock_result = _invoke_bedrock(spec, messages)
+            else:
+                resp = _post_json(spec.provider, payload)
             break
         except urllib.error.HTTPError as e:
             body, headers = _http_error_parts(e)
@@ -332,6 +459,28 @@ def generate(
                 continue
             raise LLMError(f"{spec.provider}/{spec.model_id} {e.code}: {body[:300]}") from e
         except Exception as e:  # noqa: BLE001
+            # Bedrock ThrottlingException / ModelErrorException surface as
+            # botocore ClientError; treat throttles like 429 and 5xx like
+            # transient HTTP errors.
+            name = type(e).__name__
+            ecode = getattr(e, "response", {}).get("Error", {}).get("Code", "") if hasattr(e, "response") else ""
+            if spec.provider == "bedrock" and (
+                name == "ThrottlingException"
+                or ecode in ("ThrottlingException", "TooManyRequestsException")
+            ):
+                wait = min((2 ** attempt) + random.random(), 30)
+                bucket.drain_for(wait + 1.0)
+                time.sleep(wait + 1.0)
+                err = LLMError(f"{spec.provider}/{spec.model_id} throttled: {str(e)[:200]}")
+                bucket.acquire(expected_tokens=expected_tokens)
+                continue
+            if spec.provider == "bedrock" and ecode in (
+                "ModelErrorException", "ServiceUnavailableException",
+                "InternalServerException", "ModelTimeoutException",
+            ):
+                time.sleep(min((2 ** attempt) + random.random(), 30))
+                err = LLMError(f"{spec.provider}/{spec.model_id} {ecode}: {str(e)[:200]}")
+                continue
             wait = (2 ** attempt) + random.random()
             time.sleep(min(wait, 20))
             err = e
@@ -339,20 +488,27 @@ def generate(
     else:
         raise LLMError(f"Exhausted retries for {spec.provider}/{spec.model_id}: {err}")
 
-    text = ""
-    try:
-        text = resp["choices"][0]["message"]["content"] or ""
-    except Exception:
-        text = json.dumps(resp)[:500]
+    if spec.provider == "bedrock":
+        assert bedrock_result is not None
+        text = bedrock_result["text"]
+        usage = bedrock_result["usage"]
+        returned_model_id = bedrock_result["model_id"]
+    else:
+        text = ""
+        try:
+            text = resp["choices"][0]["message"]["content"] or ""
+        except Exception:
+            text = json.dumps(resp)[:500]
+        usage = resp.get("usage", {}) or {}
+        returned_model_id = resp.get("model", spec.model_id)
 
-    usage = resp.get("usage", {}) or {}
     actual_tokens = int(usage.get("total_tokens") or 0)
     if actual_tokens:
         bucket.record_actual_tokens(actual_tokens, expected=expected_tokens)
 
     out = {
         "text": text,
-        "model_id": resp.get("model", spec.model_id),
+        "model_id": returned_model_id,
         "provider": spec.provider,
         "cached": False,
         "usage": usage,

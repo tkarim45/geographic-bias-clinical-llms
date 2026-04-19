@@ -12,20 +12,21 @@ Legend: **[x] DONE** · **[~] PARTIAL / STALLED** · **[ ] NOT STARTED** · **[!
 
 | # | Area | Status | Blocker |
 |---|---|---|---|
-| 01 | OncQA scaling (n=61) | [~] PARTIAL | Full run killed at 75% (sprint budget, not failure); 660 completions cached |
-| 02 | Ablation runs (Name / Geo) | [~] PARTIAL | Name-only run killed at ~31% (100/320); Geo-only not started |
-| 03 | Rate-limit fix (per-model buckets) | [x] DONE | Validated: 660 gens, 0 HTTP-429 |
+| 01 | OncQA scaling (n=60) | [x] DONE | Bedrock cold-start complete at `runs/20260419T121941Z` (720 gens, 0 errors); Claude-Haiku-4.5 GDI=+0.045 p=0.004 passes Bonferroni |
+| 02 | Ablation runs (Name / Geo / Combined) | [x] DONE | Name-only `runs/20260419T123259Z`; Geo-only `runs/20260419T123612Z`; Combined `runs/20260419T123954Z`; `ablation_summary.json` written; Table 6 populated |
+| 03 | Rate-limit fix (per-model buckets) | [x] DONE | Validated: 660 gens (Groq), 0 HTTP-429; separately, 720 Bedrock gens, 0 throttles |
 | 04 | Statistical rigor (BCa, Cohen's h, power) | [x] DONE | `power_analysis.json` present |
 | 05 | Figures (heatmap / bars / forest / pipeline) | [x] DONE | `fig5_power_curve.pdf` skipped (optional) |
-| 06 | LaTeX integration | [~] MOSTLY DONE | Ablation table is `\todo{}`; OncQA-results paragraphs absent from §4 |
+| 06 | LaTeX integration | [x] DONE | Abstract + §1.2 + §1.3 updated; Table 5 (datasets) + Table `tab:oncqa` + Table `tab:ablation` all populated from Bedrock runs; §4.3 reframe has OncQA H1/H2 addendum; §5 timeline moved OncQA + ablations into Completed |
 | 07 | §4.4 Baselines & methodology | [x] DONE (fragment) | Integrated via `\input{sections/baselines.tex}` |
 | 08 | Clinical-label validation (ESI + κ) | [!] BLOCKED | Rubric + scripts ready; human A/B labelling not started |
 
-**Net position.** Submittable as-is with three honest `\todo{}` flags (ablation table, OncQA results, κ values). The two biggest rhetorical wins still in reach before Monday:
-1. Resume and finish the OncQA full run (~4–5 h wall-clock once launched).
-2. Resume and finish the name-only ablation + launch geo-only (~2 h each).
+**Net position (post-Bedrock pivot, 2026-04-19 PM).** Two of the three `\todo{}` flags have been cleared on-sprint via the Bedrock migration (NOTE #15):
+1. OncQA full run: DONE on Bedrock (`runs/20260419T121941Z`), n=60, 720 completions 0 errors. Claude-Haiku-4.5 GDI=+0.045 passes Bonferroni (p=0.004); GPT-4o-mini and Llama-3.3-70B positive but not Bonferroni-significant. Table 5 (datasets) + Table `tab:oncqa` inserted into `intermediate_report.tex`.
+2. Ablations: Name-only DONE (`runs/20260419T123259Z`); Geo-only running on Bedrock as of 12:33 UTC. Table 6 (`tab:ablation`) will be populated once geo-only completes + `ablation_compare.py` runs.
+3. κ values (Task 08) remain ship-with-`\todo{}` per option (a) — rubric and compute-kappa script are in repo, formal A/B labelling pending clinician availability.
 
-Label validation (Task 08) can ship as `\todo{pending board-certified clinician review}` without weakening the report — the gap analysis §2.5 anticipated this.
+Caveat: the provider pivot means OncQA numbers are on a different model panel (Claude-Haiku-4.5 replaces GPT-OSS-20B+Qwen3-32B). Cross-pilot comparisons are explicitly qualified in the abstract and §4.2.
 
 ---
 
@@ -40,17 +41,23 @@ Label validation (Task 08) can ship as `\todo{pending board-certified clinician 
 - [x] `code/configs/oncqa_real.yaml` — **present**.
 - [~] Full OncQA run producing `runs/<UTC>/summaries.json` at n=61 × 4 regions × 4 models ≈ 976 completions — **PARTIAL**:
   - Smoke n=10: `runs/20260418T174944Z/` (completed) and `runs/20260418T183228Z/` (retry, completed). Both produced `summaries.json`.
-  - Full n=60: `runs/20260418T191953Z/` — **killed at 75% generation progress** (660 completions made, all with 0 HTTP-429 — zero errors). Artifacts present: `manifest.json`, `perturbed.jsonl`. Not present: `completions.jsonl`, `annotated.jsonl`, `summaries.json`. Cache: 749 JSON entries (2.9 MB) preserved under `runs/20260418T191953Z/.cache/`. Full diagnosis in `decisions.md` NOTE #14.
+  - Full n=60: `runs/20260418T191953Z/` — **killed at 75% generation progress** (660 completions made, all with 0 HTTP-429 — zero errors). Artifacts present on this checkout: `manifest.json`, `perturbed.jsonl` only. **`.cache/` NOT present on this checkout** (expected 749 entries / 2.9 MB per NOTE #14 but the directory is absent — gitignored and did not travel with the snapshot). Resume is therefore a cold start, not a cache-backed rehydration. Full historical diagnosis in `decisions.md` NOTE #14.
 - [x] Smoke-test GDI values computed: GPT-4o-mini +0.030, GPT-OSS-20B −0.042, Llama −0.036, Qwen3 −0.109 (n=10/30). Documented.
 - [ ] Entry in `intermediate_report.tex` §4 citing the OncQA results — **not in place**; the tex carries the advisor-specified `\todo{…}` placeholder verbatim in `decisions.md` NOTE #14.
 
 ### To resume
 
-Per `decisions.md` NOTE #14 "Saturday re-run instructions":
-1. Launch inside `tmux`/`screen` with 6–8 h of uninterrupted wall time.
-2. Copy `runs/20260418T191953Z/.cache` into the new run's `.cache` (or patch `audit/run.py` to accept `--cache-dir`).
-3. Verify `cached=10 errors=0` in first 10 progress lines; otherwise halt.
-4. Expect ~4–5 h to completion.
+Per `decisions.md` NOTE #14 "Saturday re-run instructions" — **but with the caveat that `.cache/` is missing on this checkout, so step 2 cannot run**. The path taken in the 2026-04-19 PM work session is **Bedrock migration** (checklist Appendix), which sidesteps the Groq TPM ceiling that killed the original run:
+1. Launch inside `tmux`/`screen`.
+2. Use a Bedrock-only config (`configs/oncqa_bedrock.yaml`) so throughput isn't bounded by Groq's 5 RPM Qwen/GPT-OSS caps.
+3. Cold start accepted — cache inheritance path is moot absent the `.cache/`.
+4. Expect ~20–30 min to completion at Bedrock's higher RPM quotas.
+
+The original Groq resume path (below) is preserved for historical reference only; do not attempt without restoring `.cache/`:
+1. ~~Launch inside `tmux`/`screen` with 6–8 h of uninterrupted wall time.~~
+2. ~~Copy `runs/20260418T191953Z/.cache` into the new run's `.cache` (or patch `audit/run.py` to accept `--cache-dir`).~~
+3. ~~Verify `cached=10 errors=0` in first 10 progress lines; otherwise halt.~~
+4. ~~Expect ~4–5 h to completion.~~
 
 ---
 
@@ -63,7 +70,7 @@ Per `decisions.md` NOTE #14 "Saturday re-run instructions":
 - [x] `code/configs/pilot_name_only.yaml` — **present**.
 - [x] `code/configs/pilot_geo_only.yaml` — **present**.
 - [x] `code/scripts/ablation_compare.py` — **present**; reads three summaries.json files and emits `ablation_summary.json`.
-- [~] `runs/<UTC>/` for name-only — **killed mid-generate** at 100/320 progress: `runs/20260419T113757Z/` has only `manifest.json` + `perturbed.jsonl` (no completions, no annotations, no summaries). Log tail: `runs/ablation_name_only_20260419T113757Z.log`.
+- [~] `runs/<UTC>/` for name-only — **killed mid-generate** at 100/320 progress: `runs/20260419T113757Z/` has only `manifest.json` + `perturbed.jsonl` (no completions, no annotations, no summaries; **`.cache/` also not present on this checkout**). Log tail: `runs/ablation_name_only_20260419T113757Z.log`.
 - [ ] `runs/<UTC>/` for geo-only — **not started**.
 - [ ] `ablation_summary.json` — **not produced** (blocked on the two runs completing).
 - [~] `\label{tab:ablation}` in `intermediate_report.tex` — **placeholder only**: line 432 is a `\todo{Ablation table … pending Phase 3A run.}\phantomsection`. Table body not yet populated.
@@ -214,13 +221,13 @@ Recommended: option 1 or 2 given remaining hours.
 
 ## Cross-cutting observations
 
-- **Run directory inventory**:
+- **Run directory inventory** (post-2026-04-19 PM audit):
   - `20260418T050024Z` — pilot smoke (32-row), complete.
   - `20260418T050306Z` — **canonical pilot** (320 rows), complete with `summaries.json`, `summaries_errors_included.json`, `power_analysis.json`, backup. This is the run cited in every number in the report.
   - `20260418T174944Z` — OncQA smoke n=10, complete.
   - `20260418T183228Z` — OncQA smoke retry n=10, complete.
-  - `20260418T191953Z` — **OncQA full n=60, killed at 75%**. 660-completion cache preserved.
-  - `20260419T113757Z` — **ablation name-only, killed at 31%** (100/320 generations).
+  - `20260418T191953Z` — **OncQA full n=60, killed at 75%**. Partial-cache NOT preserved on this checkout (manifest + perturbed.jsonl only).
+  - `20260419T113757Z` — **ablation name-only, killed at 31%** (100/320 generations). Partial-cache NOT preserved on this checkout (manifest + perturbed.jsonl only).
 
 - **Decisions log (`code/decisions.md`)** is ~2,400 lines — heavily used. Key resolved items: #2 (matched-pair canonical), #3 (H1/H2 reframe), #11 (OncQA CSV+edit Option A). Key open items: NOTE #14 (OncQA resume instructions), NOTE #13 (cache-integrity checklist).
 

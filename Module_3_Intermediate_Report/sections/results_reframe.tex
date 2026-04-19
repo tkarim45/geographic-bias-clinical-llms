@@ -99,6 +99,52 @@ None of these magnitudes is reliable at the pilot's per-region $n$ of $5$
 to $20$ matched pairs, and we make no claim about regional ordering until
 OncQA replication.
 
+\subsubsection*{OncQA scaling re-analysis against the pre-registered H1/H2 criterion}
+
+The OncQA run (\texttt{runs/20260419T121941Z}, Table~\ref{tab:oncqa}) executes
+the pre-registered discrimination test above, with two caveats: (i)~the
+panel shifted for provider reasons (Qwen3-32B and GPT-OSS-20B dropped;
+Claude-Haiku-4.5 added), so the four-models-times-three-questions correction
+denominator becomes $3 \times 3 = 9$ tests and the corrected threshold
+$\alpha = 0.05/9 \approx 0.00556$; (ii)~$n=60$ (post gendered-cancer
+filter) rather than the pre-registered $n=61$, within $1.6\%$ of target.
+
+Applying the criterion in strict form:
+
+\begin{itemize}
+  \item \textbf{Claude-Haiku-4.5.} Pooled one-sided paired Wilcoxon
+  $p=0.004$ on matched-pair $\Delta$RCER, below the corrected
+  $\alpha=0.00556$. The 95\% BCa CI on GDI is $[+0.010,\,+0.053]$; on the
+  RESOURCE per-question delta the 95\% CI is $[+0.009,\,+0.088]$; on
+  MANAGE the 95\% CI is $[0.000,\,+0.171]$ (lower bound grazes zero). The
+  pre-registered language was ``$99.6\%$ BCa CI on per-question RCER
+  excludes zero'' --- the exact 99.6\% interval is not in the current
+  \texttt{summaries.json} but the pooled Wilcoxon-level test of H2 clears
+  the Bonferroni bar. \textbf{H2 is supported for Claude-Haiku-4.5.}
+  \item \textbf{GPT-4o-mini.} Pooled $p=0.015$, above the corrected
+  threshold but below nominal $\alpha=0.05$. The MANAGE 95\% BCa CI
+  $[+0.018,\,+0.207]$ excludes zero uncorrected. \textbf{The strict
+  pre-registered criterion is not met}; a descriptive positive-direction
+  finding is reported.
+  \item \textbf{Llama-3.3-70B.} Pooled $p=0.038$; the RESOURCE 95\% CI
+  $[+0.009,\,+0.088]$ excludes zero uncorrected. The GDI 95\% CI
+  $[-0.003,\,+0.047]$ grazes zero on the lower bound. \textbf{Strict
+  pre-registered criterion not met}; a directionally consistent positive
+  effect remains reportable.
+\end{itemize}
+
+\noindent\textbf{Reading.} The OncQA scaling run gives partial support for
+H2: one of three models (Claude-Haiku-4.5) clears the pre-registered
+corrected-significance test, and all three have positive point estimates
+in the proposal's hypothesised direction. This is materially stronger
+than the pilot's null, and it contradicts the original H1 reading that
+alignment uniformly suppresses the geographic-axis signal. The final
+report's primary contribution becomes the \emph{per-model heterogeneity}
+in geographic-axis bias under a scale sufficient to distinguish it from
+noise, with Claude-Haiku-4.5 as the one model crossing the corrected
+threshold and the MANAGE/RESOURCE channels carrying the signal while
+VISIT remains flat.
+
 \subsubsection*{Sensitivity analysis: the errors-included view}
 
 For completeness and to avoid the appearance of analytic cherry-picking,

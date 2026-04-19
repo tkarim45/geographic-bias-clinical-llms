@@ -1,0 +1,176 @@
+[
+  {
+    "model": "Claude-Haiku-4.5 (Bedrock)",
+    "n_north_cases": 60,
+    "n_south_cases": 180,
+    "rcer_north": {
+      "manage": 0.4864864864864865,
+      "visit": 0.0,
+      "resource": 0.0
+    },
+    "rcer_south": {
+      "manage": 0.5765765765765766,
+      "visit": 0.0,
+      "resource": 0.043859649122807015
+    },
+    "rcer_north_mean": 0.16216216216216217,
+    "rcer_south_mean": 0.20681207523312786,
+    "gdi": 0.04464991307096569,
+    "gdi_ci_lo_bca": 0.010185185185185184,
+    "gdi_ci_hi_bca": 0.05277777777777778,
+    "cohens_h_north_vs_south": 0.11530334880245996,
+    "wilcoxon_W": 298.5,
+    "wilcoxon_z": 2.6187248915684247,
+    "wilcoxon_p_greater": 0.00441295469229952,
+    "wilcoxon_r": 0.5039738403602012,
+    "wilcoxon_n_nonzero": 27,
+    "bootstrap_ci_95": [
+      0.011111111111111112,
+      0.0537037037037037
+    ],
+    "per_question": {
+      "manage": {
+        "delta": 0.09009009009009006,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.17117117117117117,
+        "n_cases": 111,
+        "cohens_h": 0.18078860478642178
+      },
+      "visit": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 165,
+        "cohens_h": 0.0
+      },
+      "resource": {
+        "delta": 0.043859649122807015,
+        "delta_ci_lo": 0.008771929824561403,
+        "delta_ci_hi": 0.08771929824561403,
+        "n_cases": 114,
+        "cohens_h": 0.4219777623954801
+      }
+    },
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "GPT-4o-mini (OpenAI)",
+    "n_north_cases": 60,
+    "n_south_cases": 180,
+    "rcer_north": {
+      "manage": 0.5135135135135135,
+      "visit": 0.0,
+      "resource": 0.02631578947368421
+    },
+    "rcer_south": {
+      "manage": 0.6216216216216216,
+      "visit": 0.0,
+      "resource": 0.03508771929824561
+    },
+    "rcer_north_mean": 0.17994310099573255,
+    "rcer_south_mean": 0.21890311363995574,
+    "gdi": 0.03896001264422317,
+    "gdi_ci_lo_bca": 0.01296296296296296,
+    "gdi_ci_hi_bca": 0.08333333333333333,
+    "cohens_h_north_vs_south": 0.09761029137009503,
+    "wilcoxon_W": 402.0,
+    "wilcoxon_z": 2.162007326634538,
+    "wilcoxon_p_greater": 0.015308805730446129,
+    "wilcoxon_r": 0.37635716757958515,
+    "wilcoxon_n_nonzero": 33,
+    "bootstrap_ci_95": [
+      0.013888888888888888,
+      0.08055555555555556
+    ],
+    "per_question": {
+      "manage": {
+        "delta": 0.10810810810810811,
+        "delta_ci_lo": 0.018018018018018018,
+        "delta_ci_hi": 0.2072072072072072,
+        "n_cases": 111,
+        "cohens_h": 0.21867780738818587
+      },
+      "visit": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 165,
+        "cohens_h": 0.0
+      },
+      "resource": {
+        "delta": 0.008771929824561403,
+        "delta_ci_lo": -0.017543859649122806,
+        "delta_ci_hi": 0.03508771929824561,
+        "n_cases": 114,
+        "cohens_h": 0.05097754387804976
+      }
+    },
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  },
+  {
+    "model": "Llama-3.3-70B (Bedrock)",
+    "n_north_cases": 60,
+    "n_south_cases": 180,
+    "rcer_north": {
+      "manage": 0.5675675675675675,
+      "visit": 0.0,
+      "resource": 0.0
+    },
+    "rcer_south": {
+      "manage": 0.5495495495495496,
+      "visit": 0.0,
+      "resource": 0.043859649122807015
+    },
+    "rcer_north_mean": 0.18918918918918917,
+    "rcer_south_mean": 0.1978030662241189,
+    "gdi": 0.00861387703492969,
+    "gdi_ci_lo_bca": -0.002777777777777777,
+    "gdi_ci_hi_bca": 0.04722222222222222,
+    "cohens_h_north_vs_south": 0.02180637352762571,
+    "wilcoxon_W": 114.5,
+    "wilcoxon_z": 1.7751790062418158,
+    "wilcoxon_p_greater": 0.03793416749719508,
+    "wilcoxon_r": 0.4305441498302352,
+    "wilcoxon_n_nonzero": 17,
+    "bootstrap_ci_95": [
+      -0.002777777777777777,
+      0.0462962962962963
+    ],
+    "per_question": {
+      "manage": {
+        "delta": -0.018018018018017945,
+        "delta_ci_lo": -0.09009009009009009,
+        "delta_ci_hi": 0.05405405405405406,
+        "n_cases": 111,
+        "cohens_h": -0.03628782462147595
+      },
+      "visit": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 165,
+        "cohens_h": 0.0
+      },
+      "resource": {
+        "delta": 0.043859649122807015,
+        "delta_ci_lo": 0.008771929824561403,
+        "delta_ci_hi": 0.08771929824561403,
+        "n_cases": 114,
+        "cohens_h": 0.4219777623954801
+      }
+    },
+    "south_regions": [
+      "latin_america",
+      "south_asia",
+      "subsaharan_africa"
+    ]
+  }
+]
