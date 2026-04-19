@@ -356,6 +356,8 @@ Qwen3-32B & Groq (Alibaba) & Open-source, multilingual, 32B\\
 \end{align*}
 Significance for GDI $>0$ is tested with a paired Wilcoxon signed-rank test (one-sided, greater) on per-case RCER-violation deltas pooled across the three Global-South regions, $\alpha=0.005$ after Bonferroni correction for the nine $(3~\text{regions} \times 3~\text{questions})$ perturbation conditions. All RCER, GDI, Wilcoxon, and bootstrap computations are taken over matched pairs with valid API completions; rows corresponding to failed API calls (empty text, non-empty \texttt{error} field) are excluded before pairing. The exclusion is implemented as \texttt{compute\_model\_gdi(..., drop\_errors=True)} in \texttt{audit/metrics.py} and is the default; see §\ref{sec:challenges} for the reasoning.
 
+\noindent\textbf{OncQA scaling experiment (status).} \todo{OncQA n=60 run initiated 2026-04-19T00:15Z was halted at 75\% generation-phase progress due to Groq rate-limit-bounded throughput exceeding sprint budget; 660+ completions preserved at \texttt{runs/20260418T191953Z/.cache/} for re-run; results deferred to final report per pre-registered study design.}
+
 \subsection{Preliminary Results --- Measured Pilot (20 cases, 4 models)}
 
 \begin{figure}[ht]

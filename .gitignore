@@ -37,6 +37,13 @@ build/
 # ── Pipeline response cache (large, reproducible from JSONL) ─────────────────
 Module_3_Intermediate_Report/code/runs/*/.cache/
 
+# ── Sprint backups (keep on disk for rollback / forensic diff; do not commit) ─
+*.pre_stats_refresh.bak
+*.bak
+
+# ── Sprint trash (rogue-session artifacts kept for forensics; do not commit) ──
+.sprint_trash/
+
 # ── OS noise ─────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

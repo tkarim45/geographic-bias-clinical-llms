@@ -1,0 +1,26 @@
+# OncQA real-data run config.
+#
+# Per `code/decisions.md` DECISION_REQUIRED #11 resolution (Option A,
+# 2026-04-18T22:42Z). Loader applies the broad gendered-cancer filter
+# (n=60); per-question MANAGE/VISIT/RESOURCE gold are derived from the
+# Chen et al. content-grading schema in d56.csv + s44.csv. See
+# `code/audit/data.py::load_oncqa` for the exact aggregation rule.
+
+loader: load_oncqa
+cases_path: datasets/oncqa
+name_bank_path: configs/name_bank.json
+run_dir_parent: runs
+
+perturb_mode: combined
+
+conditions:
+  - global_north
+  - south_asia
+  - subsaharan_africa
+  - latin_america
+
+models:
+  - {"provider": "openai", "model_id": "gpt-4o-mini", "display_name": "GPT-4o-mini (OpenAI)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": true}
+  - {"provider": "groq",   "model_id": "openai/gpt-oss-20b", "display_name": "GPT-OSS-20B (OpenAI OSS)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false}
+  - {"provider": "groq",   "model_id": "llama-3.3-70b-versatile", "display_name": "Llama-3.3-70B (Meta)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": true}
+  - {"provider": "groq",   "model_id": "qwen/qwen3-32b", "display_name": "Qwen3-32B (Alibaba)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false}

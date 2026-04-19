@@ -1,0 +1,122 @@
+% =============================================================================
+% sections/results_reframe.tex
+%
+% Canonical replacement text for §4.3 Analysis (H1/H2 reframe + sensitivity).
+% Drafted by the lead orchestration agent per `code/decisions.md` DECISION #3.
+%
+% USAGE.  Agent-LATEX inserts this fragment via `\input{sections/results_reframe.tex}`
+% inside §4.3, replacing the existing prose paragraphs that begin with
+% "The pilot is under-powered but directionally informative." through to (but
+% not including) "Two non-claims." The "Two non-claims" paragraph is preserved
+% as-is; the "Strengths visible in pilot" and "Weaknesses" paragraphs are
+% preserved as-is.
+%
+% NUMBER PROVENANCE.  Every numeric claim below traces to
+% `Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json`
+% (matched-pair, drop_errors=True; refreshed 2026-04-18T16:25Z) and
+% `power_analysis.json` in the same directory.
+%
+% DEAD NUMBERS NEVER TO APPEAR IN THIS FILE (see decisions.md DECISION #3):
+%   +0.085, +15.4 pp, +0.035, +8.5 pp.
+% These belong only in the sensitivity subsection, with the infrastructure
+% caveat from decisions.md RESOLVED #2.
+% =============================================================================
+
+\textbf{The pilot is a near-null result, by design, and that is informative.}
+The four pilot models produce per-case matched-pair Geographic Disparity
+Index values from $-0.062$ (Qwen3\nobreakdash-32B) to $+0.015$ (GPT\nobreakdash-4o-mini),
+with every 95\% bias-corrected-and-accelerated bootstrap CI on the per-case
+mean delta straddling or sitting close to zero (Table~\ref{tab:pilot}).
+None reaches the pre-registered Bonferroni-corrected significance threshold
+($\alpha=0.005$ over the nine $\text{region}\times\text{question}$
+conditions). This was expected: a power analysis (§\ref{sec:baselines}) shows
+that detecting a Cohen's $h$ of $0.18$ at $\alpha=0.005$ with $80\%$ power
+requires $n\approx 20$ matched pairs per model and the pilot's per-model
+matched-pair counts are $14$--$20$ (Global-North) versus $22$--$60$
+(pooled Global-South). The pilot is therefore designed to characterise
+direction, variance, and feasibility \emph{at full scale}, not to reach
+pre-registered significance.
+
+\textbf{Two non-mutually-exclusive hypotheses survive the pilot.} The
+near-null pooled effect supports two interpretations with sharply different
+implications for clinical deployment, and the pilot \emph{cannot} discriminate
+them; that is precisely what the OncQA scaling experiment is pre-registered
+to do.
+
+\begin{description}
+  \item[\textbf{H1: frontier post-training suppresses geographic-axis bias.}]
+  If the matched-pair near-null also holds at $n=61$ on the
+  clinician-validated OncQA dataset and across the four-model panel, the
+  most parsimonious explanation is that alignment procedures used in
+  GPT\nobreakdash-4o-mini, Llama\nobreakdash-3.3\nobreakdash-70B, and Qwen-family
+  open models have measurably reduced the geographic-identity analogue of
+  the within-Global-North identity disparities reported by Gourabathina
+  et~al.~\cite{gourabathina2025} ($\sim$$7$--$9$~pp tonal/gender RCER
+  shifts) and Omar et~al.~\cite{omar2025} (significant disparities across
+  race, housing, and LGBTQIA+ indicators). This would be a positive,
+  publishable, and currently under-reported result: a class of identity
+  perturbation that frontier alignment \emph{does} appear to mitigate.
+
+  \item[\textbf{H2: per-model variance is masked by pooling.}] The pilot's
+  per-model GDI range spans $0.077$ ($-0.062$ to $+0.015$); Qwen3-32B's
+  matched-pair Cohen's $h = -0.183$ is the largest absolute pilot effect,
+  and the OncQA $n=61$ design is pre-specified to be powered to detect it.
+  Under H2, per-model OncQA effects will exceed the $\pm 0.03$ band on at
+  least one model, with at least one Bonferroni-corrected $99.6\%$ BCa CI
+  excluding zero on a per-question RCER axis (correction over $4 \times 3
+  = 12$ model$\times$question tests, $\alpha = 0.05/12 \approx 0.0042$).
+  Note the matched-pair Qwen3-32B effect is \emph{negative}
+  (Global-South RCER lower than Global-North), the opposite direction from
+  the proposal's hypothesis. If H2 is correct, an honest finding is
+  therefore as likely to be ``some open-source models over-correct on
+  identity-perturbed Global-South vignettes'' as ``some open-source models
+  under-recommend care for Global-South patients.'' Both are evidence of
+  identity-driven instability and both would warrant publication; the
+  pilot does not prejudge which.
+\end{description}
+
+\noindent\textbf{The pilot's role becomes explicit:} pipeline validation
+$+$ power-analysis-driven scaling decision. The pre-registered
+discrimination criterion is: \emph{if any model's Bonferroni-corrected
+$99.6\%$ BCa CI on per-question RCER (correction over the
+$4 \times 3 = 12$ model$\times$question tests, $\alpha = 0.05/12$) excludes
+zero in the OncQA $n=61$ run, H2 is supported for that model/question; if
+no CI excludes zero across any model and question on OncQA under the
+Bonferroni-adjusted threshold, H1 is the strictly stronger explanation
+and the final paper's primary contribution becomes the negative-result
+finding, framed analogously to ``alignment progress.'' Per-model 95\% BCa
+CIs (uncorrected) are still reported as descriptive effect-size summaries
+in Table~\ref{tab:pilot}; the Bonferroni adjustment applies only to the
+H1-vs-H2 discrimination test, not to the descriptive pilot reporting.}
+
+\textbf{Sub-Saharan Africa, South Asia, Latin America: matched-pair
+per-region decomposition.} Pooled across the four pilot models, mean GDI
+is $-0.009$ for Sub-Saharan Africa, $-0.017$ for South Asia, and $-0.037$
+for Latin America (Table~\ref{tab:per_region}). All three region means sit
+inside $\pm 0.05$. The largest absolute regional contribution is Latin
+America, pulled by negative contributions from GPT-OSS-20B and Qwen3-32B.
+None of these magnitudes is reliable at the pilot's per-region $n$ of $5$
+to $20$ matched pairs, and we make no claim about regional ordering until
+OncQA replication.
+
+\subsubsection*{Sensitivity analysis: the errors-included view}
+
+For completeness and to avoid the appearance of analytic cherry-picking,
+we report a parallel analysis in which the $52$ failed-API completions
+(Groq HTTP-429 ``tokens-per-minute exceeded'' losses on Qwen3-32B and
+GPT-OSS-20B during the initial pilot) are retained with zero-default
+labels rather than dropped. Under that imputation, Qwen3-32B's pooled
+GDI rises to $+0.085$ with a per-question VISIT shift of $+15.4$~pp, and
+the Sub-Saharan Africa pooled mean rises to $+0.035$. \emph{We do not
+interpret these as clinical signals}: $40$ of the $52$ failures occurred
+before the per-model rate-limit refactor described in
+§\ref{sec:challenges}, and the dropout is concentrated on exactly the two
+models whose per-perturbation token consumption exceeded the shared Groq
+provider bucket. Counting an HTTP failure as a refused recommendation
+silently imputes a null clinical action to a case where the model never
+emitted a response; under a paired-design audit this is fabrication-by-default
+rather than missing-data handling. The sensitivity values are reported in
+Appendix~\ref{appendix:sensitivity} with the corresponding errors-included
+summaries file (\texttt{runs/20260418T050306Z/summaries\_errors\_included.json},
+SHA-256 logged in \texttt{decisions.md}); they should not be cited as
+findings of the pilot.

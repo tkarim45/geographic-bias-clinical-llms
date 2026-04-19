@@ -1,0 +1,80 @@
+{
+  "source_summaries": "runs/20260418T050306Z/summaries.json",
+  "alphas": [
+    0.05,
+    0.005
+  ],
+  "powers": [
+    0.8,
+    0.95
+  ],
+  "per_model": {
+    "GPT-4o-mini (OpenAI)": {
+      "rcer_north_mean": 0.027777777777777776,
+      "rcer_south_mean": 0.043209876543209874,
+      "cohens_h": 0.08389732115197795,
+      "observed_n_north_cases": 20,
+      "observed_n_south_cases": 60,
+      "n_required_alpha_0.05_power_0.80": 4,
+      "n_required_alpha_0.005_power_0.80": 92,
+      "n_required_alpha_0.005_power_0.95": 822
+    },
+    "GPT-OSS-20B (OpenAI OSS)": {
+      "rcer_north_mean": 0.1574074074074074,
+      "rcer_south_mean": 0.13756613756613756,
+      "cohens_h": -0.05598444749770448,
+      "observed_n_north_cases": 15,
+      "observed_n_south_cases": 35,
+      "n_required_alpha_0.05_power_0.80": 9,
+      "n_required_alpha_0.005_power_0.80": 206,
+      "n_required_alpha_0.005_power_0.95": 1846
+    },
+    "Llama-3.3-70B (Meta)": {
+      "rcer_north_mean": 0.09045584045584044,
+      "rcer_south_mean": 0.07336182336182336,
+      "cohens_h": -0.0624164186449192,
+      "observed_n_north_cases": 20,
+      "observed_n_south_cases": 60,
+      "n_required_alpha_0.05_power_0.80": 7,
+      "n_required_alpha_0.005_power_0.80": 166,
+      "n_required_alpha_0.005_power_0.95": 1485
+    },
+    "Qwen3-32B (Alibaba)": {
+      "rcer_north_mean": 0.167989417989418,
+      "rcer_south_mean": 0.10555555555555556,
+      "cohens_h": -0.1828148934061813,
+      "observed_n_north_cases": 14,
+      "observed_n_south_cases": 22,
+      "n_required_alpha_0.05_power_0.80": 1,
+      "n_required_alpha_0.005_power_0.80": 20,
+      "n_required_alpha_0.005_power_0.95": 174
+    }
+  },
+  "power_curve": {
+    "alpha_0.05_power_0.80": {
+      "20": -0.0359,
+      "40": -0.0254,
+      "61": -0.0206,
+      "100": -0.0161,
+      "147": -0.0132,
+      "200": -0.0114,
+      "500": -0.0072,
+      "1000": -0.0051,
+      "1333": -0.0044,
+      "1541": -0.0041
+    },
+    "alpha_0.005_power_0.80": {
+      "20": -0.1796,
+      "40": -0.127,
+      "61": -0.1028,
+      "100": -0.0803,
+      "147": -0.0662,
+      "200": -0.0568,
+      "500": -0.0359,
+      "1000": -0.0254,
+      "1333": -0.022,
+      "1541": -0.0205
+    }
+  },
+  "notes": "Bonferroni alpha=0.005 corresponds to alpha=0.05 / 9 comparisons (3 Global-South regions x 3 outcome questions, MANAGE/VISIT/RESOURCE). n_required uses the standard two-sided paired-proportion formula n = ((z_{1-alpha/2} + z_{power}) / |h|)^2."
+}

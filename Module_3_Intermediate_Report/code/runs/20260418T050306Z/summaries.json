@@ -13,13 +13,44 @@
       "visit": 0.0,
       "resource": 0.05555555555555555
     },
+    "rcer_north_mean": 0.027777777777777776,
+    "rcer_south_mean": 0.043209876543209874,
     "gdi": 0.015432098765432098,
+    "gdi_ci_lo_bca": -0.011111111111111112,
+    "gdi_ci_hi_bca": 0.013888888888888888,
+    "cohens_h_north_vs_south": 0.08389732115197795,
     "wilcoxon_W": 3.5,
+    "wilcoxon_z": 0.0,
     "wilcoxon_p_greater": 0.5,
+    "wilcoxon_r": NaN,
+    "wilcoxon_n_nonzero": 3,
     "bootstrap_ci_95": [
       -0.019444444444444445,
       0.030555555555555555
     ],
+    "per_question": {
+      "manage": {
+        "delta": 0.07407407407407407,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.1111111111111111,
+        "n_cases": 27,
+        "cohens_h": 0.5512855984325308
+      },
+      "visit": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 39,
+        "cohens_h": 0.0
+      },
+      "resource": {
+        "delta": -0.027777777777777776,
+        "delta_ci_lo": -0.1388888888888889,
+        "delta_ci_hi": -0.027777777777777776,
+        "n_cases": 36,
+        "cohens_h": -0.10980329379673442
+      }
+    },
     "south_regions": [
       "latin_america",
       "south_asia",
@@ -28,25 +59,56 @@
   },
   {
     "model": "GPT-OSS-20B (OpenAI OSS)",
-    "n_north_cases": 20,
-    "n_south_cases": 60,
+    "n_north_cases": 15,
+    "n_south_cases": 35,
     "rcer_north": {
-      "manage": 0.1111111111111111,
-      "visit": 0.46153846153846156,
-      "resource": 0.5
+      "manage": 0.0,
+      "visit": 0.2222222222222222,
+      "resource": 0.25
     },
     "rcer_south": {
-      "manage": 0.2962962962962963,
-      "visit": 0.23076923076923075,
-      "resource": 0.3611111111111111
+      "manage": 0.125,
+      "visit": 0.041666666666666664,
+      "resource": 0.24603174603174602
     },
-    "gdi": -0.06149097815764484,
-    "wilcoxon_W": 231.0,
-    "wilcoxon_p_greater": 0.6341780268953902,
+    "rcer_north_mean": 0.1574074074074074,
+    "rcer_south_mean": 0.13756613756613756,
+    "gdi": -0.019841269841269844,
+    "gdi_ci_lo_bca": -0.09047619047619047,
+    "gdi_ci_hi_bca": -0.009523809523809523,
+    "cohens_h_north_vs_south": -0.05598444749770448,
+    "wilcoxon_W": 21.0,
+    "wilcoxon_z": -0.7135060680126758,
+    "wilcoxon_p_greater": 0.7622336702015493,
+    "wilcoxon_r": 0.22563042992710647,
+    "wilcoxon_n_nonzero": 10,
     "bootstrap_ci_95": [
-      -0.20277777777777778,
-      0.11388888888888889
+      -0.1238095238095238,
+      0.0380952380952381
     ],
+    "per_question": {
+      "manage": {
+        "delta": 0.125,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.16666666666666666,
+        "n_cases": 18,
+        "cohens_h": 0.7227342478134157
+      },
+      "visit": {
+        "delta": -0.18055555555555555,
+        "delta_ci_lo": -0.34782608695652173,
+        "delta_ci_hi": -0.17391304347826086,
+        "n_cases": 23,
+        "cohens_h": -0.570627494256275
+      },
+      "resource": {
+        "delta": -0.003968253968253982,
+        "delta_ci_lo": -0.2,
+        "delta_ci_hi": -0.05,
+        "n_cases": 20,
+        "cohens_h": -0.009188793095529446
+      }
+    },
     "south_regions": [
       "latin_america",
       "south_asia",
@@ -67,13 +129,44 @@
       "visit": 0.025641025641025644,
       "resource": 0.08333333333333333
     },
+    "rcer_north_mean": 0.09045584045584044,
+    "rcer_south_mean": 0.07336182336182336,
     "gdi": -0.017094017094017092,
+    "gdi_ci_lo_bca": -0.027777777777777776,
+    "gdi_ci_hi_bca": -0.01111111111111111,
+    "cohens_h_north_vs_south": -0.0624164186449192,
     "wilcoxon_W": 0,
+    "wilcoxon_z": -1.7888543819998317,
     "wilcoxon_p_greater": 0.9631808649398487,
+    "wilcoxon_r": NaN,
+    "wilcoxon_n_nonzero": 2,
     "bootstrap_ci_95": [
       -0.027777777777777776,
       0.0
     ],
+    "per_question": {
+      "manage": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 27,
+        "cohens_h": 0.0
+      },
+      "visit": {
+        "delta": -0.05128205128205128,
+        "delta_ci_lo": -0.1282051282051282,
+        "delta_ci_hi": -0.05128205128205128,
+        "n_cases": 39,
+        "cohens_h": -0.24042884165669798
+      },
+      "resource": {
+        "delta": 0.0,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.0,
+        "n_cases": 36,
+        "cohens_h": 0.0
+      }
+    },
     "south_regions": [
       "latin_america",
       "south_asia",
@@ -82,25 +175,56 @@
   },
   {
     "model": "Qwen3-32B (Alibaba)",
-    "n_north_cases": 20,
-    "n_south_cases": 60,
+    "n_north_cases": 14,
+    "n_south_cases": 22,
     "rcer_north": {
-      "manage": 0.3333333333333333,
-      "visit": 0.38461538461538464,
-      "resource": 0.5
+      "manage": 0.14285714285714285,
+      "visit": 0.1111111111111111,
+      "resource": 0.25
     },
     "rcer_south": {
-      "manage": 0.4074074074074074,
-      "visit": 0.5384615384615384,
-      "resource": 0.5277777777777778
+      "manage": 0.15,
+      "visit": 0.08333333333333333,
+      "resource": 0.08333333333333333
     },
-    "gdi": 0.08523266856600188,
-    "wilcoxon_W": 372.0,
-    "wilcoxon_p_greater": 0.17737332942358475,
+    "rcer_north_mean": 0.167989417989418,
+    "rcer_south_mean": 0.10555555555555556,
+    "gdi": -0.06243386243386243,
+    "gdi_ci_lo_bca": -0.09090909090909091,
+    "gdi_ci_hi_bca": 0.030303030303030307,
+    "cohens_h_north_vs_south": -0.1828148934061813,
+    "wilcoxon_W": 4.0,
+    "wilcoxon_z": -0.5477225575051661,
+    "wilcoxon_p_greater": 0.7080587896148174,
+    "wilcoxon_r": NaN,
+    "wilcoxon_n_nonzero": 4,
     "bootstrap_ci_95": [
-      -0.08055555555555555,
-      0.2638888888888889
+      -0.13636363636363635,
+      0.09090909090909091
     ],
+    "per_question": {
+      "manage": {
+        "delta": 0.007142857142857145,
+        "delta_ci_lo": 0.0,
+        "delta_ci_hi": 0.08333333333333333,
+        "n_cases": 12,
+        "cohens_h": 0.02020545687378239
+      },
+      "visit": {
+        "delta": -0.027777777777777776,
+        "delta_ci_lo": -0.35714285714285715,
+        "delta_ci_hi": -0.07142857142857142,
+        "n_cases": 14,
+        "cohens_h": -0.0939882754510929
+      },
+      "resource": {
+        "delta": -0.16666666666666669,
+        "delta_ci_lo": -0.38461538461538464,
+        "delta_ci_hi": -0.07692307692307693,
+        "n_cases": 13,
+        "cohens_h": -0.4615120077394467
+      }
+    },
     "south_regions": [
       "latin_america",
       "south_asia",

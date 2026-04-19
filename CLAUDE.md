@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-An academic deliverables workspace for **CS-5312 Big Data Analytics** (LUMS, Spring 2026, Dr. Imdadullah Khan). It is not a software project — it contains LaTeX sources and PDFs for the course project **"Auditing Geographic and Cultural Bias in Clinical Large Language Models"** (proposes a Geographic Disparity Index / GDI metric evaluated across 7 LLMs and 4 clinical datasets).
+An academic deliverables workspace for **CS-5312 Big Data Analytics** (LUMS, Spring 2026, Dr. Imdadullah Khan). Primarily LaTeX sources and PDFs for the course project **"Auditing Geographic and Cultural Bias in Clinical Large Language Models"** (proposes a Geographic Disparity Index / GDI metric evaluated across 7 LLMs and 4 clinical datasets). Starting with Module 3, it also contains a Python audit pipeline (`Module_3_Intermediate_Report/code/`) that produces every number cited in the intermediate report from live LLM runs — no simulated results.
 
 Group members (as listed on every submission): Shawal Latif, Usmar Haider, Taimoor Karim, Abdul Moeed Irshad, Syed Muhammad Mujtaba.
 
@@ -39,6 +39,34 @@ pdflatex literature_review.tex   # run twice so \cite references resolve
 Proposal and lit review use `\begin{thebibliography}` inline (no external `.bib`), so BibTeX is not needed. Two `pdflatex` passes are enough to resolve citations and the table of contents.
 
 The `.aux`, `.log`, `.out`, `.toc` files are compilation artifacts — they regenerate on each build and should not be kept in the repo.
+
+## The Module 3 audit pipeline (`Module_3_Intermediate_Report/code/`)
+
+Stdlib-only Python 3.11+. No package manager, no `requirements.txt` — only two env vars (`OPENAI_API_KEY`, `GROQ_API_KEY`) loaded from a root `.env` (see `.env.example`). `code/README.md` is the detailed operator manual; re-read it before changing pipeline behaviour.
+
+Pipeline stages (see `audit/` — one file per stage, orchestrated by `audit/run.py`):
+`data.py` (load + SHA-256 manifest) → `perturb.py` (NAME/GEO/COMBINED perturbations across regions) → `models.py` (unified OpenAI + Groq `generate()`, token-bucket, idempotency-keyed cache) → `annotate.py` (Llama-3.1-8B annotator with JSON/regex/heuristic fallback) → `metrics.py` (TSR, RCR, RCER, GDI; paired Wilcoxon; bootstrap CIs).
+
+Run the pilot (from repo root):
+
+```bash
+set -a && source .env && set +a
+cd Module_3_Intermediate_Report/code
+python3 -m audit.run --config configs/pilot_oncqa.yaml --seed 42 --parallelism 8
+```
+
+Each invocation writes a timestamped directory under `code/runs/<UTC>/` containing `manifest.json`, `perturbed.jsonl`, `completions.jsonl`, `annotated.jsonl`, `summaries.json`, and a `.cache/` keyed by `sha256(model, prompt, seed, temperature)`. Re-running with the same config + seed is byte-identical thanks to the cache; the manifest pins dataset and name-bank hashes alongside full model specs.
+
+If Groq's 6000 TPM ceiling causes annotator 429s (records fall back to regex heuristic), re-annotate serially:
+
+```bash
+latest=$(ls -dt runs/*/ | head -1)
+python3 scripts/reannotate.py --run-dir "$latest" --sleep 7
+```
+
+Pilot scale (`configs/pilot_oncqa.yaml`): 20 cases × 4 regions × 4 models ≈ 320 completions + 320 annotations, ~10 min wall-clock (Groq rate-limit bound). Do not commit `code/runs/` or `.cache/` artefacts, and do not commit `.env`.
+
+When the report cites a number (GDI, RCER, Wilcoxon p, CI), it should come from a specific run directory's `summaries.json` — don't hand-edit values in the `.tex`.
 
 ## Cross-milestone consistency
 

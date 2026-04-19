@@ -18,10 +18,20 @@ import sys
 import time
 from pathlib import Path
 
-from .data import load_cases, sha256_file
+from .data import load_cases, load_oncqa, sha256_file
 from .perturb import (
     REGIONS, GEO_CANONICALS, PerturbType, load_name_bank, perturb_case,
 )
+
+
+# Loader dispatch: config `loader:` key selects the case-loading function.
+# Default is `load_cases` (JSONL synthetic pilot) for backward-compat with
+# `configs/pilot_oncqa.yaml`. New configs (e.g. `configs/oncqa_real.yaml`)
+# select `load_oncqa` and pass its base directory in `cases_path`.
+_LOADERS = {
+    "load_cases": load_cases,
+    "load_oncqa": load_oncqa,
+}
 from .models import ModelSpec, ResponseCache, generate
 from .annotate import annotate as annotate_text, ANNOTATOR_SPEC
 from .metrics import (
@@ -139,15 +149,37 @@ def main(argv: list[str] | None = None) -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
     cache = ResponseCache(run_dir / ".cache")
 
-    cases = load_cases(cases_path)
+    loader_name = cfg.get("loader", "load_cases")
+    if loader_name not in _LOADERS:
+        raise ValueError(f"Unknown loader {loader_name!r}; available: {sorted(_LOADERS)}")
+    loader = _LOADERS[loader_name]
+    cases = loader(cases_path)
+
+    # OncQA loader smuggles a filter log on cases[0]; lift it into the manifest
+    # so the run dir captures the dataset-derivation provenance per G11/G7.
+    filter_log = None
+    filter_summary = None
+    if cases and "_filter_log" in cases[0]:
+        filter_log = cases[0].pop("_filter_log")
+        filter_summary = cases[0].pop("_filter_summary", None)
+
     if args.limit:
         cases = cases[: args.limit]
     name_bank = load_name_bank(name_bank_path)
 
+    # Cases path may be a file (load_cases) or directory (load_oncqa). Hash the
+    # individual files for the directory case so the manifest is reproducible.
+    cases_path_obj = Path(cases_path)
+    if cases_path_obj.is_dir():
+        cases_sha256 = {p.name: sha256_file(p) for p in sorted(cases_path_obj.iterdir()) if p.is_file()}
+    else:
+        cases_sha256 = sha256_file(cases_path_obj)
+
     manifest = {
         "run_ts_utc":      run_ts,
+        "loader":          loader_name,
         "cases_path":      str(cases_path),
-        "cases_sha256":    sha256_file(cases_path),
+        "cases_sha256":    cases_sha256,
         "name_bank_path":  str(name_bank_path),
         "name_bank_sha256": sha256_file(name_bank_path),
         "conditions":      conditions,
@@ -157,6 +189,10 @@ def main(argv: list[str] | None = None) -> int:
         "annotator":       ANNOTATOR_SPEC.__dict__,
         "n_cases":         len(cases),
     }
+    if filter_summary is not None:
+        manifest["filter_summary"] = filter_summary
+    if filter_log is not None:
+        manifest["filter_log"] = filter_log
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
 
     # Stage 2: perturbation

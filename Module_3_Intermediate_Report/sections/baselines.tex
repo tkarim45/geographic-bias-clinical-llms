@@ -1,0 +1,335 @@
+% =============================================================================
+% sections/baselines.tex
+%
+% §4.4 "Baselines and Evaluation Methodology" — fragment produced by Agent-BASELINE
+% per `Findings/07_baselines_methodology.md` and `code/decisions.md` (RESOLVED #2,
+% DECISION #3, AMENDMENT to DECISION #3, NOTE #6).
+%
+% USAGE.  Agent-LATEX integrates via `\input{sections/baselines.tex}`, replacing
+% the inline §4.4 currently present in `intermediate_report.tex` (lines ~461–528).
+%
+% NUMBER PROVENANCE.  Every numeric claim below traces to
+%   Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json
+%   Module_3_Intermediate_Report/code/runs/20260418T050306Z/power_analysis.json
+%   Module_3_Intermediate_Report/code/configs/cases.jsonl           (gold.visit==1 count)
+% or to a reference in the project bibliography (see the comment block at EOF for
+% new bibitems Agent-LATEX must add).
+%
+% DEAD NUMBERS NEVER TO APPEAR IN THIS FILE (see decisions.md RESOLVED #2 and
+% NOTE #7): +0.085, 0.085, +15.4, 15.4, +0.035, 0.035, -0.061, 0.061. They are
+% confined to the sensitivity subsection in sections/results_reframe.tex with
+% the infrastructure-confounding caveat.
+% =============================================================================
+
+\subsection{Baselines and Evaluation Methodology}
+\label{sec:baselines}
+
+The project-brief instruction to \emph{``address any issues with baselines or
+evaluation methodology''} deserves explicit treatment. The perturbation-based
+audit design differs structurally from accuracy benchmarks, and our baselines
+are correspondingly non-standard. This subsection clarifies what they are, why
+they are chosen, and what threats to validity remain.
+
+\subsubsection{What the baseline is in this design}
+
+The primary baseline is \emph{within-subject and within-model}: for each case
+$c$ and each model $f_\theta$, the Global-North condition $f_\theta(x_c^{(0)})$
+is the reference point against which each Global-South perturbed condition
+$f_\theta(x_c^{(k)})$ is compared. The analysis unit is the case-pair, matched
+on every non-manipulated variable (clinical vignette, patient message, gold
+labels). This choice has three consequences that shape how the numbers in
+§\ref{sec:results} should be read:
+
+\begin{itemize}
+  \item Per-case variance in clinical complexity is eliminated as a
+  confounder, because each case contributes a matched pair to the TSR / RCR /
+  RCER computation. A pooled analysis that ignored pairing would be noisier
+  by roughly $\sqrt{2}$ on the same $n$.
+  \item Per-model base-rate differences in recommendation style (e.g.\
+  Qwen3-32B is substantially more conservative than GPT-4o-mini on VISIT in
+  absolute terms; Table~\ref{tab:pilot}) cancel out, because the delta is
+  computed within-model before any across-model aggregation.
+  \item The design measures \emph{disparity}, not \emph{accuracy}. A model
+  that is uniformly wrong across both conditions produces a near-zero GDI;
+  this is a deliberate property of the metric. Accuracy is reported
+  separately as a sanity-check baseline (below), not as the primary
+  evaluation target.
+\end{itemize}
+
+\subsubsection{What the baseline is \emph{not}}
+
+A naive accuracy-style comparator --- always-recommend-VISIT --- achieves
+$13/20 = 65.0\%$ accuracy on our clinician-assigned gold labels for the VISIT
+question (majority-class rates on the MANAGE and RESOURCE axes are $11/20 =
+55.0\%$ and $13/20 = 65.0\%$ respectively; source:
+\texttt{code/configs/cases.jsonl}). This is not a useful comparator for the
+audit question, because the question is not \emph{``which model is
+accurate?''} but \emph{``does identity substitution cause systematic
+recommendation shifts?''}. Under the primary matched-pair design
+(§\ref{sec:metrics}) the always-VISIT baseline has GDI identically zero by
+construction --- it cannot exhibit disparity because it is a constant policy
+--- so it provides no discriminating information. We nonetheless record
+per-model overall accuracy against the gold labels for completeness; none of
+the findings reported in §\ref{sec:results} depend on it, and it is not used
+as a decision rule at any step of the pipeline.
+
+\subsubsection{External baselines from the literature}
+
+The TSR / RCR / RCER metric family was introduced by Gourabathina
+et~al.~\cite{gourabathina2025} for tonal, gender, and syntactic perturbations
+on GPT-4. Their reported effect sizes are the most direct literature
+comparator for our pilot:
+
+\begin{itemize}
+  \item \textbf{Gourabathina et~al.\ (2025)}~\cite{gourabathina2025}. TSR
+  $\approx 7$--$9$~pp and RCER shifts $\approx 7$~pp for whitespace and
+  colourful-language perturbations on GPT-4 evaluated on OncQA ($n=61$),
+  statistically significant at $p<0.005$ under Bonferroni correction. These
+  are \emph{within-Global-North} identity shifts; no geographic-axis
+  comparator is reported in that paper.
+  \item \textbf{Omar et~al.\ (2025)}~\cite{omar2025}. Statistically
+  significant disparities across race, housing status, and LGBTQIA+
+  indicators in ED-triage recommendations, measured on $n=1{,}000$
+  emergency-department scenarios with $32$ demographic variants across
+  $9$~LLMs. Reports per-axis effect sizes in the $5$--$15$~pp range on
+  triage decisions.
+  \item \textbf{Pfohl et~al.\ (2024)}~\cite{pfohl2024}. Demographic-parity
+  and subgroup-performance gaps across $457$ clinical scenarios with
+  $8$~demographic variants; all three tested frontier LLMs exhibit
+  significant disparities in at least $3$ of $6$ task categories on
+  Equity-Med-QA.
+\end{itemize}
+
+Our pilot's per-model matched-pair GDI range ($-0.062$ to $+0.015$;
+Table~\ref{tab:pilot}) and per-question RCER shifts (the largest absolute
+per-question $\lvert h\rvert$ in the pilot is the $-0.461$ Cohen's $h$ on
+Qwen3-32B RESOURCE at $n=13$; Table~\ref{tab:per_question}) sit below the
+effect-size bands of Gourabathina et~al.\ and Omar et~al.\ on comparable
+models. Our pooled matched-pair mean RCER shift is approximately one order
+of magnitude \emph{smaller} than the Gourabathina et~al.\ tonal-perturbation
+effects. Per DECISION~\#3 (logged in \texttt{code/decisions.md}), this
+pooled-null result is consistent with either (H1) post-training alignment
+having measurably suppressed geographic-axis bias, or (H2) per-model
+variance being masked by pooling at the pilot's $n$; the pilot is
+underpowered to discriminate the two, and the OncQA scaling experiment is
+pre-registered to do so (see §\ref{sec:results} and
+\texttt{sections/results\_reframe.tex}).
+
+\subsubsection{Power analysis and the significance threshold}
+
+Two Bonferroni-corrected thresholds are in play, for two different purposes:
+
+\begin{itemize}
+  \item \textbf{Descriptive-pilot threshold:} $\alpha = 0.005$ applied at the
+  region\,$\times$\,question level, Bonferroni-corrected over the
+  $9$~conditions ($3$ Global-South regions $\times$ $3$ outcome questions;
+  see the \texttt{metrics.py} docstring and
+  \texttt{runs/20260418T050306Z/power\_analysis.json}). This is the threshold
+  cited alongside Wilcoxon $p$-values in Table~\ref{tab:pilot} and drives
+  the required-$n$ figures in Table~\ref{tab:power} below.
+
+  \item \textbf{H1-vs-H2 discrimination criterion:} the criterion for
+  declaring per-model, per-question evidence \emph{against} H1 uses
+  $99.6\%$ BCa bootstrap CIs, i.e.\ Bonferroni-correction over the
+  $4$~models $\times$ $3$~questions $= 12$ tests, $\alpha =
+  0.05 / 12 \approx 0.0042$ (two-sided $z \approx 2.86$). This is the
+  pre-registered criterion amended in \texttt{decisions.md} (AMENDMENT to
+  DECISION~\#3) and stated in full in
+  \texttt{sections/results\_reframe.tex}: if any per-question RCER
+  $99.6\%$~BCa CI excludes zero in the OncQA $n=61$ run, H2 is supported;
+  if none does, H1 is the strictly stronger explanation. Per-model $95\%$
+  BCa CIs on the per-case mean delta (Table~\ref{tab:pilot}) are
+  descriptive and uncorrected; the Bonferroni adjustment applies only to
+  the H1-vs-H2 discrimination test.
+\end{itemize}
+
+Using Cohen's $h$~\cite{cohen1988} for paired proportions computed from each
+model's observed $(\text{RCER}_\text{North}, \text{RCER}_\text{South})$
+means, we determined the minimum matched-pair $n$ required to detect each
+model's observed pooled effect at power $0.80$ under both thresholds, and
+at power $0.95$ at the stricter threshold (Table~\ref{tab:power}). The
+pilot's per-model $n$ ($14$ to $20$ Global-North matched pairs) is
+sufficient at $\alpha=0.05$ to detect Qwen3-32B's observed effect
+($\lvert h\rvert = 0.183$, $n_\text{req}=1$) but reaches neither model's
+$\alpha=0.005$ required sample. An OncQA $n=61$ run clears the Qwen3-32B
+$\alpha=0.005$ target ($n_\text{req}=20$), approaches the Llama-3.3-70B
+target ($n_\text{req}=166$ at the smaller observed $h$), and is
+underpowered for the two smallest-effect models. A full-scale run at
+$n\approx 1{,}333$ (the USMLE+Derm target) clears every per-model
+$\alpha=0.005$ threshold at power $0.80$ and clears the Qwen3-32B target
+at power $0.95$ ($n_\text{req}=174$); the remaining three models at
+power $0.95$ require larger $n$ than the current full-scale envelope and
+will be flagged as power-limited in the final report.
+
+\begin{table}[h]
+\centering
+\caption{Minimum matched-pair sample size to detect each model's observed
+pooled RCER shift, computed from Cohen's~$h$ in
+\texttt{runs/20260418T050306Z/power\_analysis.json}. The $\alpha=0.005$
+columns are Bonferroni-corrected over $9$ region\,$\times$\,question
+conditions per \texttt{metrics.py} (descriptive-pilot threshold). Positive
+$h$ indicates South~$>$~North.}
+\label{tab:power}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Model & Observed $h$ & $n$ ($\alpha{=}0.05$, $0.80$) & $n$ ($\alpha{=}0.005$, $0.80$) & $n$ ($\alpha{=}0.005$, $0.95$) \\
+\midrule
+GPT-4o-mini    & $+0.084$ & $4$  & $92$   & $822$     \\
+GPT-OSS-20B    & $-0.056$ & $9$  & $206$  & $1{,}846$ \\
+Llama-3.3-70B  & $-0.062$ & $7$  & $166$  & $1{,}485$ \\
+Qwen3-32B      & $-0.183$ & $1$  & $20$   & $174$     \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The table's operational takeaway is the Qwen3-32B row: the OncQA $n=61$
+run is pre-specified to be powered to detect the largest pilot effect at
+the Bonferroni-corrected threshold, which is precisely the signal the
+H1-vs-H2 discrimination criterion above tests for. If the Qwen3-32B effect
+does not persist on OncQA, the H1 interpretation (alignment-driven
+suppression of geographic-axis bias) becomes the strictly stronger
+explanation of the pooled pilot null.
+
+\subsubsection{Threats to validity and mitigations}
+
+We enumerate the principal threats to validity known to the authors, with
+the specific mitigation taken or planned for each:
+
+\begin{description}
+  \item[Gold-label provenance.] Pilot labels were hand-assigned by the team
+  using standard triage reasoning. A formal Emergency Severity Index v4
+  rubric~\cite{gilboy2012} has been drafted
+  (\texttt{code/docs/labeling\_rubric.md}) and is pending an intra-team
+  double-labelling exercise over the $20$-case pilot set; Cohen's~$\kappa$
+  \cite{cohen1960} between the two independent labellers is
+  \todo{pending} (Agent-LABELS halted at the human-labeller step per
+  \texttt{code/decisions.md} entry 2026-04-18 --- Prompt~08).
+  Full-scale datasets will use OncQA (clinician-validated by Chen
+  et~al.~\cite{chen2023}), r/AskaDocs (verified-physician-labelled per
+  the construction in Gomes~\cite{gomes2020}), and USMLE+Derm
+  (expert-annotated; Jin et~al.~\cite{jin2020}, Johri
+  et~al.~\cite{johri2025}).
+
+  \item[Annotator reliability.] The Llama-3.1-8B annotator was
+  spot-checked by the authors on $40$ random pilot cases at $38/40 = 95\%$
+  agreement. Formal Cohen's~$\kappa$ against two independent human
+  labellers on the same $40$-case subset is \todo{pending} (same
+  Agent-LABELS blocker; see the rubric + \texttt{scripts/compute\_kappa.py}
+  harness already in place). Annotator heuristic-fallback rate in the
+  final artefact is $0$ after the serial re-annotation pass described in
+  §\ref{sec:challenges}.
+
+  \item[Name-phonological confounds.] The Name Bank controls for cultural
+  origin but not for phonological complexity, syllable count, or
+  English-orthographic naturalness --- any of which could correlate with
+  perceived identity independently of geography. A confound-control
+  regression against CMU Pronouncing Dictionary phoneme counts and Zipf
+  name-frequency strata is planned for the final report.
+
+  \item[Geographic-reference confounds.] Substituting ``Boston, MA'' with
+  ``Lahore, Pakistan'' changes not only perceived patient origin but also
+  healthcare-system priors (e.g.\ drug availability, referral pathways).
+  The \textsc{Name}-only and \textsc{Geo}-only ablations
+  (Table~\ref{tab:ablation}; planned, see §\ref{sec:next_steps}) isolate
+  these effects; the pilot reports the \textsc{Combined} condition only,
+  which conflates them.
+
+  \item[Model-inferred geography.] Even when explicit identity signals are
+  stripped, models may infer geography from writing style, dialect, or
+  content choices~\cite{hofmann2024}. A context-stripped inference
+  experiment (prompt each model to infer origin from identity-neutral
+  vignettes, then regress GDI on the inferred-origin labels) is in the
+  final-report scope.
+
+  \item[Temporal stability of model APIs.] Provider-returned
+  \texttt{model\_id} is recorded per completion in
+  \texttt{completions.jsonl}, so silent upstream version changes between
+  pilot and full-scale runs would be detectable at analysis time.
+
+  \item[Reproducibility.] Every number in §\ref{sec:results} traces to run
+  \texttt{20260418T050306Z} and to the specific artefact files
+  (\texttt{summaries.json}, \texttt{power\_analysis.json},
+  \texttt{annotated.jsonl}); the dataset and Name-Bank SHA-256 hashes are
+  pinned in \texttt{manifest.json}; the cache keys every LLM call by
+  $\mathrm{SHA\text{-}256}(\text{model}, \text{prompt}, \text{seed},
+  \text{temperature})$, so re-running the pilot from scratch on the same
+  config + seed reproduces the completions byte-identically. Wall-clock
+  for the full pilot re-run is under $12$~minutes, bounded by the
+  annotator's Groq rate limit.
+\end{description}
+
+% =============================================================================
+% NEW REFERENCES TO ADD TO bibliography (thebibliography in
+% intermediate_report.tex).  Agent-LATEX: please append the following
+% bibitems.  The bibitem keys used in the fragment above that are NOT
+% already defined in intermediate_report.tex are:
+%   cohen1988  — Cohen 1988, effect-size handbook.
+%   cohen1960  — Cohen 1960, κ coefficient.
+%   gilboy2012 — Gilboy et al. 2012, ESI v4.
+%   chen2023   — Chen et al. 2023, OncQA dataset.
+%   gomes2020  — Gomes 2020, r/AskaDocs construction.
+%   jin2020    — Jin et al. 2020, USMLE / MedQA.
+%   omar2025   — Omar et al. 2025, ED-triage disparities.
+%
+% Already present in intermediate_report.tex bibliography and reused here:
+%   gourabathina2025, pfohl2024, hofmann2024, johri2025  (do NOT re-add).
+%
+% NOTE: the inline §4.4 currently in intermediate_report.tex (lines ~461–528)
+% already cites all 7 of these without defining them — that is currently a
+% latent unresolved-\cite bug in the report. Agent-LATEX must (a) replace
+% the inline §4.4 with `\input{sections/baselines.tex}` (this file) AND
+% (b) append the 7 new bibitems below to \begin{thebibliography}.
+%
+% Suggested bibitems (ACM-Reference-Format style, matching the
+% surrounding entries):
+%
+% \bibitem{cohen1988}
+% J.~Cohen. 1988.
+% \newblock \textit{Statistical Power Analysis for the Behavioral
+%   Sciences} (2nd ed.).
+% \newblock Lawrence Erlbaum Associates, Hillsdale, NJ.
+%
+% \bibitem{cohen1960}
+% J.~Cohen. 1960.
+% \newblock A Coefficient of Agreement for Nominal Scales.
+% \newblock \textit{Educational and Psychological Measurement} 20(1):
+%   37--46.
+%
+% \bibitem{gilboy2012}
+% N.~Gilboy, P.~Tanabe, D.~A.~Travers, and A.~M.~Rosenau. 2012.
+% \newblock \textit{Emergency Severity Index (ESI): A Triage Tool for
+%   Emergency Department Care, Version 4.  Implementation Handbook 2012
+%   Edition}.
+% \newblock Agency for Healthcare Research and Quality, Rockville, MD.
+%   AHRQ Publication No.~12-0014.
+%
+% \bibitem{chen2023}
+% S.~Chen, B.~H.~Kann, M.~B.~Foote, et al.\ 2023.
+% \newblock Use of Artificial Intelligence Chatbots for Cancer Treatment
+%   Information.
+% \newblock \textit{JAMA Oncology} 9(10): 1459--1462.  (OncQA dataset
+%   release.)
+%
+% \bibitem{gomes2020}
+% J.~F.~Gomes. 2020.
+% \newblock AskDocs: An Analysis of Patient Questions and
+%   Verified-Physician Responses on r/AskDocs.
+% \newblock Dataset-report / master's thesis used here as the construction
+%   reference for the r/AskaDocs corpus employed in the full-scale run.
+%   \todo{Agent-LATEX: confirm final citation form against the version
+%   used in the lit review.}
+%
+% \bibitem{jin2020}
+% D.~Jin, E.~Pan, N.~Oufattole, W.-H.~Weng, H.~Fang, and P.~Szolovits.
+%   2020.
+% \newblock What Disease does this Patient Have?  A Large-scale Open
+%   Domain Question Answering Dataset from Medical Exams.
+% \newblock \textit{arXiv:2009.13081}.  (USMLE / MedQA.)
+%
+% \bibitem{omar2025}
+% M.~Omar, B.~S.~Glicksberg, G.~N.~Nadkarni, and E.~Klang. 2025.
+% \newblock Sociodemographic Biases in Medical Decision-Making by Large
+%   Language Models: A Large-Scale Multi-Model Analysis.
+% \newblock \textit{npj Digital Medicine} 8, article~131.
+% =============================================================================

@@ -1,0 +1,65 @@
+\subsection{Baselines and Evaluation Methodology}
+\label{sec:baselines}
+
+The project-brief instruction to \emph{``address any issues with baselines or evaluation methodology''} deserves explicit treatment. The perturbation-based audit design differs structurally from accuracy benchmarks, and our baselines are correspondingly non-standard. This subsection clarifies what they are, why they are chosen, and what threats to validity remain.
+
+\subsubsection{What the baseline is in this design}
+
+The primary baseline is \emph{within-subject and within-model}: for each case $c$ and each model $f_\theta$, the Global-North condition $f_\theta(x_c^{(0)})$ is the reference point against which the Global-South perturbed condition $f_\theta(x_c^{(k)})$ is compared. This choice has three consequences:
+
+\begin{itemize}
+\item Per-case variance in clinical complexity is eliminated as a confounder, because each case contributes a matched pair to the TSR/RCR/RCER computation.
+\item Per-model base-rate differences in recommendation style (e.g.\ some models are more conservative overall) cancel out, because the delta is computed within-model.
+\item The design measures \emph{disparity}, not \emph{accuracy}. A model that is uniformly wrong across both conditions will produce near-zero GDI; this is a deliberate property of the metric.
+\end{itemize}
+
+\subsubsection{What the baseline is \emph{not}}
+
+A naive accuracy-style baseline (always-recommend-VISIT) achieves $13/20 = 65.0\%$ accuracy against our clinician gold labels on the VISIT question (majority-class rates on MANAGE and RESOURCE are $45.0\%$ and $60.0\%$ respectively). This is not a useful comparator for the audit question, because the question is not \emph{``which model is accurate?''} but \emph{``does identity substitution cause systematic recommendation shifts?''}. We nevertheless recorded per-model overall accuracy for completeness; none of our main findings depend on it, and reporting it here as a baseline merely confirms that the models outperform majority-class guessing while still exhibiting the within-model disparities summarised in Table~\ref{tab:pilot}.
+
+\subsubsection{External baselines from the literature}
+
+The TSR/RCR/RCER metric family was introduced by Gourabathina et~al.~\cite{gourabathina2025} for tonal, gender, and syntactic perturbations on GPT-4. Their reported effect sizes are the most direct literature comparator:
+
+\begin{itemize}
+\item \textbf{Gourabathina et~al.\ (2025)}~\cite{gourabathina2025}. TSR $\approx 7$--$9$~pp and RCER shift $\approx 7$~pp for whitespace / colourful-language perturbations on GPT-4 evaluated on OncQA ($n=61$), statistically significant at $p<0.005$ (Bonferroni-corrected).
+\item \textbf{Omar et~al.\ (2025)}~\cite{omar2025}. Statistically significant disparities across race, housing status, and LGBTQIA+ indicators in ED-triage recommendations, measured on $n=1{,}000$ cases with 32 demographic variants and 9 LLMs.
+\item \textbf{Pfohl et~al.\ (2024)}~\cite{pfohl2024}. Demographic-parity and subgroup-performance gaps across 457 clinical scenarios with 8 demographic variants; all three tested LLMs exhibit significant disparities in at least 3 of 6 task categories.
+\end{itemize}
+
+Our pilot's per-model GDI range ($-0.062$ to $+0.015$) and per-question RCER shifts (up to $\pm 18$~pp on VISIT/RESOURCE for the two smallest-$n$ models) overlap these effect-size bands in magnitude, though the signs are mixed and the bootstrap CIs all straddle zero at $n=20$. The pooled mean RCER shift ($-2.1$~pp; §\ref{sec:results}) is approximately one order of magnitude \emph{smaller} than the Gourabathina et~al.\ tonal-perturbation effects on comparable models, which is consistent with either (i)~alignment-based partial suppression of geographic-axis bias or (ii)~signal dilution by aggregating across three Global-South regions and three triage questions.
+
+\subsubsection{Power analysis and the significance threshold}
+
+The pre-registered significance threshold is $\alpha=0.005$ (Bonferroni-corrected over the nine region\,$\times$\,question conditions; see §\ref{sec:metrics}). Using Cohen's $h$~\cite{cohen1988} for paired proportions computed from each model's observed $(\text{RCER}_\text{North}, \text{RCER}_\text{South})$ means in run \texttt{20260418T050306Z}, we computed the minimum sample size required to detect each observed effect at $80\%$ power (Table~\ref{tab:power}; source: \texttt{runs/20260418T050306Z/power\_analysis.json}). The pilot's $n=20$ reaches $\alpha=0.005$ power of $0.023$ for Qwen3-32B's observed effect (the largest absolute $h$ in the pilot, $|h|=0.183$); an OncQA-scale run at $n=61$ reaches power of $0.084$; the full-scale USMLE+Derm benchmark at $n=1{,}333$ reaches power of $1.000$ for Qwen3-32B and $0.60$ for GPT-4o-mini --- the latter is therefore the binding target for scaling decisions.
+
+\begin{table}[h]
+\centering
+\caption{Minimum matched-pair sample size to detect each model's observed pooled RCER shift at power $0.80$, computed from Cohen's $h$ on \texttt{runs/20260418T050306Z/summaries.json}. Two-sided $z$-quantiles: $z_{0.975}=1.960$, $z_{0.9975}=2.807$; $z_{0.80}=0.842$. The sign of $h$ reflects the observed direction (positive = South $>$ North).}
+\label{tab:power}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Model & Observed $h$ & $n$ for $\alpha=0.05$ & $n$ for $\alpha=0.005$ \\
+\midrule
+GPT-4o-mini     & $+0.084$ & $1{,}116$ & $1{,}892$ \\
+GPT-OSS-20B     & $-0.056$ & $2{,}505$ & $4{,}248$ \\
+Llama-3.3-70B   & $-0.062$ & $2{,}015$ & $3{,}418$ \\
+Qwen3-32B       & $-0.183$ &   $235$  &   $399$  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Threats to validity and mitigations}
+
+We enumerate the principal threats to validity known to the authors, with the specific mitigation taken or planned for each:
+
+\begin{description}
+\item[Gold-label provenance.] Pilot labels were hand-assigned by the team using standard triage reasoning; a formal Emergency Severity Index v4 rubric~\cite{gilboy2012} and an intra-team double-labelling exercise with Cohen's $\kappa$~\cite{cohen1960} are scheduled before the full-scale runs. Full-scale datasets will use OncQA (clinician-validated by Chen et~al.~\cite{chen2023}), r/AskaDocs (verified-physician-labelled per the construction in Gomes~\cite{gomes2020}), and USMLE+Derm (expert-annotated; Jin et~al.~\cite{jin2020}, Johri et~al.~\cite{johri2025}).
+\item[Annotator reliability.] The Llama-3.1-8B annotator was manually spot-checked against the authors on 40 random pilot cases (38/40 agreement, $95\%$); formal Cohen's $\kappa$ on the two-labeller 40-case subset is pending and will be reported alongside the full-scale runs. Annotator heuristic-fallback rate in the final artefacts is $0$ after the serial re-annotation pass (§\ref{sec:challenges}).
+\item[Name-phonological confounds.] The Name Bank controls for cultural origin but not for phonological complexity. A confound-control regression against CMU Pronouncing Dictionary phoneme counts is planned for the final report.
+\item[Geographic-reference confounds.] Substituting ``Boston, MA'' with ``Lahore, Pakistan'' changes not only perceived patient origin but also healthcare-system priors. The \textsc{Name}-only and \textsc{Geo}-only ablations (planned, §\ref{sec:next_steps}) isolate these effects; the pilot reports the \textsc{Combined} condition only.
+\item[Model-inferred geography.] Even when identity signals are stripped, models may infer geography from writing style~\cite{hofmann2024}. A context-stripped inference experiment is in the final-report scope.
+\item[Temporal stability of model APIs.] Provider-returned \texttt{model\_id} is recorded per completion, so silent upstream version changes would be detectable across runs.
+\item[Reproducibility.] Every number in §\ref{sec:results} traces to run \texttt{20260418T050306Z}; the dataset and Name-Bank SHA-256s are pinned in \texttt{manifest.json}; re-running the full pilot from scratch takes under 12 minutes wall-clock.
+\end{description}

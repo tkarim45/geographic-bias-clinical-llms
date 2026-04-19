@@ -5,8 +5,8 @@ Supported providers (detected from model_id prefix or configured endpoint):
   - groq:*         -> Groq OpenAI-compatible endpoint
 
 Features:
-  - Token-bucket rate limiting per provider
-  - Exponential-backoff retry on 429 / 5xx
+  - Token-bucket rate limiting per (provider, model) — both RPM and TPM
+  - Exponential-backoff retry on 5xx; 429 honours Retry-After / Groq body hint
   - Per-request client-side idempotency key derived from (model, prompt, seed)
   - File-based response cache keyed on the idempotency key so reruns are free
 
@@ -19,6 +19,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import threading
 import time
 import urllib.error
@@ -58,31 +59,134 @@ class ModelSpec:
 # -----------------------------------------------------------------------------
 
 class TokenBucket:
-    def __init__(self, rate_per_sec: float, capacity: float | None = None):
-        self.rate = rate_per_sec
-        self.capacity = capacity or max(1.0, rate_per_sec)
-        self._tokens = self.capacity
-        self._last = time.monotonic()
+    """Sliding 60s window bucket enforcing RPM and (optionally) TPM together.
+
+    Replaces the previous provider-shared leaky bucket. Buckets are now keyed
+    per (provider, model) so one model's TPM cannot starve another's; the
+    annotator has its own bucket separate from main-model generation.
+    """
+
+    def __init__(self, rpm: int, tpm: int | None = None):
+        self.rpm = rpm
+        self.tpm = tpm
+        self._req_times: list[float] = []
+        self._tok_events: list[tuple[float, int]] = []  # (t, token_count)
         self._lock = threading.Lock()
 
-    def take(self, n: float = 1.0) -> None:
+    def acquire(self, expected_tokens: int = 800) -> None:
         while True:
             with self._lock:
                 now = time.monotonic()
-                self._tokens = min(self.capacity, self._tokens + (now - self._last) * self.rate)
-                self._last = now
-                if self._tokens >= n:
-                    self._tokens -= n
+                self._req_times = [t for t in self._req_times if now - t < 60.0]
+                self._tok_events = [(t, n) for (t, n) in self._tok_events if now - t < 60.0]
+                tokens_used = sum(n for _, n in self._tok_events)
+                under_rpm = len(self._req_times) < self.rpm
+                under_tpm = self.tpm is None or (tokens_used + expected_tokens) <= self.tpm
+                if under_rpm and under_tpm:
+                    self._req_times.append(now)
+                    self._tok_events.append((now, expected_tokens))
                     return
-                wait = (n - self._tokens) / self.rate
-            time.sleep(min(wait, 1.0))
+            time.sleep(0.25)
+
+    # Backwards-compatible shim so any residual take() callers still work.
+    def take(self, n: float = 1.0) -> None:
+        self.acquire(expected_tokens=int(max(1, n) * 800))
+
+    def record_actual_tokens(self, actual: int, expected: int = 800) -> None:
+        """Replace the most-recent token estimate with the observed count.
+
+        Called after a successful response so the 60s window reflects reality
+        (Groq's TPM is enforced on real usage, not our guess).
+        """
+        if actual <= 0 or abs(actual - expected) < 100:
+            return
+        with self._lock:
+            if self._tok_events:
+                t, _ = self._tok_events.pop()
+                self._tok_events.append((t, int(actual)))
+
+    def drain_for(self, seconds: float) -> None:
+        """Mark the bucket fully saturated for ``seconds``.
+
+        Used after a 429 so no further requests fire until the server-provided
+        retry window elapses, even if another thread would otherwise slip in.
+        """
+        if seconds <= 0:
+            return
+        with self._lock:
+            now = time.monotonic()
+            # Insert synthetic events in the past so they expire exactly when
+            # the server says we're allowed to try again.
+            future_offset = max(0.0, seconds - 60.0)
+            anchor = now - 60.0 + seconds + future_offset
+            # Saturate RPM.
+            self._req_times = [anchor] * self.rpm
+            # Saturate TPM if configured.
+            if self.tpm is not None:
+                self._tok_events = [(anchor, self.tpm)]
 
 
-# Conservative defaults for free tiers
-_BUCKETS: dict[str, TokenBucket] = {
-    "openai": TokenBucket(rate_per_sec=5.0),   # ~300 RPM; gpt-4o-mini allows much more
-    "groq":   TokenBucket(rate_per_sec=0.5),   # ~30 RPM free tier, per model
+# Free-tier limits per (provider, model). Verified against Groq's
+# rate-limit page as of April 2026; conservative where the tier wobbles.
+_RATE_LIMITS: dict[str, dict[str, int | None]] = {
+    # OpenAI direct
+    "openai/gpt-4o-mini":                 {"rpm": 60,  "tpm": None},
+    "openai/gpt-4.1-mini":                {"rpm": 60,  "tpm": None},  # forward-compat
+    # Groq main models (pilot cohort)
+    "groq/llama-3.3-70b-versatile":       {"rpm": 10,  "tpm": 6000},
+    "groq/openai/gpt-oss-20b":            {"rpm": 5,   "tpm": 3000},  # 19 losses in pilot
+    "groq/qwen/qwen3-32b":                {"rpm": 5,   "tpm": 3000},  # 33 losses in pilot
+    # Groq annotator — reserved bucket so re-annotation cannot starve generation
+    "groq/llama-3.1-8b-instant":          {"rpm": 15,  "tpm": 6000},
 }
+
+# Safe fallback for any model not in the table above.
+_DEFAULT_LIMIT: dict[str, int | None] = {"rpm": 10, "tpm": 6000}
+
+_BUCKETS: dict[str, TokenBucket] = {}
+_BUCKETS_LOCK = threading.Lock()
+
+
+def _bucket_key(provider: str, model_id: str) -> str:
+    return f"{provider}/{model_id}"
+
+
+def _bucket_for(provider: str, model_id: str) -> TokenBucket:
+    key = _bucket_key(provider, model_id)
+    with _BUCKETS_LOCK:
+        b = _BUCKETS.get(key)
+        if b is None:
+            spec = _RATE_LIMITS.get(key, _DEFAULT_LIMIT)
+            b = TokenBucket(rpm=int(spec["rpm"]), tpm=spec["tpm"])  # type: ignore[arg-type]
+            _BUCKETS[key] = b
+        return b
+
+
+_RETRY_AFTER_RE = re.compile(r"try again in\s*([\d.]+)\s*s", re.IGNORECASE)
+
+
+def _parse_retry_after(body: str, headers: dict) -> float | None:
+    """Return the server-requested cooldown in seconds, or None.
+
+    Honours the standard ``Retry-After`` header first (seconds form), then
+    falls back to parsing Groq's free-form body hint ("Please try again in
+    42.1s"). Returns None if neither is present/parseable.
+    """
+    # Header names may arrive in mixed case depending on transport.
+    for k, v in (headers or {}).items():
+        if k.lower() == "retry-after":
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                break
+    if body:
+        m = _RETRY_AFTER_RE.search(body)
+        if m:
+            try:
+                return float(m.group(1))
+            except ValueError:
+                return None
+    return None
 
 
 # -----------------------------------------------------------------------------
@@ -150,6 +254,20 @@ def _post_json(provider: str, payload: dict, timeout: int = 120) -> dict:
         return json.loads(r.read())
 
 
+def _http_error_parts(e: urllib.error.HTTPError) -> tuple[str, dict]:
+    body = ""
+    try:
+        body = e.read().decode("utf-8", errors="ignore")
+    except Exception:
+        pass
+    headers: dict = {}
+    try:
+        headers = {k: v for k, v in e.headers.items()} if e.headers else {}
+    except Exception:
+        headers = {}
+    return body, headers
+
+
 def generate(
     *,
     spec: ModelSpec,
@@ -184,7 +302,9 @@ def generate(
     if return_json and spec.supports_json_format:
         payload["response_format"] = {"type": "json_object"}
 
-    _BUCKETS[spec.provider].take()
+    bucket = _bucket_for(spec.provider, spec.model_id)
+    expected_tokens = 800
+    bucket.acquire(expected_tokens=expected_tokens)
 
     err: Exception | None = None
     for attempt in range(max_retries):
@@ -192,13 +312,21 @@ def generate(
             resp = _post_json(spec.provider, payload)
             break
         except urllib.error.HTTPError as e:
-            body = ""
-            try:
-                body = e.read().decode("utf-8", errors="ignore")
-            except Exception:
-                pass
-            if e.code in (429, 500, 502, 503, 504):
-                wait = (2 ** attempt) + random.random()
+            body, headers = _http_error_parts(e)
+            if e.code == 429:
+                retry = _parse_retry_after(body, headers)
+                if retry is not None:
+                    bucket.drain_for(retry + 1.0)
+                    time.sleep(retry + 1.0)
+                else:
+                    time.sleep(min((2 ** attempt) + random.random(), 30))
+                err = LLMError(f"{spec.provider}/{spec.model_id} 429: {body[:200]}")
+                # Re-acquire before the next attempt so we respect the drained bucket.
+                bucket.acquire(expected_tokens=expected_tokens)
+                continue
+            if e.code in (500, 502, 503, 504):
+                retry = _parse_retry_after(body, headers)
+                wait = retry if retry is not None else (2 ** attempt) + random.random()
                 time.sleep(min(wait, 30))
                 err = LLMError(f"{spec.provider}/{spec.model_id} {e.code}: {body[:200]}")
                 continue
@@ -217,12 +345,17 @@ def generate(
     except Exception:
         text = json.dumps(resp)[:500]
 
+    usage = resp.get("usage", {}) or {}
+    actual_tokens = int(usage.get("total_tokens") or 0)
+    if actual_tokens:
+        bucket.record_actual_tokens(actual_tokens, expected=expected_tokens)
+
     out = {
         "text": text,
         "model_id": resp.get("model", spec.model_id),
         "provider": spec.provider,
         "cached": False,
-        "usage": resp.get("usage", {}),
+        "usage": usage,
     }
     if cache:
         cache.put(key, out)
