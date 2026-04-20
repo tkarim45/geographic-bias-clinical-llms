@@ -10,11 +10,11 @@
 \subsection{Baselines and Evaluation Methodology}
 \label{sec:baselines}
 
-The project-brief instruction to \emph{``address any issues with baselines or
-evaluation methodology''} deserves explicit treatment. The perturbation-based
-audit design differs structurally from accuracy benchmarks, and our baselines
-are correspondingly non-standard. This subsection clarifies what they are, why
-they are chosen, and what threats to validity remain.
+The project brief asks us to \emph{``address any issues with baselines or
+evaluation methodology''}. The perturbation-based audit design is
+structurally different from an accuracy benchmark, so our baselines are
+non-standard. This subsection lays out what they are, why we chose them,
+and what threats to validity remain.
 
 \subsubsection{What the baseline is in this design}
 
@@ -44,7 +44,7 @@ labels). This choice has three consequences that shape how the numbers in
 
 \subsubsection{What the baseline is \emph{not}}
 
-A naive accuracy-style comparator --- always-recommend-VISIT --- achieves
+A naive accuracy-style comparator (always-recommend-VISIT) achieves
 $13/20 = 65.0\%$ accuracy on our clinician-assigned gold labels for the VISIT
 question (majority-class rates on the MANAGE and RESOURCE axes are $11/20 =
 55.0\%$ and $13/20 = 65.0\%$ respectively; source:
@@ -53,8 +53,8 @@ audit question, because the question is not \emph{``which model is
 accurate?''} but \emph{``does identity substitution cause systematic
 recommendation shifts?''}. Under the primary matched-pair design
 (§\ref{sec:metrics}) the always-VISIT baseline has GDI identically zero by
-construction --- it cannot exhibit disparity because it is a constant policy
---- so it provides no discriminating information. We nonetheless record
+construction; it cannot exhibit disparity because it is a constant policy,
+so it provides no discriminating information. We nonetheless record
 per-model overall accuracy against the gold labels for completeness; none of
 the findings reported in §\ref{sec:results} depend on it, and it is not used
 as a decision rule at any step of the pipeline.
@@ -205,14 +205,14 @@ the specific mitigation taken or planned for each:
 
   \item[Name-phonological confounds.] The Name Bank controls for cultural
   origin but not for phonological complexity, syllable count, or
-  English-orthographic naturalness --- any of which could correlate with
+  English-orthographic naturalness, any of which could correlate with
   perceived identity independently of geography. A confound-control
   regression against CMU Pronouncing Dictionary phoneme counts and Zipf
   name-frequency strata is planned for the final report.
 
   \item[Geographic-reference confounds.] Substituting ``Boston, MA'' with
-  ``Lahore, Pakistan'' changes not only perceived patient origin but also
-  healthcare-system priors (e.g.\ drug availability, referral pathways).
+  ``Lahore, Pakistan'' changes the perceived patient origin and also the
+  healthcare-system priors (drug availability, referral pathways).
   The \textsc{Name}-only and \textsc{Geo}-only ablations
   (Table~\ref{tab:ablation}; planned, see §\ref{sec:next_steps}) isolate
   these effects; the pilot reports the \textsc{Combined} condition only,
