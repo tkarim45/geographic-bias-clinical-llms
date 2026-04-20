@@ -9,6 +9,7 @@
 \usepackage{titlesec}
 \usepackage{titling}
 \usepackage{fancyhdr}
+\PassOptionsToPackage{hyphens}{url}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -26,39 +27,46 @@
 \usepackage{tcolorbox}
 \usepackage{listings}
 
-% ── Colours (matching proposal/lit review theme) ─────────────────────────────
-\definecolor{acmblue}{RGB}{0, 83, 156}
+% ── Neutral academic palette (no bright colour on body text or tables) ───────
+\definecolor{ink}{RGB}{26, 26, 26}
+\definecolor{subink}{RGB}{60, 60, 60}
+\definecolor{darkgray}{RGB}{90, 90, 90}
+\definecolor{medgray}{RGB}{170, 170, 170}
 \definecolor{lightgray}{RGB}{245, 245, 245}
-\definecolor{medgray}{RGB}{220, 220, 220}
-\definecolor{darkgray}{RGB}{80, 80, 80}
-\definecolor{rowblue}{RGB}{217, 225, 242}
-\definecolor{rowalt}{RGB}{242, 242, 242}
-\definecolor{donegreen}{RGB}{34, 139, 34}
-\definecolor{progressorange}{RGB}{230, 126, 34}
-\definecolor{pendinggray}{RGB}{130, 130, 130}
+\definecolor{headerbg}{RGB}{55, 62, 74}
+\definecolor{headertext}{RGB}{255, 255, 255}
+\definecolor{rowalt}{RGB}{244, 246, 248}
+\definecolor{accent}{RGB}{74, 85, 104}
+\definecolor{donegray}{RGB}{60, 60, 60}
+\definecolor{proggray}{RGB}{120, 120, 120}
+\definecolor{pendinggray}{RGB}{170, 170, 170}
+
+% Compatibility aliases (existing section bodies reference these names)
+\colorlet{acmblue}{ink}
+\colorlet{rowblue}{headerbg}
 
 % ── Hyperref setup ────────────────────────────────────────────────────────────
 \hypersetup{
     colorlinks=true,
-    linkcolor=acmblue,
-    citecolor=acmblue,
-    urlcolor=acmblue,
+    linkcolor=accent,
+    citecolor=accent,
+    urlcolor=accent,
     pdftitle={Intermediate Project Report: Auditing Geographic and Cultural Bias in Clinical LLMs},
     pdfauthor={Group 7 - LUMS CS-5312 Spring 2026},
 }
 
-% ── Section formatting ────────────────────────────────────────────────────────
+% ── Section formatting (neutral ink, no accent colour) ────────────────────────
 \titleformat{\section}
-  {\large\bfseries\color{acmblue}}
+  {\large\bfseries\color{ink}}
   {\thesection}{1em}{}
-  [\vspace{-4pt}\rule{\linewidth}{0.8pt}\vspace{2pt}]
+  [\vspace{-4pt}\rule{\linewidth}{0.6pt}\vspace{2pt}]
 
 \titleformat{\subsection}
-  {\normalsize\bfseries\color{darkgray}}
+  {\normalsize\bfseries\color{ink}}
   {\thesubsection}{1em}{}
 
 \titleformat{\subsubsection}
-  {\normalsize\bfseries\itshape\color{darkgray}}
+  {\normalsize\bfseries\itshape\color{subink}}
   {\thesubsubsection}{1em}{}
 
 % ── Each numbered section starts on a new page (academic convention) ──────────
@@ -78,10 +86,23 @@
 \setlist[itemize]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
 \setlist[enumerate]{leftmargin=1.5em, itemsep=3pt, topsep=4pt}
 
-% ── Status tag helpers ────────────────────────────────────────────────────────
-\newcommand{\statusdone}{\textcolor{donegreen}{\textbf{[DONE]}}}
-\newcommand{\statusprog}{\textcolor{progressorange}{\textbf{[IN PROGRESS]}}}
-\newcommand{\statuspend}{\textcolor{pendinggray}{\textbf{[PENDING]}}}
+% ── Line-breaking leniency so long paths / table rows never overflow ─────────
+\setlength{\emergencystretch}{3em}
+\sloppy
+
+% ── Breakable code-path macro. Uses \url internals so long slugs wrap on
+%     slash / underscore / dot without needing \_ escapes.
+\usepackage{url}
+\urlstyle{tt}
+\makeatletter
+\g@addto@macro\UrlBreaks{\do\_\do\-\do\.}
+\makeatother
+\newcommand{\pathtt}[1]{\mbox{}\nolinkurl{#1}}
+
+% ── Status markers (subtle glyphs rather than AI-style coloured tags) ────────
+\newcommand{\statusdone}{\textcolor{donegray}{\checkmark}}
+\newcommand{\statusprog}{\textcolor{proggray}{\textbullet}}
+\newcommand{\statuspend}{\textcolor{pendinggray}{$\circ$}}
 
 % ── Placeholder marker for pending items (renders as italic bracketed text) ──
 \newcommand{\todo}[1]{\emph{[#1]}}
@@ -90,8 +111,8 @@
 \lstset{
   basicstyle=\ttfamily\footnotesize,
   commentstyle=\color{darkgray}\itshape,
-  keywordstyle=\color{acmblue}\bfseries,
-  stringstyle=\color{donegreen},
+  keywordstyle=\color{ink}\bfseries,
+  stringstyle=\color{subink}\itshape,
   frame=single,
   framerule=0.4pt,
   rulecolor=\color{medgray},
@@ -228,7 +249,7 @@ The system is a five-stage pipeline driven by a single YAML configuration (Figur
   \label{fig:pipeline}
 \end{figure}
 
-Cross-cutting components: a \textbf{token-bucket rate limiter} per provider; an \textbf{ID-stable response cache} keyed on \mbox{$(\text{model}, \text{sha256}(\text{prompt}), \text{seed})$} so reruns are free; and a \textbf{manifest hasher} recording dataset and Name-Bank SHA-256 for every run (\texttt{manifest.json}) to guarantee reproducibility.
+Cross-cutting components: a \textbf{token-bucket rate limiter} per provider; an \textbf{ID-stable response cache} keyed on $(\text{model}, \text{sha256}(\text{prompt}), \text{seed})$ so reruns are free; and a \textbf{manifest hasher} recording dataset and Name-Bank SHA-256 for every run (\texttt{manifest.json}) to guarantee reproducibility.
 
 \subsection{Implementation Details}
 
@@ -261,7 +282,7 @@ Orchestration & \texttt{audit.run} CLI; thread-pool of 8 workers\\
 
 \subsubsection{Perturbation Engine}
 
-The engine (\texttt{audit.perturb}) takes a case record and a \emph{condition} of the form \mbox{\texttt{(region, perturbation\_type, seed)}} and returns a perturbed vignette. It is deterministic: the tuple \mbox{\texttt{(case\_id, region, type, seed)}} always hashes (SHA-256) to the same name and geographic replacement.
+The engine (\texttt{audit.perturb}) takes a case record and a \emph{condition} of the form \texttt{(region,\allowbreak\ perturbation\_type,\allowbreak\ seed)} and returns a perturbed vignette. It is deterministic: the tuple \texttt{(case\_id,\allowbreak\ region,\allowbreak\ type,\allowbreak\ seed)} always hashes (SHA-256) to the same name and geographic replacement.
 
 \begin{itemize}
   \item \textbf{\textsc{Baseline}} (\texttt{region}\,$=$\,\texttt{global\_north}): Global-North name and location drawn from the Name Bank / Geo canonicals.
@@ -387,25 +408,25 @@ Ablation: \textsc{Geo}-only    & 20 synthetic cases & (see Table~\ref{tab:ablati
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\linewidth}{>{\bfseries\small}p{3.6cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
-\rowcolor{rowblue}
-\textcolor{white}{\textbf{Model}} &
-\textcolor{white}{\textbf{n(N/S)}} &
-\textcolor{white}{\textbf{RCER$_\text{N}$}} &
-\textcolor{white}{\textbf{RCER$_\text{S}$}} &
-\textcolor{white}{\textbf{$\Delta$ RCER}} &
-\textcolor{white}{\textbf{GDI}} &
-\textcolor{white}{\textbf{95\% CI (BCa)}} &
-\textcolor{white}{\textbf{$p$ (W)}}\\
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}l c c c c c c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{$n$ (N/S)}} &
+\textcolor{headertext}{\textbf{RCER$_\text{N}$}} &
+\textcolor{headertext}{\textbf{RCER$_\text{S}$}} &
+\textcolor{headertext}{\textbf{$\Delta$RCER}} &
+\textcolor{headertext}{\textbf{GDI}} &
+\textcolor{headertext}{\textbf{95\% CI (BCa)}} &
+\textcolor{headertext}{\textbf{$p$ (W)}}\\
 \rowcolor{rowalt}
-Claude-Haiku-4.5 (Bedrock)  & 60/180 & 16.2\% & 20.7\% & $+4.5$ pp & $+0.045$ & $[+0.010,\,+0.053]$ & \textbf{0.004}\\
-GPT-4o-mini (OpenAI)        & 60/180 & 18.0\% & 21.9\% & $+3.9$ pp & $+0.039$ & $[+0.013,\,+0.083]$ & 0.015\\
+\textbf{Claude-Haiku-4.5} \small{(Bedrock)} & \small 60/180 & \small 16.2\% & \small 20.7\% & \small $+4.5$ pp & \small $+0.045$ & \small $[+0.010,\,+0.053]$ & \small \textbf{0.004}\\
+\textbf{GPT-4o-mini} \small{(OpenAI)}        & \small 60/180 & \small 18.0\% & \small 21.9\% & \small $+3.9$ pp & \small $+0.039$ & \small $[+0.013,\,+0.083]$ & \small 0.015\\
 \rowcolor{rowalt}
-Llama-3.3-70B (Bedrock)     & 60/180 & 18.9\% & 19.8\% & $+0.9$ pp & $+0.009$ & $[-0.003,\,+0.047]$ & 0.038\\
+\textbf{Llama-3.3-70B} \small{(Bedrock)}     & \small 60/180 & \small 18.9\% & \small 19.8\% & \small $+0.9$ pp & \small $+0.009$ & \small $[-0.003,\,+0.047]$ & \small 0.038\\
 \midrule
-\textbf{Mean across models} & --     & \textbf{17.7\%} & \textbf{20.8\%} & \textbf{$+3.1$ pp} & \textbf{$+0.031$} & -- & --\\
-\end{tabularx}
+\textit{Mean across models} & \small --     & \small \textit{17.7\%} & \small \textit{20.8\%} & \small \textit{$+3.1$ pp} & \small \textit{$+0.031$} & \small -- & \small --\\
+\end{tabular}
 \captionof{table}{\textbf{Measured} OncQA per-model scaling results (run \texttt{20260419T121941Z}, $n=60$). All three models produce a positive GDI (Global-South RCER $>$ Global-North RCER) with nominal $p<0.05$. Claude-Haiku-4.5 crosses the Bonferroni-corrected threshold $\alpha=0.005$ ($p=0.004$); GPT-4o-mini and Llama-3.3-70B cross nominal $\alpha=0.05$ but not the corrected threshold. BCa 95\% CIs for Claude and GPT-4o-mini exclude zero; the Llama CI straddles zero marginally at the lower bound. This reverses the null of the $n=20$ synthetic pilot and is the first corroborating real-data signal for RQ1 in the matched-pair direction.}
 \label{tab:oncqa}
 \end{center}
@@ -434,26 +455,26 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\linewidth}{>{\bfseries\small}p{3.3cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
-\rowcolor{rowblue}
-\textcolor{white}{\textbf{Model}} &
-\textcolor{white}{\textbf{n(N/S)}} &
-\textcolor{white}{\textbf{RCER$_\text{N}$}} &
-\textcolor{white}{\textbf{RCER$_\text{S}$}} &
-\textcolor{white}{\textbf{$\Delta$ RCER}} &
-\textcolor{white}{\textbf{GDI}} &
-\textcolor{white}{\textbf{95\% CI}} &
-\textcolor{white}{\textbf{$p$ (W)}}\\
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}l c c c c c c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{$n$ (N/S)}} &
+\textcolor{headertext}{\textbf{RCER$_\text{N}$}} &
+\textcolor{headertext}{\textbf{RCER$_\text{S}$}} &
+\textcolor{headertext}{\textbf{$\Delta$RCER}} &
+\textcolor{headertext}{\textbf{GDI}} &
+\textcolor{headertext}{\textbf{95\% CI}} &
+\textcolor{headertext}{\textbf{$p$ (W)}}\\
 \rowcolor{rowalt}
-GPT-4o-mini (OpenAI)    & 20/60 &  2.8\% &  4.3\% & $+1.5$ pp & $+0.015$ & $[-0.019,\,+0.031]$ & 0.500 \\
-GPT-OSS-20B (via Groq)  & 15/35 & 15.7\% & 13.8\% & $-2.0$ pp & $-0.020$ & $[-0.124,\,+0.038]$ & 0.762 \\
+\textbf{GPT-4o-mini} \small{(OpenAI)}    & \small 20/60 & \small  2.8\% & \small  4.3\% & \small $+1.5$ pp & \small $+0.015$ & \small $[-0.019,\,+0.031]$ & \small 0.500 \\
+\textbf{GPT-OSS-20B} \small{(via Groq)}  & \small 15/35 & \small 15.7\% & \small 13.8\% & \small $-2.0$ pp & \small $-0.020$ & \small $[-0.124,\,+0.038]$ & \small 0.762 \\
 \rowcolor{rowalt}
-Llama-3.3-70B (via Groq)& 20/60 &  9.0\% &  7.3\% & $-1.7$ pp & $-0.017$ & $[-0.028,\,+0.000]$ & 0.963 \\
-Qwen3-32B (via Groq)    & 14/22 & 16.8\% & 10.6\% & $-6.2$ pp & $-0.062$ & $[-0.136,\,+0.091]$ & 0.708 \\
+\textbf{Llama-3.3-70B} \small{(via Groq)}& \small 20/60 & \small  9.0\% & \small  7.3\% & \small $-1.7$ pp & \small $-0.017$ & \small $[-0.028,\,+0.000]$ & \small 0.963 \\
+\textbf{Qwen3-32B} \small{(via Groq)}    & \small 14/22 & \small 16.8\% & \small 10.6\% & \small $-6.2$ pp & \small $-0.062$ & \small $[-0.136,\,+0.091]$ & \small 0.708 \\
 \midrule
-\textbf{Mean across models} & -- & \textbf{11.1\%} & \textbf{9.0\%} & \textbf{$-2.1$ pp} & \textbf{$-0.021$} & -- & --\\
-\end{tabularx}
+\textit{Mean across models} & \small -- & \small \textit{11.1\%} & \small \textit{9.0\%} & \small \textit{$-2.1$ pp} & \small \textit{$-0.021$} & \small -- & \small --\\
+\end{tabular}
 \captionof{table}{\textbf{Measured} per-model pilot results from live API calls (run \texttt{20260418T050306Z}). n(N/S) is the matched-pair count for (Global-North baseline~/~pooled Global-South) used in each model's RCER and paired tests, after dropping rows whose API call failed (see §\ref{sec:challenges}). All three Global-South regions are pooled into the South column. RCER averaged over \{MANAGE, VISIT, RESOURCE\}. 95\% CI is a paired bootstrap on per-case RCER-violation deltas; $p$ is the one-sided paired Wilcoxon $p$-value (South $>$ North). \emph{Every CI straddles zero and no $p$ approaches the Bonferroni-corrected threshold $\alpha=0.005$: the pilot is a null result at $n=20$, as expected at this scale.}}
 \label{tab:pilot}
 \end{center}
@@ -467,19 +488,19 @@ Qwen3-32B (via Groq)    & 14/22 & 16.8\% & 10.6\% & $-6.2$ pp & $-0.062$ & $[-0.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{3.4cm} >{\small}c >{\small}c >{\small}c >{\small}X}
-\rowcolor{rowblue}
-\textcolor{white}{\textbf{Model}} &
-\textcolor{white}{\textbf{$\Delta$ MANAGE}} &
-\textcolor{white}{\textbf{$\Delta$ VISIT}} &
-\textcolor{white}{\textbf{$\Delta$ RESOURCE}} &
-\textcolor{white}{\textbf{Interpretation (pilot-scale)}}\\
+\begin{tabularx}{0.98\linewidth}{>{\small}l >{\small}c >{\small}c >{\small}c >{\small}X}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{$\Delta$ MANAGE}} &
+\textcolor{headertext}{\textbf{$\Delta$ VISIT}} &
+\textcolor{headertext}{\textbf{$\Delta$ RESOURCE}} &
+\textcolor{headertext}{\textbf{Interpretation (pilot-scale)}}\\
 \rowcolor{rowalt}
-GPT-4o-mini   & $+7.4$ pp & $ 0.0$ pp & $-2.8$ pp & Slight home-management skew in S; RESOURCE moves the other way\\
-GPT-OSS-20B   & $+12.5$ pp & $-18.1$ pp & $-0.4$ pp & Small-$n$ noise; no coherent cross-question direction\\
+\textbf{GPT-4o-mini}   & $+7.4$ pp & $ 0.0$ pp & $-2.8$ pp & Slight home-management skew in South; RESOURCE moves the other way\\
+\textbf{GPT-OSS-20B}   & $+12.5$ pp & $-18.1$ pp & $-0.4$ pp & Small-$n$ noise; no coherent cross-question direction\\
 \rowcolor{rowalt}
-Llama-3.3-70B & $ 0.0$ pp & $-5.1$ pp & $ 0.0$ pp & No directional signal at this scale\\
-Qwen3-32B     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypothesised direction on VISIT and RESOURCE\\
+\textbf{Llama-3.3-70B} & $ 0.0$ pp & $-5.1$ pp & $ 0.0$ pp & No directional signal at this scale\\
+\textbf{Qwen3-32B}     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypothesised direction on VISIT and RESOURCE\\
 \end{tabularx}
 \captionof{table}{Per-question RCER deltas (South pool $-$ North baseline) per model, matched-pair basis. A positive $\Delta$ on VISIT would mean the model more often fails to recommend a clinic/ED visit when the patient is Global-South, which is the directional signature the proposal predicted. No model exhibits a positive $\Delta$ VISIT at this scale; the largest absolute deltas are negative, i.e.\ the opposite of the bias hypothesis.}
 \label{tab:per_question}
@@ -495,40 +516,41 @@ Qwen3-32B     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypo
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
 \setlength{\tabcolsep}{6pt}
-\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{3.6cm} >{\small}c >{\small}c >{\small}c >{\small}c}
-\rowcolor{rowblue}
-\textcolor{white}{\textbf{Model}} &
-\textcolor{white}{\textbf{Name-only GDI}} &
-\textcolor{white}{\textbf{Geo-only GDI}} &
-\textcolor{white}{\textbf{Combined GDI}} &
-\textcolor{white}{\textbf{Interaction}}\\
+\begin{tabular}{@{}l c c c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{Name-only GDI}} &
+\textcolor{headertext}{\textbf{Geo-only GDI}} &
+\textcolor{headertext}{\textbf{Combined GDI}} &
+\textcolor{headertext}{\textbf{Interaction}}\\
 \rowcolor{rowalt}
-Claude-Haiku-4.5 (Bedrock) & $+0.006$ & $+0.019$ & $+0.028$ & $+0.003$\\
-GPT-4o-mini (OpenAI)       & $+0.006$ & $+0.037$ & $-0.003$ & $-0.046$\\
+\textbf{Claude-Haiku-4.5} \small{(Bedrock)} & $+0.006$ & $+0.019$ & $+0.028$ & $+0.003$\\
+\textbf{GPT-4o-mini} \small{(OpenAI)}       & $+0.006$ & $+0.037$ & $-0.003$ & $-0.046$\\
 \rowcolor{rowalt}
-Llama-3.3-70B (Bedrock)    & $+0.009$ & $+0.046$ & $+0.020$ & $-0.036$\\
-\end{tabularx}
-\captionof{table}{Perturbation ablation on the 20-case synthetic pilot, Bedrock+OpenAI panel. Name-only (\texttt{runs/20260419T123259Z}), Geo-only (\texttt{runs/20260419T123612Z}), Combined (\texttt{runs/20260419T123954Z}); all $n=20$ cases $\times$ 4 regions $\times$ 3 models, zero API errors, zero heuristic fallbacks in any of the three runs. Interaction = Combined $-$ Name-only $-$ Geo-only; a positive interaction indicates super-additive perturbation, a negative one indicates mutual attenuation. Geo-only GDI is consistently 3$\times$ to 6$\times$ larger in magnitude than Name-only for every model, so the geographic reference is the dominant channel. On Claude-Haiku-4.5 the perturbations are roughly additive ($+0.003$ interaction). On GPT-4o-mini and Llama-3.3-70B the Combined GDI is \emph{smaller} than the Geo-only GDI alone, yielding a negative interaction. Stacking the two perturbations produces a prompt the model evidently reads as slightly out-of-distribution, which attenuates the geographic signal. Exact 3-decimal values are reproducible from \texttt{runs/ablation\_summary.json}.}
+\textbf{Llama-3.3-70B} \small{(Bedrock)}    & $+0.009$ & $+0.046$ & $+0.020$ & $-0.036$\\
+\end{tabular}
+\captionof{table}{Perturbation ablation on the 20-case synthetic pilot, Bedrock+OpenAI panel. Name-only (\pathtt{runs/20260419T123259Z}), Geo-only (\pathtt{runs/20260419T123612Z}), Combined (\pathtt{runs/20260419T123954Z}); all $n=20$ cases $\times$ 4 regions $\times$ 3 models, zero API errors, zero heuristic fallbacks in any of the three runs. Interaction = Combined $-$ Name-only $-$ Geo-only; a positive interaction indicates super-additive perturbation, a negative one indicates mutual attenuation. Geo-only GDI is consistently 3$\times$ to 6$\times$ larger in magnitude than Name-only for every model, so the geographic reference is the dominant channel. On Claude-Haiku-4.5 the perturbations are roughly additive ($+0.003$ interaction). On GPT-4o-mini and Llama-3.3-70B the Combined GDI is \emph{smaller} than the Geo-only GDI alone, yielding a negative interaction. Stacking the two perturbations produces a prompt the model evidently reads as slightly out-of-distribution, which attenuates the geographic signal. Exact 3-decimal values are reproducible from \pathtt{runs/ablation_summary.json}.}
 \phantomsection\label{tab:ablation}
 \end{center}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{0.90\linewidth}{>{\bfseries\small}p{3.4cm} >{\small}c >{\small}c >{\small}c >{\small}c >{\small}c}
-\rowcolor{rowblue}
-\textcolor{white}{\textbf{Region}} &
-\textcolor{white}{\textbf{GPT-4o-mini}} &
-\textcolor{white}{\textbf{GPT-OSS-20B}} &
-\textcolor{white}{\textbf{Llama-3.3-70B}} &
-\textcolor{white}{\textbf{Qwen3-32B}} &
-\textcolor{white}{\textbf{Mean}}\\
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}l *{5}{>{\small}c}@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Region}} &
+\textcolor{headertext}{\textbf{GPT-4o-mini}} &
+\textcolor{headertext}{\textbf{GPT-OSS-20B}} &
+\textcolor{headertext}{\textbf{Llama-3.3-70B}} &
+\textcolor{headertext}{\textbf{Qwen3-32B}} &
+\textcolor{headertext}{\textbf{Mean}}\\
 \rowcolor{rowalt}
-South Asia         & $+0.04$ & $+0.02$ & $-0.03$ & $-0.10$ & $-0.02$\\
-Sub-Saharan Africa & $+0.01$ & $-0.02$ & $-0.03$ & $ 0.00$ & $-0.01$\\
+\textbf{South Asia}         & $+0.04$ & $+0.02$ & $-0.03$ & $-0.10$ & $-0.02$\\
+\textbf{Sub-Saharan Africa} & $+0.01$ & $-0.02$ & $-0.03$ & $\phantom{+}0.00$ & $-0.01$\\
 \rowcolor{rowalt}
-Latin America      & $ 0.00$ & $-0.06$ & $ 0.00$ & $-0.09$ & $-0.04$\\
-\end{tabularx}
-\captionof{table}{Per-region matched-pair GDI decomposition (per-region RCER contrast against that model's own Global-North baseline; mean pools across all four models). Values rounded to two decimal places; exact three-decimal values are reproducible from \texttt{runs/20260418T050306Z/annotated.jsonl}. No region produces the positive (anti-Global-South) pattern the proposal hypothesised; all three region means sit well inside the $\pm 0.05$ band. Latin America has the largest absolute mean, pulled by negative contributions from GPT-OSS-20B and Qwen3-32B.}
+\textbf{Latin America}      & $\phantom{+}0.00$ & $-0.06$ & $\phantom{+}0.00$ & $-0.09$ & $-0.04$\\
+\end{tabular}
+\captionof{table}{Per-region matched-pair GDI decomposition (per-region RCER contrast against that model's own Global-North baseline; mean pools across all four models). Values rounded to two decimal places; exact three-decimal values are reproducible from \pathtt{runs/20260418T050306Z/annotated.jsonl}. No region produces the positive (anti-Global-South) pattern the proposal hypothesised; all three region means sit well inside the $\pm 0.05$ band. Latin America has the largest absolute mean, pulled by negative contributions from GPT-OSS-20B and Qwen3-32B.}
 \label{tab:per_region}
 \end{center}
 
@@ -552,34 +574,34 @@ Latin America      & $ 0.00$ & $-0.06$ & $ 0.00$ & $-0.09$ & $-0.04$\\
 \subsection{Completed Work}
 
 \begin{itemize}
-  \item \statusdone\ Literature review: 13 papers across 4 themes; accepted with no revisions.
-  \item \statusdone\ Pilot dataset: 20 clinician-labelled vignettes (\texttt{code/configs/cases.jsonl}).
-  \item \statusdone\ Geographic Name Bank v1.0: 150 entries, 25 per region, M/F balanced (\texttt{code/configs/name\_bank.json}).
-  \item \statusdone\ Perturbation engine: template-based, deterministic (SHA-256 keyed), 4 perturbation types.
-  \item \statusdone\ Inference harness: OpenAI, Groq, \textbf{and AWS Bedrock} adapters, token-bucket rate-limiting (per-model, sliding 60\,s RPM+TPM window), exponential-backoff retry, file-backed cache, idempotency keys, SHA-256 manifest.
-  \item \statusdone\ LLM-as-annotator: Llama-3.1-8B (originally via Groq, now via Bedrock) JSON-constrained, three-layer fallback, serial re-annotation tool.
-  \item \statusdone\ Pilot run \texttt{20260418T050306Z}: 320 scheduled completions (268 successful, 52 lost to Groq 429s); all 320 rows annotated, 0 heuristic fallback after the serial re-annotation pass.
-  \item \statusdone\ Pilot statistical analysis (Table~\ref{tab:pilot}--\ref{tab:per_region}): Wilcoxon, bootstrap CIs, per-question and per-region decomposition.
-  \item \statusdone\ \textbf{OncQA scaling run} \texttt{20260419T121941Z}: 60 cases $\times$ 4 regions $\times$ 3 models on the Bedrock+OpenAI panel; 720/720 completions and 720/720 annotations with zero errors and zero heuristic fallbacks. Results in Table~\ref{tab:oncqa}.
-  \item \statusdone\ \textbf{Perturbation ablations} (Name-only, Geo-only, Combined) on the Bedrock+OpenAI panel; ablation decomposition in Table~\ref{tab:ablation}.
+  \item Literature review: 13 papers across 4 themes; accepted with no revisions.
+  \item Pilot dataset: 20 clinician-labelled vignettes (\pathtt{code/configs/cases.jsonl}).
+  \item Geographic Name Bank v1.0: 150 entries, 25 per region, M/F balanced (\pathtt{code/configs/name_bank.json}).
+  \item Perturbation engine: template-based, deterministic (SHA-256 keyed), 4 perturbation types.
+  \item Inference harness: OpenAI, Groq, and AWS~Bedrock adapters, token-bucket rate-limiting (per-model, sliding 60\,s RPM+TPM window), exponential-backoff retry, file-backed cache, idempotency keys, SHA-256 manifest.
+  \item LLM-as-annotator: Llama-3.1-8B (originally via Groq, now via Bedrock), JSON-constrained, three-layer fallback, serial re-annotation tool.
+  \item Pilot run \texttt{20260418T050306Z}: 320 scheduled completions (268 successful, 52 lost to Groq 429s); all 320 rows annotated, 0 heuristic fallback after the serial re-annotation pass.
+  \item Pilot statistical analysis (Table~\ref{tab:pilot}--\ref{tab:per_region}): Wilcoxon, bootstrap CIs, per-question and per-region decomposition.
+  \item OncQA scaling run \texttt{20260419T121941Z}: 60 cases $\times$ 4 regions $\times$ 3 models on the Bedrock+OpenAI panel; 720/720 completions and 720/720 annotations with zero errors and zero heuristic fallbacks. Results in Table~\ref{tab:oncqa}.
+  \item Perturbation ablations (Name-only, Geo-only, Combined) on the Bedrock+OpenAI panel; ablation decomposition in Table~\ref{tab:ablation}.
 \end{itemize}
 
 \subsection{Work in Progress}
 
 \begin{itemize}
-  \item \statusprog\ Clinical-label validation (ESI-rubric inter-rater $\kappa$): rubric and compute-kappa script shipped in \texttt{code/docs/labeling\_rubric.md} and \texttt{code/scripts/compute\_kappa.py}; independent A/B labelling by board-certified clinicians pending for the final report.
-  \item \statusprog\ Add frontier models: Claude 4-family already online via Bedrock (Haiku 4.5 included in this report); GPT-5-family available through the existing OpenAI key; Gemini still pending.
+  \item Clinical-label validation (ESI-rubric inter-rater $\kappa$): rubric and compute-kappa script shipped in \pathtt{code/docs/labeling_rubric.md} and \pathtt{code/scripts/compute_kappa.py}; independent A/B labelling by board-certified clinicians is pending for the final report.
+  \item Add frontier models: Claude 4-family is already online via Bedrock (Haiku 4.5 included in this report); GPT-5-family is available through the existing OpenAI key; Gemini is still pending.
 \end{itemize}
 
 \subsection{Remaining Work}
 
 \begin{itemize}
-  \item \statuspend\ Scale to additional real datasets: r/AskaDocs, USMLE+Derm (CRAFT-MD).
-  \item \statuspend\ Add Southeast Asia and MENA regions (already in the Name Bank) to the condition set.
-  \item \statuspend\ Multi-seed re-run (3 seeds) for the variance-critical experiments.
-  \item \statuspend\ Intersectional analysis: geography $\times$ gender, geography $\times$ severity.
-  \item \statuspend\ Model-inferred-geography experiment (prompt each model with identity-stripped vignettes and infer origin, regress GDI on inference).
-  \item \statuspend\ Final report and presentation.
+  \item Scale to additional real datasets: r/AskaDocs, USMLE+Derm (CRAFT-MD).
+  \item Add Southeast Asia and MENA regions (already in the Name Bank) to the condition set.
+  \item Multi-seed re-run (3 seeds) for the variance-critical experiments.
+  \item Intersectional analysis: geography $\times$ gender, geography $\times$ severity.
+  \item Model-inferred-geography experiment (prompt each model with identity-stripped vignettes and infer origin, regress GDI on inference).
+  \item Final report and presentation.
 \end{itemize}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -650,14 +672,14 @@ Syed Muhammad Mujtaba & Built the unified multi-provider inference harness (\tex
 
 \textbf{Repository layout} (packaged with this submission under \texttt{code/}):
 \begin{itemize}
-  \item \texttt{audit/data.py}: dataset loader and SHA-256 manifest hashing.
-  \item \texttt{audit/perturb.py}: Name-Bank-driven perturbation engine (deterministic).
-  \item \texttt{audit/models.py}: unified \texttt{generate(messages)} abstraction over OpenAI, Groq, and AWS~Bedrock; per-model token-bucket rate limiter (sliding 60\,s RPM+TPM); idempotent disk cache; stdlib transport for OpenAI/Groq, \texttt{boto3} for Bedrock (the only non-stdlib dep).
-  \item \texttt{audit/annotate.py}: Llama-3.1-8B annotator; three-layer JSON/regex/heuristic fallback.
-  \item \texttt{audit/metrics.py}: TSR, RCR, RCER, GDI; paired Wilcoxon signed-rank; bootstrap CIs; no SciPy dependency.
-  \item \texttt{audit/run.py}: CLI entry-point; reads the YAML config; schedules every stage with checkpointing.
-  \item \texttt{scripts/reannotate.py}: serial re-annotation for heuristic-fallback records.
-  \item \texttt{configs/pilot\_oncqa.yaml}, \texttt{configs/cases.jsonl}, \texttt{configs/name\_bank.json}.
+  \item \pathtt{audit/data.py}: dataset loader and SHA-256 manifest hashing.
+  \item \pathtt{audit/perturb.py}: Name-Bank-driven perturbation engine (deterministic).
+  \item \pathtt{audit/models.py}: unified \texttt{generate(messages)} abstraction over OpenAI, Groq, and AWS~Bedrock; per-model token-bucket rate limiter (sliding 60\,s RPM+TPM); idempotent disk cache; stdlib transport for OpenAI/Groq, \texttt{boto3} for Bedrock (the only non-stdlib dep).
+  \item \pathtt{audit/annotate.py}: Llama-3.1-8B annotator; three-layer JSON/regex/heuristic fallback.
+  \item \pathtt{audit/metrics.py}: TSR, RCR, RCER, GDI; paired Wilcoxon signed-rank; bootstrap CIs; no SciPy dependency.
+  \item \pathtt{audit/run.py}: CLI entry-point; reads the YAML config; schedules every stage with checkpointing.
+  \item \pathtt{scripts/reannotate.py}: serial re-annotation for heuristic-fallback records.
+  \item \pathtt{configs/pilot_oncqa.yaml}, \pathtt{configs/cases.jsonl}, \pathtt{configs/name\_bank.json}.
 \end{itemize}
 
 \textbf{Reproducing the runs.} With \texttt{OPENAI\_API\_KEY} and AWS Bedrock credentials (\texttt{AWS\_ACCESS\_KEY\_ID}, \texttt{AWS\_SECRET\_ACCESS\_KEY}, \texttt{AWS\_SESSION\_TOKEN} for STS, \texttt{AWS\_DEFAULT\_REGION}) in \texttt{.env}:
@@ -687,7 +709,7 @@ Each run directory contains \texttt{manifest.json}, \texttt{perturbed.jsonl}, \t
 \subsection{Sensitivity Analysis (Errors-Included View)}
 \label{appendix:sensitivity}
 
-The full errors-included sensitivity narrative is in §\ref{sec:results} under the subsubsection ``Sensitivity analysis: the errors-included view,'' together with the infrastructure caveat ($40$ of $52$ failures preceded the per-model rate-limit refactor). The corresponding artefact is \texttt{runs/20260418T050306Z/summaries\_errors\_included.json}; its SHA-256 is recorded in the run's \texttt{manifest.json}. These values are not cited as findings of the pilot.
+The full errors-included sensitivity narrative is in §\ref{sec:results} under the subsubsection ``Sensitivity analysis: the errors-included view,'' together with the infrastructure caveat ($40$ of $52$ failures preceded the per-model rate-limit refactor). The corresponding artefact is \pathtt{runs/20260418T050306Z/summaries_errors_included.json}; its SHA-256 is recorded in the run's \texttt{manifest.json}. These values are not cited as findings of the pilot.
 
 % ══════════════════════════════════════════════════════════════════════════════
 \clearpage

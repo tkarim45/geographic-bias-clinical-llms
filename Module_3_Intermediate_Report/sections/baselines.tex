@@ -48,7 +48,7 @@ A naive accuracy-style comparator (always-recommend-VISIT) achieves
 $13/20 = 65.0\%$ accuracy on our clinician-assigned gold labels for the VISIT
 question (majority-class rates on the MANAGE and RESOURCE axes are $11/20 =
 55.0\%$ and $13/20 = 65.0\%$ respectively; source:
-\texttt{code/configs/cases.jsonl}). This is not a useful comparator for the
+\pathtt{code/configs/cases.jsonl}). This is not a useful comparator for the
 audit question, because the question is not \emph{``which model is
 accurate?''} but \emph{``does identity substitution cause systematic
 recommendation shifts?''}. Under the primary matched-pair design
@@ -126,9 +126,10 @@ Two Bonferroni-corrected thresholds are in play, for two different purposes:
   the H1-vs-H2 discrimination test.
 \end{itemize}
 
-Using Cohen's $h$~\cite{cohen1988} for paired proportions computed from each
-model's observed $(\text{RCER}_\text{North}, \text{RCER}_\text{South})$
-means, we determined the minimum matched-pair $n$ required to detect each
+Using Cohen's $h$~\cite{cohen1988} for paired proportions, computed from
+each model's observed pair of means
+$(\text{RCER}_\text{North},\allowbreak\ \text{RCER}_\text{South})$,
+we determined the minimum matched-pair $n$ required to detect each
 model's observed pooled effect at power $0.80$ under both thresholds, and
 at power $0.95$ at the stricter threshold (Table~\ref{tab:power}). The
 pilot's per-model $n$ ($14$ to $20$ Global-North matched pairs) is
@@ -183,7 +184,7 @@ the specific mitigation taken or planned for each:
   \item[Gold-label provenance.] Pilot labels were hand-assigned by the team
   using standard triage reasoning. A formal Emergency Severity Index v4
   rubric~\cite{gilboy2012} has been drafted
-  (\texttt{code/docs/labeling\_rubric.md}) and is pending an intra-team
+  (\pathtt{code/docs/labeling_rubric.md}) and is pending an intra-team
   double-labelling exercise over the $20$-case pilot set; Cohen's~$\kappa$
   \cite{cohen1960} between the two independent labellers is
   \todo{pending} (board-certified-clinician double-labelling exercise
@@ -198,8 +199,8 @@ the specific mitigation taken or planned for each:
   agreement. Formal Cohen's~$\kappa$ against two independent human
   labellers on the same $40$-case subset is \todo{pending}; the ESI
   rubric and the $\kappa$-computation script are in place at
-  \texttt{code/docs/labeling\_rubric.md} and
-  \texttt{code/scripts/compute\_kappa.py}. Annotator heuristic-fallback
+  \pathtt{code/docs/labeling_rubric.md} and
+  \pathtt{code/scripts/compute_kappa.py}. Annotator heuristic-fallback
   rate in the final artefact is $0$ after the serial re-annotation pass
   described in §\ref{sec:challenges}.
 
