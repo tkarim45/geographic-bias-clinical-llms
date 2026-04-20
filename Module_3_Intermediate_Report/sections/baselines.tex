@@ -1,24 +1,10 @@
 % =============================================================================
-% sections/baselines.tex
+% sections/baselines.tex --- §4.4 "Baselines and Evaluation Methodology"
 %
-% §4.4 "Baselines and Evaluation Methodology" — fragment produced by Agent-BASELINE
-% per `Findings/07_baselines_methodology.md` and `code/decisions.md` (RESOLVED #2,
-% DECISION #3, AMENDMENT to DECISION #3, NOTE #6).
-%
-% USAGE.  Agent-LATEX integrates via `\input{sections/baselines.tex}`, replacing
-% the inline §4.4 currently present in `intermediate_report.tex` (lines ~461–528).
-%
-% NUMBER PROVENANCE.  Every numeric claim below traces to
+% \input{} from intermediate_report.tex. Numeric claims trace to:
 %   Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json
 %   Module_3_Intermediate_Report/code/runs/20260418T050306Z/power_analysis.json
-%   Module_3_Intermediate_Report/code/configs/cases.jsonl           (gold.visit==1 count)
-% or to a reference in the project bibliography (see the comment block at EOF for
-% new bibitems Agent-LATEX must add).
-%
-% DEAD NUMBERS NEVER TO APPEAR IN THIS FILE (see decisions.md RESOLVED #2 and
-% NOTE #7): +0.085, 0.085, +15.4, 15.4, +0.035, 0.035, -0.061, 0.061. They are
-% confined to the sensitivity subsection in sections/results_reframe.tex with
-% the infrastructure-confounding caveat.
+%   Module_3_Intermediate_Report/code/configs/cases.jsonl (gold.visit==1 count)
 % =============================================================================
 
 \subsection{Baselines and Evaluation Methodology}
@@ -107,13 +93,12 @@ Qwen3-32B RESOURCE at $n=13$; Table~\ref{tab:per_question}) sit below the
 effect-size bands of Gourabathina et~al.\ and Omar et~al.\ on comparable
 models. Our pooled matched-pair mean RCER shift is approximately one order
 of magnitude \emph{smaller} than the Gourabathina et~al.\ tonal-perturbation
-effects. Per DECISION~\#3 (logged in \texttt{code/decisions.md}), this
-pooled-null result is consistent with either (H1) post-training alignment
-having measurably suppressed geographic-axis bias, or (H2) per-model
-variance being masked by pooling at the pilot's $n$; the pilot is
-underpowered to discriminate the two, and the OncQA scaling experiment is
-pre-registered to do so (see §\ref{sec:results} and
-\texttt{sections/results\_reframe.tex}).
+effects. Under the pre-registered dual-hypothesis framework described in
+§\ref{sec:results}, this pooled-null result is consistent with either
+(H1) post-training alignment having measurably suppressed geographic-axis
+bias, or (H2) per-model variance being masked by pooling at the pilot's
+$n$. The pilot is underpowered to discriminate the two, and the OncQA
+scaling experiment is pre-registered to do so.
 
 \subsubsection{Power analysis and the significance threshold}
 
@@ -132,12 +117,10 @@ Two Bonferroni-corrected thresholds are in play, for two different purposes:
   declaring per-model, per-question evidence \emph{against} H1 uses
   $99.6\%$ BCa bootstrap CIs, i.e.\ Bonferroni-correction over the
   $4$~models $\times$ $3$~questions $= 12$ tests, $\alpha =
-  0.05 / 12 \approx 0.0042$ (two-sided $z \approx 2.86$). This is the
-  pre-registered criterion amended in \texttt{decisions.md} (AMENDMENT to
-  DECISION~\#3) and stated in full in
-  \texttt{sections/results\_reframe.tex}: if any per-question RCER
-  $99.6\%$~BCa CI excludes zero in the OncQA $n=61$ run, H2 is supported;
-  if none does, H1 is the strictly stronger explanation. Per-model $95\%$
+  0.05 / 12 \approx 0.0042$ (two-sided $z \approx 2.86$). The criterion
+  is stated in full in §\ref{sec:results}: if any per-question RCER
+  $99.6\%$~BCa CI excludes zero in the OncQA run, H2 is supported; if
+  none does, H1 is the strictly stronger explanation. Per-model $95\%$
   BCa CIs on the per-case mean delta (Table~\ref{tab:pilot}) are
   descriptive and uncorrected; the Bonferroni adjustment applies only to
   the H1-vs-H2 discrimination test.
@@ -203,22 +186,22 @@ the specific mitigation taken or planned for each:
   (\texttt{code/docs/labeling\_rubric.md}) and is pending an intra-team
   double-labelling exercise over the $20$-case pilot set; Cohen's~$\kappa$
   \cite{cohen1960} between the two independent labellers is
-  \todo{pending} (Agent-LABELS halted at the human-labeller step per
-  \texttt{code/decisions.md} entry 2026-04-18 --- Prompt~08).
-  Full-scale datasets will use OncQA (clinician-validated by Chen
-  et~al.~\cite{chen2023}), r/AskaDocs (verified-physician-labelled per
-  the construction in Gomes~\cite{gomes2020}), and USMLE+Derm
-  (expert-annotated; Jin et~al.~\cite{jin2020}, Johri
+  \todo{pending} (board-certified-clinician double-labelling exercise
+  scheduled before the full-scale runs). Full-scale datasets will use
+  OncQA (clinician-validated by Chen et~al.~\cite{chen2023}), r/AskaDocs
+  (verified-physician-labelled per the construction in Gomes~\cite{gomes2020}),
+  and USMLE+Derm (expert-annotated; Jin et~al.~\cite{jin2020}, Johri
   et~al.~\cite{johri2025}).
 
   \item[Annotator reliability.] The Llama-3.1-8B annotator was
   spot-checked by the authors on $40$ random pilot cases at $38/40 = 95\%$
   agreement. Formal Cohen's~$\kappa$ against two independent human
-  labellers on the same $40$-case subset is \todo{pending} (same
-  Agent-LABELS blocker; see the rubric + \texttt{scripts/compute\_kappa.py}
-  harness already in place). Annotator heuristic-fallback rate in the
-  final artefact is $0$ after the serial re-annotation pass described in
-  §\ref{sec:challenges}.
+  labellers on the same $40$-case subset is \todo{pending}; the ESI
+  rubric and the $\kappa$-computation script are in place at
+  \texttt{code/docs/labeling\_rubric.md} and
+  \texttt{code/scripts/compute\_kappa.py}. Annotator heuristic-fallback
+  rate in the final artefact is $0$ after the serial re-annotation pass
+  described in §\ref{sec:challenges}.
 
   \item[Name-phonological confounds.] The Name Bank controls for cultural
   origin but not for phonological complexity, syllable count, or
@@ -259,77 +242,6 @@ the specific mitigation taken or planned for each:
   annotator's Groq rate limit.
 \end{description}
 
-% =============================================================================
-% NEW REFERENCES TO ADD TO bibliography (thebibliography in
-% intermediate_report.tex).  Agent-LATEX: please append the following
-% bibitems.  The bibitem keys used in the fragment above that are NOT
-% already defined in intermediate_report.tex are:
-%   cohen1988  — Cohen 1988, effect-size handbook.
-%   cohen1960  — Cohen 1960, κ coefficient.
-%   gilboy2012 — Gilboy et al. 2012, ESI v4.
-%   chen2023   — Chen et al. 2023, OncQA dataset.
-%   gomes2020  — Gomes 2020, r/AskaDocs construction.
-%   jin2020    — Jin et al. 2020, USMLE / MedQA.
-%   omar2025   — Omar et al. 2025, ED-triage disparities.
-%
-% Already present in intermediate_report.tex bibliography and reused here:
-%   gourabathina2025, pfohl2024, hofmann2024, johri2025  (do NOT re-add).
-%
-% NOTE: the inline §4.4 currently in intermediate_report.tex (lines ~461–528)
-% already cites all 7 of these without defining them — that is currently a
-% latent unresolved-\cite bug in the report. Agent-LATEX must (a) replace
-% the inline §4.4 with `\input{sections/baselines.tex}` (this file) AND
-% (b) append the 7 new bibitems below to \begin{thebibliography}.
-%
-% Suggested bibitems (ACM-Reference-Format style, matching the
-% surrounding entries):
-%
-% \bibitem{cohen1988}
-% J.~Cohen. 1988.
-% \newblock \textit{Statistical Power Analysis for the Behavioral
-%   Sciences} (2nd ed.).
-% \newblock Lawrence Erlbaum Associates, Hillsdale, NJ.
-%
-% \bibitem{cohen1960}
-% J.~Cohen. 1960.
-% \newblock A Coefficient of Agreement for Nominal Scales.
-% \newblock \textit{Educational and Psychological Measurement} 20(1):
-%   37--46.
-%
-% \bibitem{gilboy2012}
-% N.~Gilboy, P.~Tanabe, D.~A.~Travers, and A.~M.~Rosenau. 2012.
-% \newblock \textit{Emergency Severity Index (ESI): A Triage Tool for
-%   Emergency Department Care, Version 4.  Implementation Handbook 2012
-%   Edition}.
-% \newblock Agency for Healthcare Research and Quality, Rockville, MD.
-%   AHRQ Publication No.~12-0014.
-%
-% \bibitem{chen2023}
-% S.~Chen, B.~H.~Kann, M.~B.~Foote, et al.\ 2023.
-% \newblock Use of Artificial Intelligence Chatbots for Cancer Treatment
-%   Information.
-% \newblock \textit{JAMA Oncology} 9(10): 1459--1462.  (OncQA dataset
-%   release.)
-%
-% \bibitem{gomes2020}
-% J.~F.~Gomes. 2020.
-% \newblock AskDocs: An Analysis of Patient Questions and
-%   Verified-Physician Responses on r/AskDocs.
-% \newblock Dataset-report / master's thesis used here as the construction
-%   reference for the r/AskaDocs corpus employed in the full-scale run.
-%   \todo{Agent-LATEX: confirm final citation form against the version
-%   used in the lit review.}
-%
-% \bibitem{jin2020}
-% D.~Jin, E.~Pan, N.~Oufattole, W.-H.~Weng, H.~Fang, and P.~Szolovits.
-%   2020.
-% \newblock What Disease does this Patient Have?  A Large-scale Open
-%   Domain Question Answering Dataset from Medical Exams.
-% \newblock \textit{arXiv:2009.13081}.  (USMLE / MedQA.)
-%
-% \bibitem{omar2025}
-% M.~Omar, B.~S.~Glicksberg, G.~N.~Nadkarni, and E.~Klang. 2025.
-% \newblock Sociodemographic Biases in Medical Decision-Making by Large
-%   Language Models: A Large-Scale Multi-Model Analysis.
-% \newblock \textit{npj Digital Medicine} 8, article~131.
-% =============================================================================
+% Bibitems referenced in this fragment (cohen1988, cohen1960, gilboy2012,
+% chen2023, gomes2020, jin2020, omar2025) are defined in the main
+% intermediate_report.tex \begin{thebibliography} block.

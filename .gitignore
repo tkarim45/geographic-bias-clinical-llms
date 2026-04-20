@@ -54,3 +54,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# ── Sprint archive (post-sprint orchestration scratch, local only) ──────────
+.sprint_archive/

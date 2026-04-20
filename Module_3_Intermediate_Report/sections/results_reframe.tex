@@ -1,25 +1,10 @@
 % =============================================================================
-% sections/results_reframe.tex
-%
-% Canonical replacement text for §4.3 Analysis (H1/H2 reframe + sensitivity).
-% Drafted by the lead orchestration agent per `code/decisions.md` DECISION #3.
-%
-% USAGE.  Agent-LATEX inserts this fragment via `\input{sections/results_reframe.tex}`
-% inside §4.3, replacing the existing prose paragraphs that begin with
-% "The pilot is under-powered but directionally informative." through to (but
-% not including) "Two non-claims." The "Two non-claims" paragraph is preserved
-% as-is; the "Strengths visible in pilot" and "Weaknesses" paragraphs are
-% preserved as-is.
-%
-% NUMBER PROVENANCE.  Every numeric claim below traces to
-% `Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json`
-% (matched-pair, drop_errors=True; refreshed 2026-04-18T16:25Z) and
-% `power_analysis.json` in the same directory.
-%
-% DEAD NUMBERS NEVER TO APPEAR IN THIS FILE (see decisions.md DECISION #3):
-%   +0.085, +15.4 pp, +0.035, +8.5 pp.
-% These belong only in the sensitivity subsection, with the infrastructure
-% caveat from decisions.md RESOLVED #2.
+% sections/results_reframe.tex --- §4.3 Analysis of Results (H1/H2 reframe
+% + sensitivity subsection). \input{} from intermediate_report.tex.
+% Numeric claims trace to:
+%   Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json
+%     (matched-pair analysis, drop_errors=True)
+%   Module_3_Intermediate_Report/code/runs/20260418T050306Z/power_analysis.json
 % =============================================================================
 
 \textbf{The pilot is a near-null result, by design, and that is informative.}
@@ -164,5 +149,5 @@ emitted a response; under a paired-design audit this is fabrication-by-default
 rather than missing-data handling. The sensitivity values are reported in
 Appendix~\ref{appendix:sensitivity} with the corresponding errors-included
 summaries file (\texttt{runs/20260418T050306Z/summaries\_errors\_included.json},
-SHA-256 logged in \texttt{decisions.md}); they should not be cited as
-findings of the pilot.
+whose SHA-256 is recorded in the run's \texttt{manifest.json}); they should
+not be cited as findings of the pilot.
