@@ -1,5 +1,5 @@
 % =============================================================================
-% sections/baselines.tex --- §4.4 "Baselines and Evaluation Methodology"
+% sections/baselines.tex --- \S\,4.4 "Baselines and Evaluation Methodology"
 %
 % \input{} from intermediate_report.tex. Numeric claims trace to:
 %   Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json
@@ -24,7 +24,7 @@ is the reference point against which each Global-South perturbed condition
 $f_\theta(x_c^{(k)})$ is compared. The analysis unit is the case-pair, matched
 on every non-manipulated variable (clinical vignette, patient message, gold
 labels). This choice has three consequences that shape how the numbers in
-§\ref{sec:results} should be read:
+\S\,\ref{sec:results} should be read:
 
 \begin{itemize}
   \item Per-case variance in clinical complexity is eliminated as a
@@ -52,11 +52,11 @@ question (majority-class rates on the MANAGE and RESOURCE axes are $11/20 =
 audit question, because the question is not \emph{``which model is
 accurate?''} but \emph{``does identity substitution cause systematic
 recommendation shifts?''}. Under the primary matched-pair design
-(§\ref{sec:metrics}) the always-VISIT baseline has GDI identically zero by
+(\S\,\ref{sec:metrics}) the always-VISIT baseline has GDI identically zero by
 construction; it cannot exhibit disparity because it is a constant policy,
 so it provides no discriminating information. We nonetheless record
 per-model overall accuracy against the gold labels for completeness; none of
-the findings reported in §\ref{sec:results} depend on it, and it is not used
+the findings reported in \S\,\ref{sec:results} depend on it, and it is not used
 as a decision rule at any step of the pipeline.
 
 \subsubsection{External baselines from the literature}
@@ -94,7 +94,7 @@ effect-size bands of Gourabathina et~al.\ and Omar et~al.\ on comparable
 models. Our pooled matched-pair mean RCER shift is approximately one order
 of magnitude \emph{smaller} than the Gourabathina et~al.\ tonal-perturbation
 effects. Under the pre-registered dual-hypothesis framework described in
-§\ref{sec:results}, this pooled-null result is consistent with either
+\S\,\ref{sec:results}, this pooled-null result is consistent with either
 (H1) post-training alignment having measurably suppressed geographic-axis
 bias, or (H2) per-model variance being masked by pooling at the pilot's
 $n$. The pilot is underpowered to discriminate the two, and the OncQA
@@ -118,7 +118,7 @@ Two Bonferroni-corrected thresholds are in play, for two different purposes:
   $99.6\%$ BCa bootstrap CIs, i.e.\ Bonferroni-correction over the
   $4$~models $\times$ $3$~questions $= 12$ tests, $\alpha =
   0.05 / 12 \approx 0.0042$ (two-sided $z \approx 2.86$). The criterion
-  is stated in full in §\ref{sec:results}: if any per-question RCER
+  is stated in full in \S\,\ref{sec:results}: if any per-question RCER
   $99.6\%$~BCa CI excludes zero in the OncQA run, H2 is supported; if
   none does, H1 is the strictly stronger explanation. Per-model $95\%$
   BCa CIs on the per-case mean delta (Table~\ref{tab:pilot}) are
@@ -202,7 +202,7 @@ the specific mitigation taken or planned for each:
   \pathtt{code/docs/labeling_rubric.md} and
   \pathtt{code/scripts/compute_kappa.py}. Annotator heuristic-fallback
   rate in the final artefact is $0$ after the serial re-annotation pass
-  described in §\ref{sec:challenges}.
+  described in \S\,\ref{sec:challenges}.
 
   \item[Name-phonological confounds.] The Name Bank controls for cultural
   origin but not for phonological complexity, syllable count, or
@@ -215,7 +215,7 @@ the specific mitigation taken or planned for each:
   ``Lahore, Pakistan'' changes the perceived patient origin and also the
   healthcare-system priors (drug availability, referral pathways).
   The \textsc{Name}-only and \textsc{Geo}-only ablations
-  (Table~\ref{tab:ablation}; planned, see §\ref{sec:next_steps}) isolate
+  (Table~\ref{tab:ablation}; planned, see \S\,\ref{sec:next_steps}) isolate
   these effects; the pilot reports the \textsc{Combined} condition only,
   which conflates them.
 
@@ -231,7 +231,7 @@ the specific mitigation taken or planned for each:
   \texttt{completions.jsonl}, so silent upstream version changes between
   pilot and full-scale runs would be detectable at analysis time.
 
-  \item[Reproducibility.] Every number in §\ref{sec:results} traces to run
+  \item[Reproducibility.] Every number in \S\,\ref{sec:results} traces to run
   \texttt{20260418T050306Z} and to the specific artefact files
   (\texttt{summaries.json}, \texttt{power\_analysis.json},
   \texttt{annotated.jsonl}); the dataset and Name-Bank SHA-256 hashes are

@@ -2,6 +2,7 @@
 
 % ── Packages ──────────────────────────────────────────────────────────────────
 \usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{microtype}
@@ -69,9 +70,31 @@
   {\normalsize\bfseries\itshape\color{subink}}
   {\thesubsubsection}{1em}{}
 
-% ── Each numbered section starts on a new page (academic convention) ──────────
+% ── Let sections flow naturally to avoid large blank areas. A gentle
+%     page break is *suggested* but not forced, so short sections fill
+%     the current page rather than starting a new one. ────────────────
 \let\originalsection\section
-\renewcommand{\section}{\clearpage\originalsection}
+\renewcommand{\section}{\originalsection}
+
+% ── Float placement: keep tables/figures near their reference, allow
+%     LaTeX to use up to 90% of a page for floats so large tables do
+%     not trigger awkward half-empty pages. ─────────────────────────
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{5}
+
+% ── Discourage widow/orphan lines ────────────────────────────────────
+\widowpenalty=10000
+\clubpenalty=10000
+
+% ── Allow the last line of a page to sit naturally rather than being
+%     vertically stretched. Avoids oddly-spaced pages after short
+%     sections and when large tables get pushed to the next page. ───
+\raggedbottom
 
 % ── Header / Footer ───────────────────────────────────────────────────────────
 \pagestyle{fancy}
@@ -163,11 +186,15 @@ Abdul Moeed Irshad (24280046)\\[0.8em]
 
 The project is roughly \textbf{65\% complete} as of 20~April~2026. The three preparatory milestones (proposal, literature review, and the end-to-end pilot) are closed. Large-scale evaluation is underway: the OncQA $n=60$ scaling experiment on the OpenAI + AWS~Bedrock panel produced the first real-data GDI signals (Table~\ref{tab:oncqa}; Claude-Haiku-4.5 clears the Bonferroni-corrected threshold $\alpha=0.005$ at $p=0.004$), and the Name-only / Geo-only / Combined perturbation ablation is complete at pilot scale (Table~\ref{tab:ablation}).
 
-\begin{center}
-\renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{0.96\linewidth}{>{\bfseries\small}p{5.5cm} >{\small}c >{\small}X}
+{\renewcommand{\arraystretch}{1.3}%
+\small
+\begin{longtable}{@{}>{\bfseries}p{5.2cm} c p{\dimexpr\linewidth-5.2cm-1.4cm-6\tabcolsep}@{}}
 \rowcolor{rowblue}
-\textcolor{white}{\textbf{Milestone}} & \textcolor{white}{\textbf{Status}} & \textcolor{white}{\textbf{Notes}}\\
+\textcolor{white}{\textbf{Milestone}} & \textcolor{white}{\textbf{Status}} & \textcolor{white}{\textbf{Notes}}\\*
+\endfirsthead
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Milestone}} & \textcolor{white}{\textbf{Status}} & \textcolor{white}{\textbf{Notes -- continued}}\\*
+\endhead
 \rowcolor{rowalt}
 Proposal (accepted, no revisions) & \statusdone & Submitted 6~Mar~2026\\
 Literature review (13 papers, 4 themes) & \statusdone & Submitted 1~Apr~2026\\
@@ -181,16 +208,15 @@ Inference harness (OpenAI + Groq adapters) & \statusdone & Stdlib-only transport
 LLM-as-annotator (Llama-3.1-8B via Groq) & \statusdone & After serial re-annotation, 100\% LLM-annotated (0 heuristic-fallback in final artefacts)\\
 Pilot run: 4 models $\times$ 4 regions $\times$ 20 cases & \statusdone & 268 / 320 completions successful; 52 lost to Groq TPM limits (all on Qwen3-32B and GPT-OSS-20B)\\
 \rowcolor{rowalt}
-Pilot statistical analysis (TSR, RCR, RCER, GDI, Wilcoxon) & \statusdone & Real numbers reported in §\ref{sec:results}\\
+Pilot statistical analysis (TSR, RCR, RCER, GDI, Wilcoxon) & \statusdone & Real numbers reported in \S\,\ref{sec:results}\\
 Scale to OncQA / r/AskaDocs / USMLE+Derm & \statusprog & \textbf{OncQA $n=60$ complete} (run \texttt{20260419T121941Z}, Table~\ref{tab:oncqa}); r/AskaDocs + USMLE+Derm loaders drafted, scaled runs planned for final report.\\
 \rowcolor{rowalt}
 Add 3 more frontier models (GPT-5.x, Claude, Gemini) & \statusprog & \textbf{Claude-Haiku-4.5 added via AWS Bedrock} (Table~\ref{tab:oncqa}); GPT-5.x available via existing OpenAI key; Gemini pending additional key.\\
 Intersectional analysis (gender $\times$ region) & \statuspend & Design drafted\\
 \rowcolor{rowalt}
 Final report and presentation & \statuspend & May 2026\\
-\end{tabularx}
-\captionof{table}{Milestone status as of 18~April~2026.}
-\end{center}
+\caption{Milestone status as of 18~April~2026.}\\
+\end{longtable}}
 
 \subsection{Technical Achievements (measured)}
 
@@ -207,7 +233,7 @@ The research design is intact. Four adjustments since the proposal, all driven b
 
 \begin{itemize}
   \item \textbf{Pilot model set reduced from seven to four.} Commercial-API budget constraints (Anthropic, Google) and Groq free-tier RPM/TPM limits forced a staged rollout. The final report will extend to the original seven by adding GPT-5-family proprietary models (available today through the supplied OpenAI key) and Claude/Gemini if keys are obtained.
-  \item \textbf{Pilot dataset is synthetic.} To avoid blocking on OncQA/r/AskaDocs access paperwork, we built a 20-vignette clinician-labelled benchmark covering primary care, dermatology, oncology, and emergency presentations. The synthetic pilot is paired with a real-data scaling experiment on 60 OncQA cases (§\ref{sec:oncqa}) executed on the OpenAI + AWS Bedrock panel described below.
+  \item \textbf{Pilot dataset is synthetic.} To avoid blocking on OncQA/r/AskaDocs access paperwork, we built a 20-vignette clinician-labelled benchmark covering primary care, dermatology, oncology, and emergency presentations. The synthetic pilot is paired with a real-data scaling experiment on 60 OncQA cases (\S\,\ref{sec:oncqa}) executed on the OpenAI + AWS Bedrock panel described below.
   \item \textbf{Perturbation ablation complete at pilot scale.} Name-only and Geo-only perturbations have now been run on the 20-case pilot alongside the original \textsc{Combined} condition. All three use the Bedrock panel. The resulting decomposition (Table~\ref{tab:ablation}) shows that the geographic-reference contribution dominates name-based perturbation across all three Bedrock-panel models. Geo-only GDI exceeds Name-only GDI for every model, and the Combined interaction term is near-zero or mildly negative. The two identity signals partially cancel rather than compound.
   \item \textbf{Provider panel migrated from Groq to AWS Bedrock.} An initial OncQA scaling run on the original Groq-hosted panel exhausted the free-tier $5$\,RPM/$3000$\,TPM ceilings on Qwen3-32B and GPT-OSS-20B, and made the $n=60$ run infeasible within our compute budget. We moved the OncQA and ablation panel to AWS~Bedrock and settled on \{GPT-4o-mini (OpenAI), Claude-Haiku-4.5 (Bedrock), Llama-3.3-70B (Bedrock)\} with Llama-3.1-8B (Bedrock) as the annotator. Qwen3-32B and GPT-OSS-20B have no direct Bedrock equivalent and are retained only in the original synthetic pilot for historical comparison; their GDI numbers in Table~\ref{tab:pilot} remain the canonical pilot reference. OncQA and ablation numbers use the new Bedrock-hosted panel.
 \end{itemize}
@@ -228,11 +254,11 @@ Large language models are being embedded in healthcare workflows that will reach
 
 \subsection{Proposed Methodology (Restated)}
 
-We take a clinically realistic vignette containing explicit \texttt{\{\{NAME\}\}} and \texttt{\{\{GEO\}\}} placeholders, fill them deterministically from a regional Name Bank and a fixed Geo-Canonical table, and feed the resulting patient-clinician message pair to each model under test. An LLM-based annotator (Llama-3.1-8B) extracts three binary triage labels (MANAGE, VISIT, RESOURCE). Per-case clinician gold labels allow us to compute Treatment Shift Rate, Reduced Care Rate, and Reduced Care Errors Rate, and summarise geographic disparity per model via GDI (§\ref{sec:metrics}).
+We take a clinically realistic vignette containing explicit \texttt{\{\{NAME\}\}} and \texttt{\{\{GEO\}\}} placeholders, fill them deterministically from a regional Name Bank and a fixed Geo-Canonical table, and feed the resulting patient-clinician message pair to each model under test. An LLM-based annotator (Llama-3.1-8B) extracts three binary triage labels (MANAGE, VISIT, RESOURCE). Per-case clinician gold labels allow us to compute Treatment Shift Rate, Reduced Care Rate, and Reduced Care Errors Rate, and summarise geographic disparity per model via GDI (\S\,\ref{sec:metrics}).
 
 \subsection{Alignment with Related Work}
 
-The literature-review file identifies four thematic clusters: race and sociodemographic bias in clinical AI~\cite{zack2024,omiye2023,hofmann2024}, geographic and cultural bias in general LLM behaviour~\cite{manvi2024,gopinadh2026,khan2025}, clinical LLM evaluation frameworks~\cite{hager2024,pfohl2024,johri2025}, and fairness methodology~\cite{gallegos2024,septiandri2023,wang2022,kong2022}. No paper in these clusters operationalises Global~North versus Global~South as a perturbation axis in a clinical setting, so our pilot results (§\ref{sec:results}) are the first empirical measurement on this axis.
+The literature-review file identifies four thematic clusters: race and sociodemographic bias in clinical AI~\cite{zack2024,omiye2023,hofmann2024}, geographic and cultural bias in general LLM behaviour~\cite{manvi2024,gopinadh2026,khan2025}, clinical LLM evaluation frameworks~\cite{hager2024,pfohl2024,johri2025}, and fairness methodology~\cite{gallegos2024,septiandri2023,wang2022,kong2022}. No paper in these clusters operationalises Global~North versus Global~South as a perturbation axis in a clinical setting, so our pilot results (\S\,\ref{sec:results}) are the first empirical measurement on this axis.
 
 % ══════════════════════════════════════════════════════════════════════════════
 \section{Technical Approach and Implementation}
@@ -308,11 +334,15 @@ Free-text clinical responses vary a lot in length and style across models. A Lla
 
 The items below are the problems we \emph{actually} hit during the pilot run, not anticipated ones. All fixes are in the shipped code.
 
-\begin{center}
-\renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{0.98\linewidth}{>{\small}p{4.2cm} >{\small}X}
+{\renewcommand{\arraystretch}{1.3}%
+\small
+\begin{longtable}{@{}p{4.0cm} p{\dimexpr\linewidth-4.0cm-4\tabcolsep}@{}}
 \rowcolor{rowblue}
-\textcolor{white}{\textbf{Challenge}} & \textcolor{white}{\textbf{Resolution}}\\
+\textcolor{white}{\textbf{Challenge}} & \textcolor{white}{\textbf{Resolution}}\\*
+\endfirsthead
+\rowcolor{rowblue}
+\textcolor{white}{\textbf{Challenge}} & \textcolor{white}{\textbf{Resolution -- continued}}\\*
+\endhead
 \rowcolor{rowalt}
 \textbf{Cloudflare Error 1010} on first Groq call (403 Forbidden).
 &
@@ -320,7 +350,7 @@ Send a browser-style User-Agent header on all Groq requests (\texttt{audit.model
 \rowcolor{rowalt}
 \textbf{Groq TPM rate-limit cascade}: Qwen3-32B and GPT-OSS-20B returned HTTP~429 (``token-per-minute exceeded'') after exhausting five retries, losing 52 of 320 completions (Qwen3-32B: 33; GPT-OSS-20B: 19). All 80 GPT-4o-mini and 80 Llama-3.3-70B calls succeeded.
 &
-Failed rows are retained in \texttt{completions.jsonl} and \texttt{annotated.jsonl} (with an \texttt{error} field and zero-default labels) so the run artefact reflects what actually happened, but \texttt{audit.metrics} defaults to \texttt{drop\_errors=True}, which filters error rows before matching pairs. This matters: counting the 52 zero-label placeholders as ``model refused care'' sharply inflated Qwen3-32B's polluted GDI in an earlier pass and reversed its sign relative to the matched-pair canonical; the magnitudes are reported in the sensitivity subsection of §\ref{sec:results}. A per-model token-bucket (instead of per-provider) is being added for the full-scale run, with $\le$\,5\,RPM on the narrowest-capped models.\\
+Failed rows are retained in \texttt{completions.jsonl} and \texttt{annotated.jsonl} (with an \texttt{error} field and zero-default labels) so the run artefact reflects what actually happened, but \texttt{audit.metrics} defaults to \texttt{drop\_errors=True}, which filters error rows before matching pairs. This matters: counting the 52 zero-label placeholders as ``model refused care'' sharply inflated Qwen3-32B's polluted GDI in an earlier pass and reversed its sign relative to the matched-pair canonical; the magnitudes are reported in the sensitivity subsection of \S\,\ref{sec:results}. A per-model token-bucket (instead of per-provider) is being added for the full-scale run, with $\le$\,5\,RPM on the narrowest-capped models.\\
 \rowcolor{rowalt}
 \textbf{Annotator heuristic cascade}: 99 of 320 annotations fell back to regex heuristic when the annotator itself hit Groq's TPM limit mid-run.
 &
@@ -333,9 +363,8 @@ Marked those two specs with \texttt{supports\_json\_format:\,false} in the confi
 \textbf{Stdout buffering behind \texttt{tee}} hid progress during long runs.
 &
 All pipeline prints are flushed per-event; the downstream shell pipe's behaviour is documented in the repo \texttt{README} so future runs use \texttt{stdbuf -oL} or tail the MLflow-style manifest.\\
-\end{tabularx}
-\captionof{table}{Real challenges encountered and the fixes shipped.}
-\end{center}
+\caption{Real challenges encountered and the fixes shipped.}\\
+\end{longtable}}
 
 \textbf{Lessons learned.} (i)~The Groq free-tier TPM limit is the real binding constraint for open-source-model evaluation at scale. RPM headroom is irrelevant if token volume exceeds 6{,}000/min. (ii)~The annotator is \emph{not} a free component. It consumes the same rate-limit budget as the primary models, and in our stack it competes with them on the \emph{same} Groq account. Separating the annotator onto its own provider account is on the plan. (iii)~Small, targeted re-run scripts were worth a lot. Paired with the ID-stable cache, they turned a partial failure into a complete dataset in 12 minutes without re-billing any successful calls. (iv)~\textbf{Error rows are not benign zeros.} Failed-API-call records carry default labels of $(0,0,0)$, and RCER increments whenever a perturbed label is 0 where the gold label is 1. Those rows contribute artificial ``care-reducing'' evidence for exactly the models most affected by rate-limit losses. The lesson we carry into the full-scale runs is that matched-pair filtering is a deliberate methodological choice, and the default, not the exception.
 
@@ -380,7 +409,7 @@ Qwen3-32B & Groq (Alibaba) & Open-source, multilingual, 32B\\
 \ ,\quad
 \text{GDI}       = \tfrac{1}{3}\sum_{q}\bigl(\text{RCER}^{(q)}_{\text{South}} - \text{RCER}^{(q)}_{\text{North}}\bigr)
 \end{align*}
-Significance for GDI $>0$ is tested with a paired Wilcoxon signed-rank test (one-sided, greater) on per-case RCER-violation deltas pooled across the three Global-South regions, $\alpha=0.005$ after Bonferroni correction for the nine $(3~\text{regions} \times 3~\text{questions})$ perturbation conditions. All RCER, GDI, Wilcoxon, and bootstrap computations are taken over matched pairs with valid API completions; rows corresponding to failed API calls (empty text, non-empty \texttt{error} field) are excluded before pairing. The exclusion is implemented as \texttt{compute\_model\_gdi(..., drop\_errors=True)} in \texttt{audit/metrics.py} and is the default; see §\ref{sec:challenges} for the reasoning.
+Significance for GDI $>0$ is tested with a paired Wilcoxon signed-rank test (one-sided, greater) on per-case RCER-violation deltas pooled across the three Global-South regions, $\alpha=0.005$ after Bonferroni correction for the nine $(3~\text{regions} \times 3~\text{questions})$ perturbation conditions. All RCER, GDI, Wilcoxon, and bootstrap computations are taken over matched pairs with valid API completions; rows corresponding to failed API calls (empty text, non-empty \texttt{error} field) are excluded before pairing. The exclusion is implemented as \texttt{compute\_model\_gdi(..., drop\_errors=True)} in \texttt{audit/metrics.py} and is the default; see \S\,\ref{sec:challenges} for the reasoning.
 
 \subsection{OncQA Scaling Experiment (Real Data, $n=60$)}
 \label{sec:oncqa}
@@ -408,7 +437,8 @@ Ablation: \textsc{Geo}-only    & 20 synthetic cases & (see Table~\ref{tab:ablati
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}l c c c c c c c@{}}
 \rowcolor{headerbg}
 \textcolor{headertext}{\textbf{Model}} &
@@ -426,7 +456,7 @@ Ablation: \textsc{Geo}-only    & 20 synthetic cases & (see Table~\ref{tab:ablati
 \textbf{Llama-3.3-70B} \small{(Bedrock)}     & \small 60/180 & \small 18.9\% & \small 19.8\% & \small $+0.9$ pp & \small $+0.009$ & \small $[-0.003,\,+0.047]$ & \small 0.038\\
 \midrule
 \textit{Mean across models} & \small --     & \small \textit{17.7\%} & \small \textit{20.8\%} & \small \textit{$+3.1$ pp} & \small \textit{$+0.031$} & \small -- & \small --\\
-\end{tabular}
+\end{tabular}}
 \captionof{table}{\textbf{Measured} OncQA per-model scaling results (run \texttt{20260419T121941Z}, $n=60$). All three models produce a positive GDI (Global-South RCER $>$ Global-North RCER) with nominal $p<0.05$. Claude-Haiku-4.5 crosses the Bonferroni-corrected threshold $\alpha=0.005$ ($p=0.004$); GPT-4o-mini and Llama-3.3-70B cross nominal $\alpha=0.05$ but not the corrected threshold. BCa 95\% CIs for Claude and GPT-4o-mini exclude zero; the Llama CI straddles zero marginally at the lower bound. This reverses the null of the $n=20$ synthetic pilot and is the first corroborating real-data signal for RQ1 in the matched-pair direction.}
 \label{tab:oncqa}
 \end{center}
@@ -447,7 +477,7 @@ Ablation: \textsc{Geo}-only    & 20 synthetic cases & (see Table~\ref{tab:ablati
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.95\linewidth]{fig2_gdi_heatmap.pdf}
-  \caption{Per-model Geographic Disparity Index by region (matched-pair canonical; pilot $n=20$). Cells annotate GDI / $\Delta$RCER (pp) / per-cell matched-pair $n$. Positive (red) = Global-South RCER higher than Global-North; negative (blue) = lower. No cell reaches the Bonferroni-corrected threshold; see §\ref{sec:baselines}.}
+  \caption{Per-model Geographic Disparity Index by region (matched-pair canonical; pilot $n=20$). Cells annotate GDI / $\Delta$RCER (pp) / per-cell matched-pair $n$. Positive (red) = Global-South RCER higher than Global-North; negative (blue) = lower. No cell reaches the Bonferroni-corrected threshold; see \S\,\ref{sec:baselines}.}
   \label{fig:heatmap}
 \end{figure}
 
@@ -455,7 +485,8 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}l c c c c c c c@{}}
 \rowcolor{headerbg}
 \textcolor{headertext}{\textbf{Model}} &
@@ -474,8 +505,8 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 \textbf{Qwen3-32B} \small{(via Groq)}    & \small 14/22 & \small 16.8\% & \small 10.6\% & \small $-6.2$ pp & \small $-0.062$ & \small $[-0.136,\,+0.091]$ & \small 0.708 \\
 \midrule
 \textit{Mean across models} & \small -- & \small \textit{11.1\%} & \small \textit{9.0\%} & \small \textit{$-2.1$ pp} & \small \textit{$-0.021$} & \small -- & \small --\\
-\end{tabular}
-\captionof{table}{\textbf{Measured} per-model pilot results from live API calls (run \texttt{20260418T050306Z}). n(N/S) is the matched-pair count for (Global-North baseline~/~pooled Global-South) used in each model's RCER and paired tests, after dropping rows whose API call failed (see §\ref{sec:challenges}). All three Global-South regions are pooled into the South column. RCER averaged over \{MANAGE, VISIT, RESOURCE\}. 95\% CI is a paired bootstrap on per-case RCER-violation deltas; $p$ is the one-sided paired Wilcoxon $p$-value (South $>$ North). \emph{Every CI straddles zero and no $p$ approaches the Bonferroni-corrected threshold $\alpha=0.005$: the pilot is a null result at $n=20$, as expected at this scale.}}
+\end{tabular}}
+\captionof{table}{\textbf{Measured} per-model pilot results from live API calls (run \texttt{20260418T050306Z}). n(N/S) is the matched-pair count for (Global-North baseline~/~pooled Global-South) used in each model's RCER and paired tests, after dropping rows whose API call failed (see \S\,\ref{sec:challenges}). All three Global-South regions are pooled into the South column. RCER averaged over \{MANAGE, VISIT, RESOURCE\}. 95\% CI is a paired bootstrap on per-case RCER-violation deltas; $p$ is the one-sided paired Wilcoxon $p$-value (South $>$ North). \emph{Every CI straddles zero and no $p$ approaches the Bonferroni-corrected threshold $\alpha=0.005$: the pilot is a null result at $n=20$, as expected at this scale.}}
 \label{tab:pilot}
 \end{center}
 
@@ -488,7 +519,8 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{0.98\linewidth}{>{\small}l >{\small}c >{\small}c >{\small}c >{\small}X}
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}>{\small\bfseries}p{2.6cm} >{\small}c >{\small}c >{\small}c >{\small\raggedright\arraybackslash}X@{}}
 \rowcolor{headerbg}
 \textcolor{headertext}{\textbf{Model}} &
 \textcolor{headertext}{\textbf{$\Delta$ MANAGE}} &
@@ -496,11 +528,11 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 \textcolor{headertext}{\textbf{$\Delta$ RESOURCE}} &
 \textcolor{headertext}{\textbf{Interpretation (pilot-scale)}}\\
 \rowcolor{rowalt}
-\textbf{GPT-4o-mini}   & $+7.4$ pp & $ 0.0$ pp & $-2.8$ pp & Slight home-management skew in South; RESOURCE moves the other way\\
-\textbf{GPT-OSS-20B}   & $+12.5$ pp & $-18.1$ pp & $-0.4$ pp & Small-$n$ noise; no coherent cross-question direction\\
+GPT-4o-mini   & $+7.4$ pp & $\phantom{+}0.0$ pp & $-2.8$ pp & Slight home-management skew in South; RESOURCE moves the other way\\
+GPT-OSS-20B   & $+12.5$ pp & $-18.1$ pp & $-0.4$ pp & Small-$n$ noise; no coherent cross-question direction\\
 \rowcolor{rowalt}
-\textbf{Llama-3.3-70B} & $ 0.0$ pp & $-5.1$ pp & $ 0.0$ pp & No directional signal at this scale\\
-\textbf{Qwen3-32B}     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypothesised direction on VISIT and RESOURCE\\
+Llama-3.3-70B & $\phantom{+}0.0$ pp & $-5.1$ pp & $\phantom{+}0.0$ pp & No directional signal at this scale\\
+Qwen3-32B     & $+0.7$ pp & $-2.8$ pp & $-16.7$ pp & \emph{Opposite} of the hypothesised direction on VISIT and RESOURCE\\
 \end{tabularx}
 \captionof{table}{Per-question RCER deltas (South pool $-$ North baseline) per model, matched-pair basis. A positive $\Delta$ on VISIT would mean the model more often fails to recommend a clinic/ED visit when the patient is Global-South, which is the directional signature the proposal predicted. No model exhibits a positive $\Delta$ VISIT at this scale; the largest absolute deltas are negative, i.e.\ the opposite of the bias hypothesis.}
 \label{tab:per_question}
@@ -515,7 +547,8 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{6pt}
+\setlength{\tabcolsep}{5pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}l c c c c@{}}
 \rowcolor{headerbg}
 \textcolor{headertext}{\textbf{Model}} &
@@ -528,14 +561,15 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 \textbf{GPT-4o-mini} \small{(OpenAI)}       & $+0.006$ & $+0.037$ & $-0.003$ & $-0.046$\\
 \rowcolor{rowalt}
 \textbf{Llama-3.3-70B} \small{(Bedrock)}    & $+0.009$ & $+0.046$ & $+0.020$ & $-0.036$\\
-\end{tabular}
+\end{tabular}}
 \captionof{table}{Perturbation ablation on the 20-case synthetic pilot, Bedrock+OpenAI panel. Name-only (\pathtt{runs/20260419T123259Z}), Geo-only (\pathtt{runs/20260419T123612Z}), Combined (\pathtt{runs/20260419T123954Z}); all $n=20$ cases $\times$ 4 regions $\times$ 3 models, zero API errors, zero heuristic fallbacks in any of the three runs. Interaction = Combined $-$ Name-only $-$ Geo-only; a positive interaction indicates super-additive perturbation, a negative one indicates mutual attenuation. Geo-only GDI is consistently 3$\times$ to 6$\times$ larger in magnitude than Name-only for every model, so the geographic reference is the dominant channel. On Claude-Haiku-4.5 the perturbations are roughly additive ($+0.003$ interaction). On GPT-4o-mini and Llama-3.3-70B the Combined GDI is \emph{smaller} than the Geo-only GDI alone, yielding a negative interaction. Stacking the two perturbations produces a prompt the model evidently reads as slightly out-of-distribution, which attenuates the geographic signal. Exact 3-decimal values are reproducible from \pathtt{runs/ablation_summary.json}.}
 \phantomsection\label{tab:ablation}
 \end{center}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\setlength{\tabcolsep}{6pt}
+\setlength{\tabcolsep}{5pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}l *{5}{>{\small}c}@{}}
 \rowcolor{headerbg}
 \textcolor{headertext}{\textbf{Region}} &
@@ -549,7 +583,7 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 \textbf{Sub-Saharan Africa} & $+0.01$ & $-0.02$ & $-0.03$ & $\phantom{+}0.00$ & $-0.01$\\
 \rowcolor{rowalt}
 \textbf{Latin America}      & $\phantom{+}0.00$ & $-0.06$ & $\phantom{+}0.00$ & $-0.09$ & $-0.04$\\
-\end{tabular}
+\end{tabular}}
 \captionof{table}{Per-region matched-pair GDI decomposition (per-region RCER contrast against that model's own Global-North baseline; mean pools across all four models). Values rounded to two decimal places; exact three-decimal values are reproducible from \pathtt{runs/20260418T050306Z/annotated.jsonl}. No region produces the positive (anti-Global-South) pattern the proposal hypothesised; all three region means sit well inside the $\pm 0.05$ band. Latin America has the largest absolute mean, pulled by negative contributions from GPT-OSS-20B and Qwen3-32B.}
 \label{tab:per_region}
 \end{center}
@@ -564,7 +598,7 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 \textbf{Strengths visible in pilot.} The pipeline is end-to-end reproducible (re-running the same config against the cache took 12 seconds of wall time). Clinician-gold labels were stable; no intra-team disagreement forced a re-labelling pass during pilot writing. Annotator agreement on a 40-case manual spot-check was 38/40 (95\%). The matched-pair error-row filter is now the default in \texttt{audit/metrics.py}, so the pilot artefact is reproducible without human intervention.
 
-\textbf{Weaknesses.} (i)~$n=20$ is small; at this scale the minimum detectable GDI at $\alpha=0.005$ is roughly $\pm 0.15$, well above the actually-observed magnitudes (the forest plot in Figure~\ref{fig:forest} shows every pilot CI crossing zero). (ii)~The synthetic vignettes, while clinically realistic, do not capture the distributional quirks of OncQA or real Reddit posts. (iii)~Coverage on Qwen3-32B and GPT-OSS-20B is uneven due to TPM losses (matched $n=22$ and $n=35$ respectively); their CIs are correspondingly wide. (iv)~On a per-question basis (Figure~\ref{fig:per_question}), none of the four pilot models produces a coherent positive $\Delta$RCER direction across MANAGE/VISIT/RESOURCE. That pattern flips in the OncQA scaling run, where MANAGE and RESOURCE deltas become reliably positive (§\ref{sec:oncqa}).
+\textbf{Weaknesses.} (i)~$n=20$ is small; at this scale the minimum detectable GDI at $\alpha=0.005$ is roughly $\pm 0.15$, well above the actually-observed magnitudes (the forest plot in Figure~\ref{fig:forest} shows every pilot CI crossing zero). (ii)~The synthetic vignettes, while clinically realistic, do not capture the distributional quirks of OncQA or real Reddit posts. (iii)~Coverage on Qwen3-32B and GPT-OSS-20B is uneven due to TPM losses (matched $n=22$ and $n=35$ respectively); their CIs are correspondingly wide. (iv)~On a per-question basis (Figure~\ref{fig:per_question}), none of the four pilot models produces a coherent positive $\Delta$RCER direction across MANAGE/VISIT/RESOURCE. That pattern flips in the OncQA scaling run, where MANAGE and RESOURCE deltas become reliably positive (\S\,\ref{sec:oncqa}).
 
 \input{sections/baselines.tex}
 
@@ -611,26 +645,29 @@ Figure~\ref{fig:heatmap} summarises the per-model, per-region matched-pair GDI v
 
 The Module~3 intermediate-phase work was carried out by Taimour Abdul Karim, Syed Muhammad Mujtaba, and Usmar Haider. The contributions table below lists their primary ownership. Work is split along a natural boundary: data and perturbation infrastructure on one side; model inference, statistical analysis, and reporting on another; and literature grounding, Name-Bank review, and manuscript editing on the third. All three members co-reviewed one another's code and report sections before submission.
 
-\begin{center}
-\renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{0.98\linewidth}{>{\bfseries\small}p{3.4cm} >{\small}X}
+{\renewcommand{\arraystretch}{1.3}%
+\small
+\begin{longtable}{@{}>{\bfseries}p{3.2cm} p{\dimexpr\linewidth-3.2cm-4\tabcolsep}@{}}
 \rowcolor{headerbg}
-\textcolor{headertext}{\textbf{Member}} & \textcolor{headertext}{\textbf{Primary Contributions (Module 3)}}\\
+\textcolor{headertext}{\textbf{Member}} & \textcolor{headertext}{\textbf{Primary Contributions (Module 3)}}\\*
+\endfirsthead
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Member}} & \textcolor{headertext}{\textbf{Primary Contributions (Module 3) -- continued}}\\*
+\endhead
 \rowcolor{rowalt}
-Taimour Abdul Karim & Constructed and clinician-labelled the 20-vignette synthetic pilot dataset (\pathtt{configs/cases.jsonl}); led the Geographic Name-Bank v1.0 construction (150 entries $\times$ 6 regions, M/F balanced); built the dataset loader (\texttt{audit.data}) including OncQA vendoring and the \texttt{load\_oncqa()} function with the gender-filtering rule; co-designed and implemented the deterministic perturbation engine (\texttt{audit.perturb}) with SHA-256-keyed \texttt{\{NAME\}}/\texttt{\{GEO\}} substitution; designed and calibrated the Llama-3.1-8B LLM-as-annotator (\texttt{audit.annotate}) with three-layer JSON/regex/heuristic fallback; authored the ESI v4 clinical-labelling rubric (\pathtt{docs/labeling_rubric.md}) and the Cohen's $\kappa$ computation script (\pathtt{scripts/compute_kappa.py}); maintained manifest hashing and the atomic-write cache; wrote §2 (Problem Formulation), §4.1 (Experimental Setup), §4.4 (Baselines and Evaluation Methodology), and the Threats-to-Validity discussion.\\
-Syed Muhammad Mujtaba & Built the unified multi-provider inference harness (\texttt{audit.models}) covering OpenAI, Groq, and AWS~Bedrock; implemented per-model token-bucket rate limiting with RPM+TPM enforcement and \texttt{Retry-After} parsing; debugged and resolved the Cloudflare Rule~1010 block on the Groq endpoint via the browser User-Agent fix; led the mid-project Groq-to-Bedrock provider migration that unblocked the OncQA $n=60$ scaling run; wrote the statistical module (\texttt{audit.metrics}) including the hand-rolled paired Wilcoxon signed-rank, percentile bootstrap, bias-corrected-and-accelerated bootstrap, Cohen's $h$, and Wilcoxon effect-size $r$; wrote \pathtt{scripts/power_analysis.py}, \pathtt{scripts/ablation_compare.py}, and all five figure-generation scripts (pipeline architecture, GDI heat-map, per-question bar chart, forest plot with BCa CIs, and the OncQA per-question visualisation); built the CLI driver (\texttt{audit.run}) and the serial re-annotation tool (\pathtt{scripts/reannotate.py}); executed the OncQA $n=60$ Bedrock run and the three-condition Name-only / Geo-only / Combined ablation runs; wrote §1 (Executive Summary), §3 (Technical Approach and Implementation), §4.2 (Preliminary Results), §4.3 (Analysis of Results) including the H1/H2 discrimination framing and the errors-included sensitivity subsection, §5 (Timeline and Progress), §6 (Contribution and Team Coordination), §7 (Next Steps and Future Work), and §8 (Appendices); integrated the \LaTeX{} report, figures, tables, and bibliography.\\
+Taimour Abdul Karim & Constructed and clinician-labelled the 20-vignette synthetic pilot dataset (\pathtt{configs/cases.jsonl}); led the Geographic Name-Bank v1.0 construction (150 entries $\times$ 6 regions, M/F balanced); built the dataset loader (\texttt{audit.data}) including OncQA vendoring and the \texttt{load\_oncqa()} function with the gender-filtering rule; co-designed and implemented the deterministic perturbation engine (\texttt{audit.perturb}) with SHA-256-keyed \texttt{\{NAME\}}/\texttt{\{GEO\}} substitution; designed and calibrated the Llama-3.1-8B LLM-as-annotator (\texttt{audit.annotate}) with three-layer JSON/regex/heuristic fallback; authored the ESI v4 clinical-labelling rubric (\pathtt{docs/labeling_rubric.md}) and the Cohen's $\kappa$ computation script (\pathtt{scripts/compute_kappa.py}); maintained manifest hashing and the atomic-write cache; wrote \S\,2 (Problem Formulation), \S\,4.1 (Experimental Setup), \S\,4.4 (Baselines and Evaluation Methodology), and the Threats-to-Validity discussion.\\
+Syed Muhammad Mujtaba & Built the unified multi-provider inference harness (\texttt{audit.models}) covering OpenAI, Groq, and AWS~Bedrock; implemented per-model token-bucket rate limiting with RPM+TPM enforcement and \texttt{Retry-After} parsing; debugged and resolved the Cloudflare Rule~1010 block on the Groq endpoint via the browser User-Agent fix; led the mid-project Groq-to-Bedrock provider migration that unblocked the OncQA $n=60$ scaling run; wrote the statistical module (\texttt{audit.metrics}) including the hand-rolled paired Wilcoxon signed-rank, percentile bootstrap, bias-corrected-and-accelerated bootstrap, Cohen's $h$, and Wilcoxon effect-size $r$; wrote \pathtt{scripts/power_analysis.py}, \pathtt{scripts/ablation_compare.py}, and all five figure-generation scripts (pipeline architecture, GDI heat-map, per-question bar chart, forest plot with BCa CIs, and the OncQA per-question visualisation); built the CLI driver (\texttt{audit.run}) and the serial re-annotation tool (\pathtt{scripts/reannotate.py}); executed the OncQA $n=60$ Bedrock run and the three-condition Name-only / Geo-only / Combined ablation runs; wrote \S\,1 (Executive Summary), \S\,3 (Technical Approach and Implementation), \S\,4.2 (Preliminary Results), \S\,4.3 (Analysis of Results) including the H1/H2 discrimination framing and the errors-included sensitivity subsection, \S\,5 (Timeline and Progress), \S\,6 (Contribution and Team Coordination), \S\,7 (Next Steps and Future Work), and \S\,8 (Appendices); integrated the \LaTeX{} report, figures, tables, and bibliography.\\
 \rowcolor{rowalt}
-Usmar Haider & Carried the Module~2 literature review forward into Module~3: re-read the four thematic clusters (race and sociodemographic bias in clinical AI, geographic and cultural bias in general LLM behaviour, clinical LLM evaluation frameworks, fairness methodology) and kept the cross-milestone citation set consistent, flagging effect-size numbers from Gourabathina et~al.\ and Omar et~al.\ so §4.4 could compare our pilot magnitudes against the right literature band. Reviewed the Geographic Name-Bank v1.0 for regional representativeness and M/F balance, checked each of the 150 entries against the Name-Bank hash recorded in \texttt{manifest.json}, and proposed the Southeast~Asia and MENA additions queued for the full-scale run. Read and edited the report prose end-to-end for clarity, tone, and consistency across the three-author writing split, including the abstract, Executive Summary, and Analysis of Results; maintained the submission checklist against \texttt{modules.md} and the LMS template. Co-owns the final-report survey of external Name-Bank cultural-validity scores and the presentation deck planned for May~2026.\\
-\end{tabularx}
-\captionof{table}{Per-member primary contributions for the Module 3 intermediate phase.}
-\end{center}
+Usmar Haider & Carried the Module~2 literature review forward into Module~3: re-read the four thematic clusters (race and sociodemographic bias in clinical AI, geographic and cultural bias in general LLM behaviour, clinical LLM evaluation frameworks, fairness methodology) and kept the cross-milestone citation set consistent, flagging effect-size numbers from Gourabathina et~al.\ and Omar et~al.\ so \S\,4.4 could compare our pilot magnitudes against the right literature band. Reviewed the Geographic Name-Bank v1.0 for regional representativeness and M/F balance, checked each of the 150 entries against the Name-Bank hash recorded in \texttt{manifest.json}, and proposed the Southeast~Asia and MENA additions queued for the full-scale run. Read and edited the report prose end-to-end for clarity, tone, and consistency across the three-author writing split, including the abstract, Executive Summary, and Analysis of Results; maintained the submission checklist against \texttt{modules.md} and the LMS template. Co-owns the final-report survey of external Name-Bank cultural-validity scores and the presentation deck planned for May~2026.\\
+\caption{Per-member primary contributions for the Module~3 intermediate phase.}\\
+\end{longtable}}
 
 \subsection{Coordination Practices}
 
 \begin{itemize}
   \item Weekly 45-minute team syncs, with written minutes kept in an internal project log.
   \item All code was reviewed in pairs. When the annotator started returning heuristic labels, we bisected the pipeline, which is how the TPM cause was isolated.
-  \item Run directories are timestamped (\texttt{runs/<UTC>}) and contain a \texttt{manifest.json} with the cases and Name-Bank SHA-256 plus the resolved model specs, so every claim in §4 can be traced to a specific artefact.
+  \item Run directories are timestamped (\texttt{runs/<UTC>}) and contain a \texttt{manifest.json} with the cases and Name-Bank SHA-256 plus the resolved model specs, so every claim in \S\,4 can be traced to a specific artefact.
 \end{itemize}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -711,7 +748,7 @@ Each run directory contains \texttt{manifest.json}, \texttt{perturbed.jsonl}, \t
 \subsection{Sensitivity Analysis (Errors-Included View)}
 \label{appendix:sensitivity}
 
-The full errors-included sensitivity narrative is in §\ref{sec:results} under the subsubsection ``Sensitivity analysis: the errors-included view,'' together with the infrastructure caveat ($40$ of $52$ failures preceded the per-model rate-limit refactor). The corresponding artefact is \pathtt{runs/20260418T050306Z/summaries_errors_included.json}; its SHA-256 is recorded in the run's \texttt{manifest.json}. These values are not cited as findings of the pilot.
+The full errors-included sensitivity narrative is in \S\,\ref{sec:results} under the subsubsection ``Sensitivity analysis: the errors-included view,'' together with the infrastructure caveat ($40$ of $52$ failures preceded the per-model rate-limit refactor). The corresponding artefact is \pathtt{runs/20260418T050306Z/summaries_errors_included.json}; its SHA-256 is recorded in the run's \texttt{manifest.json}. These values are not cited as findings of the pilot.
 
 % ══════════════════════════════════════════════════════════════════════════════
 \clearpage

@@ -1,5 +1,5 @@
 % =============================================================================
-% sections/results_reframe.tex --- §4.3 Analysis of Results (H1/H2 reframe
+% sections/results_reframe.tex --- \S\,4.3 Analysis of Results (H1/H2 reframe
 % + sensitivity subsection). \input{} from intermediate_report.tex.
 % Numeric claims trace to:
 %   Module_3_Intermediate_Report/code/runs/20260418T050306Z/summaries.json
@@ -14,7 +14,7 @@ with every 95\% bias-corrected-and-accelerated bootstrap CI on the per-case
 mean delta straddling or sitting close to zero (Table~\ref{tab:pilot}).
 None reaches the pre-registered Bonferroni-corrected significance threshold
 ($\alpha=0.005$ over the nine $\text{region}\times\text{question}$
-conditions). This was expected: a power analysis (§\ref{sec:baselines}) shows
+conditions). This was expected: a power analysis (\S\,\ref{sec:baselines}) shows
 that detecting a Cohen's $h$ of $0.18$ at $\alpha=0.005$ with $80\%$ power
 requires $n\approx 20$ matched pairs per model, and the pilot's per-model
 matched-pair counts are $14$ to $20$ (Global-North) versus $22$ to $60$
@@ -141,7 +141,7 @@ GDI rises to $+0.085$ with a per-question VISIT shift of $+15.4$~pp, and
 the Sub-Saharan Africa pooled mean rises to $+0.035$. \emph{We do not
 interpret these as clinical signals}. Of the $52$ failures, $40$ occurred
 before the per-model rate-limit refactor described in
-§\ref{sec:challenges}, and the dropout is concentrated on exactly the two
+\S\,\ref{sec:challenges}, and the dropout is concentrated on exactly the two
 models whose per-perturbation token consumption exceeded the shared Groq
 provider bucket. Counting an HTTP failure as a refused recommendation
 silently imputes a null clinical action to a case where the model never
