@@ -61,6 +61,10 @@
   {\normalsize\bfseries\itshape\color{darkgray}}
   {\thesubsubsection}{1em}{}
 
+% ── Each numbered section starts on a new page (academic convention) ──────────
+\let\originalsection\section
+\renewcommand{\section}{\clearpage\originalsection}
+
 % ── Header / Footer ───────────────────────────────────────────────────────────
 \pagestyle{fancy}
 \fancyhf{}
@@ -686,6 +690,7 @@ Each run directory contains \texttt{manifest.json}, \texttt{perturbed.jsonl}, \t
 The full errors-included sensitivity narrative is in §\ref{sec:results} under the subsubsection ``Sensitivity analysis: the errors-included view,'' together with the infrastructure caveat ($40$ of $52$ failures preceded the per-model rate-limit refactor). The corresponding artefact is \texttt{runs/20260418T050306Z/summaries\_errors\_included.json}; its SHA-256 is recorded in the run's \texttt{manifest.json}. These values are not cited as findings of the pilot.
 
 % ══════════════════════════════════════════════════════════════════════════════
+\clearpage
 \bibliographystyle{ACM-Reference-Format}
 \begin{thebibliography}{99}
 
