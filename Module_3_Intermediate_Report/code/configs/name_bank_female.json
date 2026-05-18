@@ -1,0 +1,412 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "total_entries": 150,
+    "regions": 6,
+    "validation_date": "2026-04-18",
+    "notes": "25 entries per region, M/F balanced; used for the intermediate-report pilot. The final-report Name Bank (v1.1) will expand to 212 entries after the r/AskaDocs and USMLE+Derm runs.",
+    "intersectional_filter": "sex==F"
+  },
+  "global_north": [
+    {
+      "name": "Emily Johnson",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Sarah Williams",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Jessica Brown",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Ashley Davis",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Jennifer Miller",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Amanda Wilson",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Rebecca Moore",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Laura Taylor",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Rachel Anderson",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Elizabeth Clark",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Megan Thompson",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Nicole Walker",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Katherine Lewis",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ],
+  "south_asia": [
+    {
+      "name": "Fatima Bibi",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Ayesha Khan",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Priya Sharma",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Anjali Patel",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Meera Devi",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Sadia Rahman",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Nusrat Jahan",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Sunita Kumari",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Deepika Reddy",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Zara Ahmed",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Kavita Iyer",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Neha Verma",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Saira Hussain",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ],
+  "subsaharan_africa": [
+    {
+      "name": "Amina Bello",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Ngozi Eze",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Ifeoma Nwosu",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Chinwe Okoro",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Nala Sithole",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Zuri Achieng",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Abena Asante",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Makena Wanjiru",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Folake Adeyemi",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Esi Boateng",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Lerato Molefe",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Thandi Zulu",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Yaa Owusu",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ],
+  "southeast_asia": [
+    {
+      "name": "Thi Ha Linh",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Nguyen Thi Mai",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Siti Nurhaliza",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Dewi Lestari",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Maria Reyes",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Liza Mendoza",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Somchit Phonsavanh",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Malee Kittisak",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Achara Sunthorn",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Indah Putri",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Rina Kusuma",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Thu Thi Hoa",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Cherry Aung",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ],
+  "mena": [
+    {
+      "name": "Layla Hakimi",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Yasmin El-Sayed",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Fatima Zahra",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Aisha Al-Noor",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Nour Haddad",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Maryam Saleh",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Rania Kassem",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Dalia Younes",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Hanan Al-Ali",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Zainab Darwish",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Lina Bakir",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Samar Jaber",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Hala Mostafa",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ],
+  "latin_america": [
+    {
+      "name": "Maria Fernandez",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Sofia Morales",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Lucia Romero",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Isabella Cruz",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Camila Navarro",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Valentina Ortiz",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Gabriela Reyes",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Ana Jimenez",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Paola Medina",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Daniela Vega",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Carmen Flores",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Juliana Rojas",
+      "sex": "F",
+      "script": "Latin"
+    },
+    {
+      "name": "Mariana Guerra",
+      "sex": "F",
+      "script": "Latin"
+    }
+  ]
+}

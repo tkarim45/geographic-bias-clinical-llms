@@ -272,19 +272,26 @@ def _post_json(provider: str, payload: dict, timeout: int = 120) -> dict:
 # Bedrock
 # -----------------------------------------------------------------------------
 
-_BEDROCK_CLIENTS: dict[str, object] = {}
-_BEDROCK_LOCK = threading.Lock()
+_BEDROCK_LOCAL = threading.local()
 
 
 def _bedrock_client(region: str):
-    """Lazily import boto3 and cache one bedrock-runtime client per region."""
-    with _BEDROCK_LOCK:
-        c = _BEDROCK_CLIENTS.get(region)
-        if c is None:
-            import boto3  # local import keeps stdlib-only for non-bedrock runs
-            c = boto3.client("bedrock-runtime", region_name=region)
-            _BEDROCK_CLIENTS[region] = c
-        return c
+    """Return a bedrock-runtime client, one per (thread, region).
+
+    botocore clients are not reliably safe to share across threads under the
+    sandbox's SSL stack (a shared client segfaulted under the thread pool), so
+    each worker thread builds and caches its own client.
+    """
+    clients = getattr(_BEDROCK_LOCAL, "clients", None)
+    if clients is None:
+        clients = {}
+        _BEDROCK_LOCAL.clients = clients
+    c = clients.get(region)
+    if c is None:
+        import boto3  # local import keeps stdlib-only for non-bedrock runs
+        c = boto3.client("bedrock-runtime", region_name=region)
+        clients[region] = c
+    return c
 
 
 _LLAMA_TEMPLATE = (

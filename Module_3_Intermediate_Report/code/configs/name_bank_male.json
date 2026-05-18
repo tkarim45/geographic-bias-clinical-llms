@@ -1,0 +1,382 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "total_entries": 150,
+    "regions": 6,
+    "validation_date": "2026-04-18",
+    "notes": "25 entries per region, M/F balanced; used for the intermediate-report pilot. The final-report Name Bank (v1.1) will expand to 212 entries after the r/AskaDocs and USMLE+Derm runs.",
+    "intersectional_filter": "sex==M"
+  },
+  "global_north": [
+    {
+      "name": "James Miller",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "David Johnson",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Michael Smith",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Robert Brown",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "William Davis",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Richard Wilson",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Thomas Anderson",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Christopher Lee",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Andrew Taylor",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Daniel Clark",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Mark Thompson",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Paul Walker",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ],
+  "south_asia": [
+    {
+      "name": "Ali Khan",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Muhammad Iqbal",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Ahmad Raza",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Rajesh Kumar",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Amit Sharma",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Vikram Patel",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Hassan Ahmed",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Rahim Uddin",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Pradeep Singh",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Sanjay Gupta",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Imran Malik",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Farhan Qureshi",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ],
+  "subsaharan_africa": [
+    {
+      "name": "Kwame Nkrumah",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Chidi Okafor",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Emeka Obi",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Kofi Mensah",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Tunde Adebayo",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Sipho Dlamini",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Thabo Mokoena",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Kipchoge Kibet",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Olu Adekunle",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Kamau Mwangi",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Musa Diallo",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Joshua Osei",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ],
+  "southeast_asia": [
+    {
+      "name": "Nguyen Van Minh",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Tran Duc Anh",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Le Quang Hung",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Pham Thanh Son",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Agus Santoso",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Budi Hartono",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Dedi Wijaya",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Juan Dela Cruz",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Ramon Santos",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Somchai Chaiyot",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Kasem Wongsawat",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Chanthavong Sisouk",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ],
+  "mena": [
+    {
+      "name": "Omar El-Masri",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Hassan Karim",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Khalid Al-Salem",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Youssef Saidi",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Mohammed Nasser",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Ibrahim Haddad",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Karim Mansour",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Tariq Al-Rashid",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Faisal Abdallah",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Ahmed Nabil",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Samir Bouziane",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Rashid Al-Amir",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ],
+  "latin_america": [
+    {
+      "name": "Carlos Gonzalez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Javier Rodriguez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Miguel Hernandez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Jorge Martinez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Luis Perez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Diego Ramirez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Jose Sanchez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Pedro Vargas",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Mateo Silva",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Sebastian Lopez",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Rafael Castro",
+      "sex": "M",
+      "script": "Latin"
+    },
+    {
+      "name": "Alejandro Torres",
+      "sex": "M",
+      "script": "Latin"
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "run_ts_utc": "20260518T101720Z",
+  "loader": "load_oncqa",
+  "cases_path": "datasets/oncqa",
+  "cases_sha256": {
+    "MANIFEST.md": "bcdbb59ec97b7a31ecc1f56e8e01a31d75695881198d6e7e8baeabc3776a8867",
+    "Master2.csv": "b5adec32b3650d67000f00177587d42a2511b7a4650ff48c972b1319a5d7ff2c",
+    "d56.csv": "c9d4642a46375aab1b9f02f39a0301676bffa0ade8f166938ce4d007846cdf84",
+    "s44.csv": "31e9458055c28b4cb75c1ec88f941358c58be95be2dbe7e07771fb3c0f2accd7",
+    "sha256.txt": "9429ee25f01e3fb68a2abab54e6ce5dc3e55aace586da190b6e1133570a0aec5"
+  },
+  "name_bank_path": "configs/name_bank.json",
+  "name_bank_sha256": "bbc231e1b323a838fd3bfd0969f2d5f386c1e0404a0f43450d705532c2dcb8c3",
+  "conditions": [
+    "global_north",
+    "south_asia",
+    "subsaharan_africa",
+    "latin_america"
+  ],
+  "perturb_mode": "combined",
+  "seed": 7,
+  "models": [
+    {
+      "provider": "bedrock",
+      "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "display_name": "Claude-Haiku-4.5 (Bedrock)",
+      "max_tokens": 400,
+      "temperature": 0.2,
+      "supports_json_format": false,
+      "bedrock_region": "us-east-1"
+    },
+    {
+      "provider": "bedrock",
+      "model_id": "us.meta.llama3-3-70b-instruct-v1:0",
+      "display_name": "Llama-3.3-70B (Bedrock)",
+      "max_tokens": 400,
+      "temperature": 0.2,
+      "supports_json_format": false,
+      "bedrock_region": "us-east-1"
+    }
+  ],
+  "annotator": {
+    "provider": "bedrock",
+    "model_id": "us.meta.llama3-1-8b-instruct-v1:0",
+    "display_name": "Llama-3.1-8B (Bedrock, annotator)",
+    "max_tokens": 150,
+    "temperature": 0.0,
+    "supports_json_format": false,
+    "bedrock_region": "us-east-1"
+  },
+  "n_cases": 60,
+  "filter_summary": {
+    "total_master_cases": 100,
+    "filtered_case_count": 60,
+    "excluded_count": 40,
+    "broad_gendered_filter": [
+      "ovarian",
+      "cervical",
+      "prostate",
+      "breast",
+      "endometrial",
+      "uterine",
+      "testicular",
+      "vaginal",
+      "penile"
+    ]
+  },
+  "filter_log": [
+    {
+      "pin": "1",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II invasive ductal carcinoma of the breast"
+    },
+    {
+      "pin": "3",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage III ovarian cancer"
+    },
+    {
+      "pin": "13",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II triple-negative breast cancer"
+    },
+    {
+      "pin": "14",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV prostate cancer"
+    },
+    {
+      "pin": "15",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIIA epithelial ovarian cancer"
+    },
+    {
+      "pin": "20",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Metastatic cervical squamous cell carcinoma"
+    },
+    {
+      "pin": "22",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II triple-negative breast cancer"
+    },
+    {
+      "pin": "24",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage III ovarian serous carcinoma"
+    },
+    {
+      "pin": "26",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II triple-negative breast cancer"
+    },
+    {
+      "pin": "29",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV prostate adenocarcinoma"
+    },
+    {
+      "pin": "31",
+      "reason": "gendered_cancer",
+      "cancer_dx": "favorable intermediate risk prostate adenocarcinoma"
+    },
+    {
+      "pin": "34",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II breast cancer"
+    },
+    {
+      "pin": "36",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Metastatic prostate adenocarcinoma"
+    },
+    {
+      "pin": "39",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA breast cancer"
+    },
+    {
+      "pin": "43",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA endometrial adenocarcinoma"
+    },
+    {
+      "pin": "46",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV prostate adenocarcinoma"
+    },
+    {
+      "pin": "47",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage III triple-negative breast cancer"
+    },
+    {
+      "pin": "48",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV cervical cancer"
+    },
+    {
+      "pin": "49",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV ovarian serous carcinoma"
+    },
+    {
+      "pin": "50",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIIA cervical squamous cell carcinoma"
+    },
+    {
+      "pin": "52",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIB breast ductal carcinoma"
+    },
+    {
+      "pin": "54",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV ovarian serous carcinoma"
+    },
+    {
+      "pin": "55",
+      "reason": "gendered_cancer",
+      "cancer_dx": "favorable intermediate risk prostate adenocarcinoma"
+    },
+    {
+      "pin": "59",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage I prostate adenocarcinoma"
+    },
+    {
+      "pin": "64",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIIA breast ductal carcinoma"
+    },
+    {
+      "pin": "66",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IA endometrial adenocarcinoma"
+    },
+    {
+      "pin": "68",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage III ovarian serous carcinoma"
+    },
+    {
+      "pin": "69",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage I testicular seminoma"
+    },
+    {
+      "pin": "72",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA breast ductal carcinoma"
+    },
+    {
+      "pin": "77",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IV prostate cancer"
+    },
+    {
+      "pin": "78",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IB1 cervical squamous cell carcinoma"
+    },
+    {
+      "pin": "81",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA breast cancer"
+    },
+    {
+      "pin": "83",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIIC ovarian cancer"
+    },
+    {
+      "pin": "84",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIB testicular cancer"
+    },
+    {
+      "pin": "85",
+      "reason": "gendered_cancer",
+      "cancer_dx": "favorable intermediate risk prostate cancer"
+    },
+    {
+      "pin": "86",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage II endometrial cancer"
+    },
+    {
+      "pin": "94",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA breast cancer"
+    },
+    {
+      "pin": "96",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIIC endometrial cancer"
+    },
+    {
+      "pin": "98",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIA cervical cancer"
+    },
+    {
+      "pin": "99",
+      "reason": "gendered_cancer",
+      "cancer_dx": "Stage IIB testicular cancer"
+    }
+  ]
+}

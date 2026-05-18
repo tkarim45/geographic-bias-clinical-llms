@@ -1,0 +1,16 @@
+loader: load_oncqa
+cases_path: datasets/oncqa
+name_bank_path: configs/name_bank_female.json
+run_dir_parent: runs
+
+perturb_mode: combined
+
+conditions:
+  - global_north
+  - south_asia
+  - subsaharan_africa
+  - latin_america
+
+models:
+  - {"provider": "bedrock", "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0", "display_name": "Claude-Haiku-4.5 (Bedrock)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false, "bedrock_region": "us-east-1"}
+  - {"provider": "bedrock", "model_id": "us.meta.llama3-3-70b-instruct-v1:0", "display_name": "Llama-3.3-70B (Bedrock)", "max_tokens": 400, "temperature": 0.2, "supports_json_format": false, "bedrock_region": "us-east-1"}
