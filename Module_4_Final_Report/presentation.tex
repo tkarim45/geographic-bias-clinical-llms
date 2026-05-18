@@ -231,8 +231,9 @@
   \begin{itemize}
     \item All three models now produce a \textbf{positive} GDI in the
     hypothesised direction.
-    \item Claude-Haiku-4.5 clears the Bonferroni-corrected threshold
-    ($p=0.004 < 0.0056$).
+    \item On this seed Claude-Haiku-4.5 clears the Bonferroni-corrected
+    threshold ($p=0.004 < 0.0056$); the robustness slide shows how far that
+    holds.
     \item 60 real clinician-written oncology cases; $n=20 \to n=60$ plus real
     text is what moves the signal out of the noise.
   \end{itemize}
@@ -287,6 +288,55 @@
   \end{itemize}
 \end{frame}
 
+% ── Multi-seed ───────────────────────────────────────────────────────────────
+\begin{frame}{Robustness check: the result is seed-sensitive}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \footnotesize
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    \textbf{Model} & \textbf{Seed 42} & \textbf{Seed 7} & \textbf{Seed 13} & \textbf{Mean}\\
+    \midrule
+    Claude-Haiku-4.5 & $+0.045$ & $-0.015$ & $+0.012$ & $+0.014$\\
+    Llama-3.3-70B    & $+0.009$ & $+0.039$ & $+0.012$ & $+0.020$\\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.5em}
+  \begin{itemize}
+    \item The seed fixes which name and city fill each case. Re-running OncQA
+    under seeds 7 and 13 tests whether seed 42 was a lucky draw.
+    \item The direction holds: both models stay positive in the mean.
+    \item The significance does not. Claude's $p=0.004$ at seed 42 becomes
+    $p=0.85$ at seed 7. The honest effect is a small mean GDI near $+0.02$.
+  \end{itemize}
+\end{frame}
+
+% ── Intersectional ───────────────────────────────────────────────────────────
+\begin{frame}{Intersectional: gender changes the geographic effect}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \footnotesize
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    \textbf{Model} & \textbf{Male patients} & \textbf{Female patients}\\
+    \midrule
+    Claude-Haiku-4.5 & $+0.012$ & $-0.012$\\
+    Llama-3.3-70B    & $-0.048$ & $+0.003$\\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.6em}
+  \begin{itemize}
+    \item Re-running OncQA with male-only and female-only names isolates a
+    gender axis on top of geography.
+    \item On Claude-Haiku-4.5 the geographic disadvantage falls on male
+    patients; on Llama-3.3-70B it falls the other way.
+    \item Geography and gender are not separable. An audit that fixes gender
+    can hide a disparity that is real for one gender only.
+  \end{itemize}
+\end{frame}
+
 % ── Analysis ─────────────────────────────────────────────────────────────────
 \begin{frame}{Analysis: which reading of the null survives?}
   \begin{itemize}
@@ -295,35 +345,36 @@
     \item \textbf{H2:} per-model variance is masked by pooling at small $n$.
   \end{itemize}
   \vspace{0.5em}
-  \begin{block}{The OncQA run favours H2}
-    Claude-Haiku-4.5 clears the Bonferroni-corrected threshold. All three
-    models are positive. The bias is genuine and detectable at scale, but its
-    size varies from model to model. That rules out the strong form of H1:
-    alignment does not erase the geographic signal uniformly.
+  \begin{block}{The evidence gives qualified support for H2}
+    All models and seeds are positive in the mean, which rules out the strong
+    form of H1: alignment does not erase the geographic signal. But the effect
+    is small (mean GDI near $+0.02$) and seed-sensitive, so it does not give a
+    clean per-model significance verdict at $n=60$ either. The signal is
+    genuine but modest.
   \end{block}
   \vspace{0.3em}
   {\footnotesize The geographic axis produces disparities of similar size to
-  the race and tone axes already documented by Gourabathina et~al.\ and Omar
-  et~al.}
+  the race and tone axes documented by Gourabathina et~al.\ and Omar et~al.}
 \end{frame}
 
 % ── Conclusion ───────────────────────────────────────────────────────────────
 \begin{frame}{Conclusion: answering the research questions}
   \begin{itemize}
     \item \textbf{RQ1.} On real data, Global-South identity perturbation
-    measurably reduces appropriate care.
-    \item \textbf{RQ2.} The bias is systemic in direction (all models
-    positive) but varies in magnitude and significance.
+    reduces appropriate care by a small but consistently positive margin.
+    \item \textbf{RQ2.} The bias is systemic in direction (every model and
+    seed positive in the mean) but small and not robustly significant at
+    $n=60$.
     \item \textbf{RQ3.} GDI gives a usable within-panel ranking at adequate
-    $n$, but not one that is stable across scales.
-    \item \textbf{RQ4.} The disparity splits into a dominant geographic
-    component and a weak name component that do not simply add.
+    $n$, but not one that is stable across scales or seeds.
+    \item \textbf{RQ4.} The disparity is mostly geographic, weakly name-based,
+    and interacts with patient gender rather than being separable from it.
   \end{itemize}
   \vspace{0.5em}
   \begin{block}{Bottom line}
-    Geographic-axis bias in clinical LLMs is real but model-heterogeneous.
-    Detecting it reliably needs real clinical text and a sample size
-    justified by a power analysis.
+    Geographic-axis bias in clinical LLMs is genuine but modest and
+    model-variable. Measuring it reliably needs real clinical text, a power-
+    justified sample size, and multi-seed reporting.
   \end{block}
 \end{frame}
 
@@ -333,17 +384,21 @@
     \begin{column}{0.5\textwidth}
       \textbf{Limitations}
       \begin{itemize}
-        \item Single seed; no multi-seed variance estimate yet.
+        \item Effect is small and seed-sensitive at $n=60$; three seeds is
+        still few.
         \item Pilot gold labels are team-assigned, not clinician-validated.
+        \item Multi-seed and intersectional runs use a Bedrock-only two-model
+        panel (OpenAI quota was exhausted).
         \item Findings scoped to OncQA oncology text and three South regions.
       \end{itemize}
     \end{column}
     \begin{column}{0.5\textwidth}
       \textbf{Future work}
       \begin{itemize}
-        \item Scale to r/AskaDocs and USMLE+Derm.
+        \item More seeds and more cases to pin the effect size.
+        \item Scale to other real corpora beyond oncology.
         \item Exercise the Southeast Asia and MENA regions.
-        \item Multi-seed runs; intersectional (gender $\times$ region) slices.
+        \item Multi-seed intersectional runs; severity crossing.
         \item Board-certified clinician inter-rater agreement.
       \end{itemize}
     \end{column}

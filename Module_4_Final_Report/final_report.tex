@@ -173,21 +173,23 @@ of this size. \emph{(2)~An OncQA real-data scaling experiment} ($n=60$
 clinician-written oncology cases, 4 regions, 3 models on an OpenAI+Bedrock
 panel, producing 720 completions and 720 annotations with zero errors)
 reverses the null. All three models produce a \emph{positive} GDI in the
-hypothesised direction. Claude-Haiku-4.5 reaches $+0.045$ with a paired
-Wilcoxon $p=0.004$ that clears the Bonferroni-corrected threshold
-$\alpha=0.0056$, and GPT-4o-mini ($+0.039$) and Llama-3.3-70B ($+0.009$) are
-positive at nominal significance. \emph{(3)~A perturbation ablation} that
-separates Name-only, Geo-only, and Combined identity cues shows the geographic
-reference is the dominant channel: Geo-only GDI is 3 to 6 times larger than
-Name-only for every model. The OncQA signal sits on the MANAGE and RESOURCE
-triage questions, and VISIT stays flat because of a $92\%$ gold base rate. We
-read the result as per-model variation in geographic-axis bias, detectable
-once the sample is large enough, rather than uniform suppression by alignment
+hypothesised direction; on the seed-42 run Claude-Haiku-4.5 reaches $+0.045$
+with a paired Wilcoxon $p=0.004$. A three-seed robustness check, however,
+shows that headline is seed-sensitive: across seeds 42, 7, and 13 the same
+model averages $+0.014$ (the $p=0.004$ pass does not replicate), and
+Llama-3.3-70B averages $+0.020$. The honest effect size is a small but
+consistently positive GDI of about $+0.014$ to $+0.020$. \emph{(3)~A
+perturbation ablation} that separates Name-only, Geo-only, and Combined
+identity cues shows the geographic reference is the dominant channel: Geo-only
+GDI is 3 to 6 times larger than Name-only for every model. An intersectional
+run finds the effect is gender-dependent, carried by male patients on one
+model and reversed for male patients on the other. The OncQA signal sits on
+the MANAGE and RESOURCE triage questions, and VISIT stays flat because of a
+$92\%$ gold base rate. We read the result as a genuine but modest and
+model-variable geographic-axis bias, not uniform suppression by alignment
 training. The report closes with a baselines and evaluation-methodology
-discussion, a threats-to-validity analysis, and a future-work agenda covering
-additional real datasets, multi-seed variance estimation, intersectional
-slices, and clinician inter-rater agreement. Every cited number traces to a
-specific timestamped run directory.
+discussion, a threats-to-validity analysis, and a future-work agenda. Every
+cited number traces to a specific timestamped run directory.
 \end{abstract}
 
 \vspace{0.4em}
@@ -251,16 +253,16 @@ in this report:
   SHA-256-keyed idempotency cache, per-model token-bucket rate limiting, and a
   manifest hasher that pins datasets and the Name-Bank to every run
   (\S\ref{sec:architecture}).
-  \item \textbf{Three executed experiments.} A synthetic pilot, an OncQA
-  real-data scaling experiment, and a Name/Geo/Combined perturbation ablation.
-  All three were run against live model APIs, and every number traces to a
-  timestamped run directory (\S\ref{sec:results}).
+  \item \textbf{Five executed experiments.} A synthetic pilot, an OncQA
+  real-data scaling experiment, a Name/Geo/Combined perturbation ablation, a
+  three-seed robustness check, and an intersectional gender-by-region run. All
+  were run against live model APIs, and every number traces to a timestamped
+  run directory (\S\ref{sec:results}).
   \item \textbf{An empirical finding.} On real clinician-written oncology
-  correspondence, geographic identity perturbation produces a positive GDI on
-  all three evaluated models, and one model (Claude-Haiku-4.5) crosses a
-  Bonferroni-corrected significance threshold. To our knowledge this is the
-  first measurement of geographic-axis bias in a clinical setting
-  (\S\ref{sec:analysis}).
+  correspondence, geographic identity perturbation produces a small but
+  consistently positive GDI (mean $+0.014$ to $+0.020$ across seeds). To our
+  knowledge this is the first measurement of geographic-axis bias in a
+  clinical setting (\S\ref{sec:analysis}).
 \end{enumerate}
 
 \subsection{Summary of Findings}
@@ -269,12 +271,15 @@ The main result is that the measured disparity changes direction as the
 sample grows. At $n=20$ on synthetic vignettes the audit returns a near-null,
 with no model showing a geographic disparity distinguishable from noise. At
 $n=60$ on real OncQA oncology cases the same pipeline returns a positive GDI
-on every model, and Claude-Haiku-4.5 is significant after Bonferroni
-correction. The ablation attributes most of the effect to the geographic
-reference rather than the patient name, and the per-question decomposition
-places it on the MANAGE (self-management) and RESOURCE (referral and
-diagnostic) triage axes. We conclude that geographic-axis bias in clinical
-LLMs is genuine but varies from model to model, and that detecting it
+on every model. A three-seed robustness check puts the size of that effect at
+a small but consistently positive mean (about $+0.014$ to $+0.020$ GDI), and
+shows that a single seed can read anywhere from null to
+Bonferroni-significant. The ablation attributes most of the effect to the
+geographic reference rather than the patient name, the per-question
+decomposition places it on the MANAGE (self-management) and RESOURCE (referral
+and diagnostic) triage axes, and an intersectional run shows it also depends
+on patient gender. We conclude that geographic-axis bias in clinical
+LLMs is genuine but small and varies from model to model, and that detecting it
 reliably needs both real clinical text and a sample size justified by a power
 analysis.
 
@@ -630,31 +635,44 @@ All experiments use the Global-North baseline plus three Global-South regions
 (South Asia, Sub-Saharan Africa, and Latin America), which gives a
 four-condition matched-pair design. Southeast Asia and MENA are present in the
 Name Bank but were not exercised, and are reserved for future work
-(\S\ref{sec:future}). All runs use a single fixed seed
-(\texttt{seed}\,$=42$) and are byte-reproducible through the idempotency
-cache. Table~\ref{tab:runs} inventories the three executed experiments.
+(\S\ref{sec:future}). The headline runs use a single fixed seed
+(\texttt{seed}\,$=42$); the multi-seed robustness check (\S\ref{sec:multiseed})
+adds seeds 7 and 13. Every run is byte-reproducible through the idempotency
+cache. Table~\ref{tab:runs} inventories the executed experiments.
 
 \begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{0.97\linewidth}{@{}>{\bfseries\small}p{2.7cm} >{\small}p{2.5cm} >{\small}p{2.7cm} >{\small\raggedright\arraybackslash}X@{}}
+\renewcommand{\arraystretch}{1.25}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.9cm} >{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}X@{}}
 \rowcolor{rowblue}
 \textcolor{white}{\textbf{Experiment}} &
 \textcolor{white}{\textbf{Scale}} &
 \textcolor{white}{\textbf{Run directory}} &
 \textcolor{white}{\textbf{Panel}}\\
 \rowcolor{rowalt}
-Synthetic pilot & 20 cases $\times$ 4 regions $\times$ 4 models & \texttt{20260418\-T050306Z} & OpenAI + Groq\\
-OncQA scaling & 60 cases $\times$ 4 regions $\times$ 3 models & \texttt{20260419\-T121941Z} & OpenAI + Bedrock\\
+Synthetic pilot & 20 cases, 4 regions, 4 models & \texttt{20260418T050306Z} & OpenAI + Groq\\
+OncQA scaling & 60 cases, 4 regions, 3 models & \texttt{20260419T121941Z} & OpenAI + Bedrock\\
 \rowcolor{rowalt}
-Ablation: \textsc{Name} & 20 cases $\times$ 4 regions $\times$ 3 models & \texttt{20260419\-T123259Z} & OpenAI + Bedrock\\
-Ablation: \textsc{Geo} & 20 cases $\times$ 4 regions $\times$ 3 models & \texttt{20260419\-T123612Z} & OpenAI + Bedrock\\
+Ablation: \textsc{Name} & 20 cases, 4 regions, 3 models & \texttt{20260419T123259Z} & OpenAI + Bedrock\\
+Ablation: \textsc{Geo} & 20 cases, 4 regions, 3 models & \texttt{20260419T123612Z} & OpenAI + Bedrock\\
 \rowcolor{rowalt}
-Ablation: \textsc{Combined} & 20 cases $\times$ 4 regions $\times$ 3 models & \texttt{20260419\-T123954Z} & OpenAI + Bedrock\\
+Ablation: \textsc{Combined} & 20 cases, 4 regions, 3 models & \texttt{20260419T123954Z} & OpenAI + Bedrock\\
+OncQA multi-seed 7 & 60 cases, 4 regions, 2 models & \texttt{20260518T101720Z} & Bedrock\\
+\rowcolor{rowalt}
+OncQA multi-seed 13 & 60 cases, 4 regions, 2 models & \texttt{20260518T102557Z} & Bedrock\\
+Intersectional: male & 60 cases, 4 regions, 2 models & \texttt{20260518T103408Z} & Bedrock\\
+\rowcolor{rowalt}
+Intersectional: female & 60 cases, 4 regions, 2 models & \texttt{20260518T104220Z} & Bedrock\\
 \end{tabularx}
-\captionof{table}{The three executed experiments. Every number in
-\S\ref{sec:results} traces to the cited run directory's \texttt{summaries.json}.
-The OncQA run produced 720 completions and 720 annotations with zero HTTP
-errors and zero heuristic-fallback annotations.}
+\captionof{table}{The executed experiments. Every number in
+\S\ref{sec:results} traces to the cited run directory's
+\texttt{summaries.json}. The seed-42 OncQA run produced 720 completions and
+720 annotations with zero HTTP errors and zero heuristic-fallback
+annotations. The multi-seed and intersectional runs use a Bedrock-only
+two-model panel (Claude-Haiku-4.5, Llama-3.3-70B); the OpenAI-hosted models
+were unavailable for those runs because the project's OpenAI quota was
+exhausted.}
 \label{tab:runs}
 \end{center}
 
@@ -958,6 +976,115 @@ produce a prompt the model reads as mildly out-of-distribution, which damps
 the geographic signal instead of compounding it. This is a direct, measured
 answer to RQ4.
 
+\subsection{Multi-Seed Robustness}
+\label{sec:multiseed}
+
+The headline OncQA result in \S\ref{sec:oncqa} comes from a single seed
+(\texttt{seed}\,$=42$). A single seed fixes which name and which city fill the
+\texttt{\{\{NAME\}\}} and \texttt{\{\{GEO\}\}} placeholders in each case, so a
+single-seed GDI could reflect a lucky or unlucky draw rather than a stable
+property of the model. To test that, the OncQA run was repeated under two more
+seeds (7 and 13) on the Bedrock two-model panel. Table~\ref{tab:multiseed}
+reports all three seeds.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l c c c c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{Seed}} &
+\textcolor{headertext}{\textbf{RCER$_\text{N}$}} &
+\textcolor{headertext}{\textbf{RCER$_\text{S}$}} &
+\textcolor{headertext}{\textbf{GDI}} &
+\textcolor{headertext}{\textbf{$p$ (W)}}\\
+\rowcolor{rowalt}
+\textbf{Claude-Haiku-4.5} & 42 & \small 16.2\% & \small 20.7\% & $+0.045$ & \textbf{0.004}\\
+\textbf{Claude-Haiku-4.5} &  7 & \small 21.6\% & \small 20.1\% & $-0.015$ & 0.846\\
+\rowcolor{rowalt}
+\textbf{Claude-Haiku-4.5} & 13 & \small 18.9\% & \small 20.1\% & $+0.012$ & 0.017\\
+\textit{Claude-Haiku-4.5} & \textit{mean} & \small -- & \small -- & \textit{$+0.014$} & \textit{sd 0.024}\\
+\rowcolor{rowalt}
+\textbf{Llama-3.3-70B} & 42 & \small 18.9\% & \small 19.8\% & $+0.009$ & 0.038\\
+\textbf{Llama-3.3-70B} &  7 & \small 17.1\% & \small 21.0\% & $+0.039$ & 0.016\\
+\rowcolor{rowalt}
+\textbf{Llama-3.3-70B} & 13 & \small 19.8\% & \small 21.0\% & $+0.012$ & 0.190\\
+\textit{Llama-3.3-70B} & \textit{mean} & \small -- & \small -- & \textit{$+0.020$} & \textit{sd 0.013}\\
+\end{tabular}
+\captionof{table}{OncQA GDI under three seeds (runs \texttt{20260419T121941Z},
+\texttt{20260518T101720Z}, \texttt{20260518T102557Z}; $n=60$, Bedrock
+two-model panel). Both models have a positive mean GDI, but the per-seed
+values are dispersed and the per-seed Wilcoxon $p$ is not stable.}
+\label{tab:multiseed}
+\end{center}
+
+Two things follow, and the second tempers the headline. First, the
+\emph{direction is consistent}: five of the six model-seed cells have a
+positive GDI, and the per-model mean is positive for both
+(Claude-Haiku-4.5 $+0.014$, Llama-3.3-70B $+0.020$). The hypothesised
+Global-South disadvantage shows up on average. Second, \emph{the single-seed
+significance does not replicate}. Claude-Haiku-4.5's seed-42 GDI of $+0.045$
+with $p=0.004$ cleared the Bonferroni-corrected threshold, but at seed 7 the
+same model returns $-0.015$ ($p=0.846$) and at seed 13 $+0.012$ ($p=0.017$).
+The seed-42 run sampled a draw at the high end of the model's spread. The
+honest reading of the OncQA experiment is therefore weaker than the seed-42
+table alone suggests: there is a positive directional signal of about
+$+0.014$ to $+0.020$ GDI, but it is small, seed-sensitive, and not robustly
+significant once seed variance is accounted for. This is exactly the kind of
+fragility a single-seed audit hides, and it is why multi-seed reporting should
+be standard for perturbation audits at this scale.
+
+\subsection{Intersectional Analysis: Gender $\times$ Region}
+\label{sec:intersectional}
+
+RQ4's name-versus-geography ablation treats identity as one axis. Patient
+gender is a second axis, and the audit can cross the two by drawing
+\texttt{\{\{NAME\}\}} from a gender-filtered Name Bank. The OncQA run was
+repeated twice on the Bedrock panel: once with male-only names in every region
+and once with female-only names, holding seed and cases fixed.
+Table~\ref{tab:intersectional} reports the result.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l c c c c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Model}} &
+\textcolor{headertext}{\textbf{Gender}} &
+\textcolor{headertext}{\textbf{RCER$_\text{N}$}} &
+\textcolor{headertext}{\textbf{RCER$_\text{S}$}} &
+\textcolor{headertext}{\textbf{GDI}} &
+\textcolor{headertext}{\textbf{$p$ (W)}}\\
+\rowcolor{rowalt}
+\textbf{Claude-Haiku-4.5} & Male   & \small 18.9\% & \small 20.1\% & $+0.012$ & 0.040\\
+\textbf{Claude-Haiku-4.5} & Female & \small 22.5\% & \small 21.3\% & $-0.012$ & 0.864\\
+\rowcolor{rowalt}
+\textbf{Llama-3.3-70B} & Male   & \small 24.3\% & \small 19.5\% & $-0.048$ & 0.999\\
+\textbf{Llama-3.3-70B} & Female & \small 19.8\% & \small 20.1\% & $+0.003$ & 0.603\\
+\end{tabular}
+\captionof{table}{OncQA GDI split by patient gender (runs
+\texttt{20260518T103408Z} male, \texttt{20260518T104220Z} female; $n=60$,
+seed 42, Bedrock two-model panel). Each run draws all names from a
+gender-filtered Name Bank, so the Global-North baseline is also
+gender-matched.}
+\label{tab:intersectional}
+\end{center}
+
+The geographic effect is not gender-neutral, and the two models behave
+differently. On Claude-Haiku-4.5 the positive GDI is carried entirely by male
+patients ($+0.012$); for female patients the GDI is slightly negative
+($-0.012$). On Llama-3.3-70B the pattern is sharper and runs the other way:
+male Global-South patients receive a \emph{negative} GDI ($-0.048$, meaning
+Global-South RCER is lower than Global-North), while female patients are flat
+($+0.003$). We do not over-read the magnitudes, since each gender-split cell
+is a single seed and \S\ref{sec:multiseed} has shown how much a single seed
+can move. The defensible claim is qualitative: patient gender measurably
+changes the geographic-axis effect, and it changes it in opposite directions
+on the two models. Geographic bias and gender are not separable, which means a
+fairness audit that fixes gender (as the main OncQA run implicitly does by
+pooling) can mask a disparity that is real for one gender and absent for the
+other.
+
 % ══════════════════════════════════════════════════════════════════════════════
 \section{Analysis and Discussion}
 \label{sec:analysis}
@@ -980,30 +1107,38 @@ GDI range spans $0.077$. Under H2, per-model effects at a large enough $n$
 would exceed the $\pm0.03$ band on at least one model, with at least one
 Bonferroni-corrected CI excluding zero.
 
-\textbf{The OncQA run discriminates in favour of H2.} The pre-registered
-criterion was that if any model clears the Bonferroni-corrected threshold on
-OncQA, H2 is supported. Claude-Haiku-4.5's pooled one-sided paired Wilcoxon
-$p=0.004$ is below the corrected $\alpha=0.0056$ ($3$ regions $\times$ $3$
-questions), and its GDI BCa CI $[+0.010,+0.053]$ excludes zero, so H2 is
-supported for Claude-Haiku-4.5. GPT-4o-mini ($p=0.015$) and Llama-3.3-70B
-($p=0.038$) clear nominal but not corrected significance; both still have
-positive point estimates, and GPT-4o-mini also has a GDI CI that excludes
-zero. The fair reading is partial support for H2. Geographic-axis bias is
-genuine and detectable at scale, but its size varies from model to model
-rather than being a uniform property of every frontier model. That outcome
-rules out the strong form of H1: alignment does not erase the geographic
-signal uniformly.
+\textbf{The OncQA run leans towards H2, and the multi-seed check tells us how
+firmly.} The pre-registered criterion was that if any model clears the
+Bonferroni-corrected threshold on OncQA, H2 is supported. On the seed-42 run
+Claude-Haiku-4.5's pooled one-sided paired Wilcoxon $p=0.004$ is below the
+corrected $\alpha=0.0056$ ($3$ regions $\times$ $3$ questions), and its GDI
+BCa CI $[+0.010,+0.053]$ excludes zero. Taken alone, that satisfies the
+criterion. The multi-seed robustness check (\S\ref{sec:multiseed}) shows the
+criterion should not be taken alone: the same model returns $p=0.846$ at
+seed 7 and $p=0.017$ at seed 13, so the corrected-significance pass at
+seed 42 does not replicate. What \emph{does} replicate is the direction.
+Across the three seeds Claude-Haiku-4.5 averages $+0.014$ GDI and
+Llama-3.3-70B averages $+0.020$, both positive, and GPT-4o-mini's seed-42
+GDI ($+0.039$) is positive as well. The fair conclusion is qualified support
+for H2: geographic-axis bias is real and points in the hypothesised direction
+on every model and seed tested in the mean, but it is small (GDI on the order
+of $+0.02$) and seed-sensitive enough that a single run can land anywhere from
+null to Bonferroni-significant. That still rules out the strong form of H1:
+alignment does not erase the geographic signal. It also rules out the strong
+form of H2: the effect is not large or stable enough to give a clean
+per-model significance verdict at $n=60$. The geographic signal is genuine but
+modest, and pinning its magnitude needs more cases and more seeds.
 
 \subsection{Cross-Experiment Synthesis}
 
-Taken together, the three experiments tell one coherent story:
+Taken together, the experiments tell one coherent story:
 
 \begin{itemize}
   \item \textbf{Scale matters.} The identical pipeline returns a null at
-  $n=20$ and a positive, partly-significant signal at $n=60$. The power
-  analysis (Table~\ref{tab:power}) predicted exactly this: the pilot was
-  under-powered by design, and the OncQA $n$ was chosen to clear the largest
-  pilot effect's $\alpha=0.005$ requirement.
+  $n=20$ and a positive signal at $n=60$. The power analysis
+  (Table~\ref{tab:power}) predicted exactly this: the pilot was under-powered
+  by design, and the OncQA $n$ was chosen to clear the largest pilot effect's
+  $\alpha=0.005$ requirement.
   \item \textbf{Real text matters.} The OncQA cases are real clinician-written
   oncology messages, whereas the pilot cases are synthetic. The change of
   direction is partly a power effect and partly a distributional one, since
@@ -1018,6 +1153,15 @@ Taken together, the three experiments tell one coherent story:
   willing to recommend home self-management, or to withhold a diagnostic
   referral, for a Global-South patient, while still correctly recommending an
   in-person visit when the case clearly warrants one.
+  \item \textbf{The effect is small and seed-sensitive.} The multi-seed check
+  (\S\ref{sec:multiseed}) puts the OncQA GDI at about $+0.014$ to $+0.020$ in
+  the mean, with enough seed-to-seed spread that a single run can read as null
+  or as Bonferroni-significant. The signal is genuine in direction but modest
+  in size.
+  \item \textbf{Gender interacts with geography.} The intersectional runs
+  (\S\ref{sec:intersectional}) show the geographic effect is carried by male
+  patients on Claude-Haiku-4.5 and runs negative for male patients on
+  Llama-3.3-70B. The two identity axes are not separable.
 \end{itemize}
 
 RQ3 asks whether GDI yields a stable model ranking, and the evidence is mixed.
@@ -1112,13 +1256,18 @@ its mitigation or its status as an acknowledged limitation.
   This is mitigated by the OncQA experiment, which uses real
   clinician-written correspondence; the pilot's role is explicitly pipeline
   validation and power estimation.
-  \item[Single seed.] All runs use one seed. Multi-seed variance estimation
-  was not performed and is the most important piece of future work for
-  tightening the OncQA confidence intervals.
-  \item[Panel migration.] Provider rate limits forced the OncQA/ablation
-  panel to differ from the pilot panel. This is why cross-table model
-  comparison is explicitly disclaimed (\S\ref{sec:oncqa}); within-panel
-  comparisons are unaffected.
+  \item[Seed sensitivity.] The headline OncQA result is single-seed, and the
+  multi-seed check (\S\ref{sec:multiseed}) shows the per-seed GDI is dispersed
+  enough that the seed-42 corrected-significance pass does not replicate. The
+  reported effect should be read as the three-seed mean
+  (GDI $\approx +0.014$ to $+0.020$), not the seed-42 value. Three seeds is
+  still few; more seeds would tighten the estimate further.
+  \item[Panel migration and provider availability.] Provider rate limits
+  forced the OncQA and ablation panel to differ from the pilot panel, which is
+  why cross-table model comparison is disclaimed (\S\ref{sec:oncqa}). The
+  multi-seed and intersectional runs use a Bedrock-only two-model panel
+  because the project's OpenAI quota was exhausted before those runs; the
+  GPT-4o-mini rows therefore exist only at seed 42.
   \item[Name-phonological confounds.] The Name Bank controls for cultural
   origin but not for phonological complexity or English-orthographic
   naturalness. A confound-control regression is left to future work; the
@@ -1130,15 +1279,23 @@ its mitigation or its status as an acknowledged limitation.
   geographic channel but cannot separate ``perceived identity'' from
   ``inferred health-system context''; disentangling these is future work.
   \item[Coverage.] Two Name-Bank regions (Southeast Asia, MENA) were not
-  exercised, and two planned real datasets (r/AskaDocs, USMLE+Derm) were not
-  run within the project window. The reported findings are therefore scoped
-  to OncQA oncology correspondence and three South regions.
+  exercised. Two further real datasets (r/AskaDocs, USMLE+Derm) were
+  attempted but not run: the accessible r/AskaDocs corpora are either gated,
+  built for a clarifying-question task with no triage-recommendation gold, or
+  raw Reddit text with patient identity already baked in (which a controlled
+  perturbation cannot cleanly override), and USMLE-style material is
+  multiple-choice exam question answering that does not fit the
+  patient-message triage design. The reported findings are therefore scoped to
+  OncQA oncology correspondence and three South regions.
   \item[Reproducibility.] Every number traces to a timestamped run directory;
   the dataset and Name-Bank SHA-256 hashes are pinned in
   \texttt{manifest.json}; the cache keys every LLM call by
   $\mathrm{SHA\text{-}256}(\text{model},\text{prompt},\text{seed},
   \text{temperature})$, so any run reproduces byte-identically on the same
-  config and seed.
+  config and seed. The multi-seed and intersectional runs required one code
+  fix: the Bedrock client is now built per worker thread rather than shared,
+  because a shared client segfaulted under the thread pool. The fix changes
+  concurrency safety only, not any model output.
 \end{description}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -1155,26 +1312,34 @@ implementation is a reproducible, near-zero-dependency, multi-provider
 pipeline, with every result pinned to a hashed run directory.
 
 The empirical conclusion is that geographic-axis bias in clinical LLMs is
-genuine, but its size varies from model to model. A deliberately
-under-powered synthetic pilot returned a null. Scaling the same pipeline to
-$60$ real OncQA oncology cases reversed that null: all three evaluated models
-showed a positive Geographic Disparity Index, and Claude-Haiku-4.5 crossed a
-Bonferroni-corrected significance threshold ($\text{GDI}=+0.045$, $p=0.004$).
-The perturbation ablation attributes most of the effect to the geographic
+genuine, points in the hypothesised direction, but is small and varies from
+model to model. A deliberately under-powered synthetic pilot returned a null.
+Scaling the same pipeline to $60$ real OncQA oncology cases reversed that
+null: all three evaluated models showed a positive Geographic Disparity Index.
+The seed-42 run put Claude-Haiku-4.5 at $\text{GDI}=+0.045$ ($p=0.004$, past
+the Bonferroni-corrected threshold), but the three-seed robustness check
+brought that down to a mean of $+0.014$ and showed the corrected-significance
+pass does not replicate across seeds. The honest summary is a mean GDI on the
+order of $+0.014$ to $+0.020$: a real directional disadvantage for
+Global-South patients, modest in size and seed-sensitive at $n=60$. The
+perturbation ablation attributes most of the effect to the geographic
 reference, which is $3$ to $6$ times stronger than the name channel, and the
 per-question decomposition places it on the self-management and referral
-axes. These disparities are of similar size to the race- and tone-axis
-disparities already documented in the literature, which is why we argue the
-geographic axis belongs in clinical-LLM fairness evaluation.
+axes. The intersectional runs show the effect is also gender-dependent. These
+disparities are of similar size to the race- and tone-axis disparities already
+documented in the literature, which is why we argue the geographic axis
+belongs in clinical-LLM fairness evaluation.
 
 The research questions can now be answered directly. \textbf{RQ1:} on real
 data, Global-South identity perturbation does measurably reduce appropriate
-care. \textbf{RQ2:} the bias is systemic in direction, since all three models
-are positive on OncQA, but it varies in magnitude and significance from one
-model to the next. \textbf{RQ3:} GDI gives a usable within-panel ranking at an
-adequate $n$, but not a ranking that is stable across scales. \textbf{RQ4:}
+care, by a small but consistently positive margin. \textbf{RQ2:} the bias is
+systemic in direction, since every model and seed tested is positive in the
+mean, but it varies in magnitude and is not robustly significant per model at
+$n=60$. \textbf{RQ3:} GDI gives a usable within-panel ranking at an adequate
+$n$, but not a ranking that is stable across scales or seeds. \textbf{RQ4:}
 the disparity splits into a dominant geographic component and a weak name
-component, and the two do not simply add.
+component that do not simply add, and it interacts with patient gender rather
+than being separable from it.
 
 \subsection{Future Work}
 \label{sec:future}
@@ -1182,18 +1347,24 @@ component, and the two do not simply add.
 The items below extend the audit beyond the scope completed in this report.
 
 \begin{itemize}
-  \item \textbf{Additional real datasets.} Scale to r/AskaDocs verified-
-  physician correspondence~\cite{gomes2020} and USMLE+Derm exam
-  items~\cite{jin2020,johri2025}, whose gold distributions load less heavily
-  on VISIT and would give an informative test on that axis.
-  \item \textbf{Multi-seed variance estimation.} Re-run the
-  variance-critical experiments under three or more seeds to tighten the BCa
-  confidence intervals and confirm the OncQA significance.
+  \item \textbf{More seeds and more cases.} Three seeds already show the
+  $n=60$ GDI is seed-sensitive. A larger case set and more seeds would tighten
+  the estimate and settle whether any per-model effect is robustly
+  significant.
+  \item \textbf{Additional real datasets.} A scaled run on r/AskaDocs
+  verified-physician correspondence~\cite{gomes2020} and on broader clinical
+  corpora would test the effect outside oncology. This needs dedicated data
+  engineering: the accessible r/AskaDocs corpora are gated, built for a
+  different task, or carry patient identity in free text that the controlled
+  perturbation cannot override, so each would need identity scrubbing and an
+  independent gold-labelling pass.
   \item \textbf{Region coverage.} Exercise the Southeast Asia and MENA
   Name-Bank regions, already constructed, to test whether the disparity
   generalises beyond the three South regions reported here.
-  \item \textbf{Intersectional analysis.} Cross the geographic axis with
-  gender and disease severity to test for compounding effects.
+  \item \textbf{Deeper intersectional work.} The gender $\times$ region runs
+  here use one seed each; multi-seed intersectional runs, and crossing in
+  disease severity, would turn the qualitative gender interaction into a
+  quantitative one.
   \item \textbf{Clinician inter-rater agreement.} Complete the
   board-certified-clinician double-labelling exercise and report Cohen's
   $\kappa$ on the gold labels.
