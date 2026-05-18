@@ -253,11 +253,11 @@ in this report:
   SHA-256-keyed idempotency cache, per-model token-bucket rate limiting, and a
   manifest hasher that pins datasets and the Name-Bank to every run
   (\S\ref{sec:architecture}).
-  \item \textbf{Five executed experiments.} A synthetic pilot, an OncQA
+  \item \textbf{Six executed experiments.} A synthetic pilot, an OncQA
   real-data scaling experiment, a Name/Geo/Combined perturbation ablation, a
-  three-seed robustness check, and an intersectional gender-by-region run. All
-  were run against live model APIs, and every number traces to a timestamped
-  run directory (\S\ref{sec:results}).
+  three-seed robustness check, an intersectional gender-by-region run, and a
+  five-region coverage run. All were run against live model APIs, and every
+  number traces to a timestamped run directory (\S\ref{sec:results}).
   \item \textbf{An empirical finding.} On real clinician-written oncology
   correspondence, geographic identity perturbation produces a small but
   consistently positive GDI (mean $+0.014$ to $+0.020$ across seeds). To our
@@ -664,6 +664,7 @@ OncQA multi-seed 13 & 60 cases, 4 regions, 2 models & \texttt{20260518T102557Z} 
 Intersectional: male & 60 cases, 4 regions, 2 models & \texttt{20260518T103408Z} & Bedrock\\
 \rowcolor{rowalt}
 Intersectional: female & 60 cases, 4 regions, 2 models & \texttt{20260518T104220Z} & Bedrock\\
+OncQA all regions & 60 cases, 6 regions, 2 models & \texttt{20260518T133530Z} & Bedrock\\
 \end{tabularx}
 \captionof{table}{The executed experiments. Every number in
 \S\ref{sec:results} traces to the cited run directory's
@@ -1085,6 +1086,55 @@ fairness audit that fixes gender (as the main OncQA run implicitly does by
 pooling) can mask a disparity that is real for one gender and absent for the
 other.
 
+\subsection{Regional Coverage: All Five South Regions}
+\label{sec:regions}
+
+The headline OncQA run pools three Global-South regions. The Name Bank also
+holds Southeast Asia and MENA, so the audit was extended to all five South
+regions in one seed-42 run on the Bedrock panel (run
+\texttt{20260518T133530Z}, 60 cases $\times$ 6 conditions $\times$ 2 models).
+Table~\ref{tab:regions} reports the per-region GDI.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}l c c@{}}
+\rowcolor{headerbg}
+\textcolor{headertext}{\textbf{Region}} &
+\textcolor{headertext}{\textbf{Claude-Haiku-4.5}} &
+\textcolor{headertext}{\textbf{Llama-3.3-70B}}\\
+\rowcolor{rowalt}
+\textbf{South Asia}         & $-0.027$ & $-0.018$\\
+\textbf{Sub-Saharan Africa} & $-0.027$ & $-0.027$\\
+\rowcolor{rowalt}
+\textbf{Southeast Asia}     & $-0.027$ & $-0.036$\\
+\textbf{MENA}               & $-0.018$ & $+0.009$\\
+\rowcolor{rowalt}
+\textbf{Latin America}      & $-0.027$ & $-0.027$\\
+\textit{Pooled (5 regions)} & \textit{$-0.025$} & \textit{$-0.020$}\\
+\end{tabular}
+\captionof{table}{Per-region OncQA GDI (run \texttt{20260518T133530Z}, $n=60$,
+seed 42, Bedrock panel). Per-region figures are computed from
+\texttt{annotated.jsonl} by \pathtt{scripts/per_region_gdi.py}; the pooled row
+is the all-region GDI from \texttt{summaries.json}.}
+\label{tab:regions}
+\end{center}
+
+Two points. First, the two newly-added regions behave like the original
+three: Southeast Asia ($-0.027$ Claude, $-0.036$ Llama) and MENA ($-0.018$
+Claude, $+0.009$ Llama) sit in the same narrow band as South Asia,
+Sub-Saharan Africa, and Latin America. No region produces a large or distinct
+disparity, and the geographic effect does not concentrate on any one region.
+Second, every per-region GDI in this run is small and most are slightly
+\emph{negative}, even though the headline seed-42 run (Table~\ref{tab:oncqa})
+and the multi-seed mean (Table~\ref{tab:multiseed}) are positive. The
+explanation is the same run-to-run variance documented in
+\S\ref{sec:multiseed}: the seed fixes the perturbation, but generation runs at
+temperature $0.2$, so two runs draw different completions and a GDI of small
+absolute size can flip sign. This run is one more draw from a distribution
+centred near zero, and it reinforces the main reading: the geographic effect
+is real in direction on average but small enough that any single run is noisy.
+
 % ══════════════════════════════════════════════════════════════════════════════
 \section{Analysis and Discussion}
 \label{sec:analysis}
@@ -1278,15 +1328,15 @@ its mitigation or its status as an acknowledged limitation.
   healthcare-system priors. The \textsc{Geo}-only ablation isolates the
   geographic channel but cannot separate ``perceived identity'' from
   ``inferred health-system context''; disentangling these is future work.
-  \item[Coverage.] Two Name-Bank regions (Southeast Asia, MENA) were not
-  exercised. Two further real datasets (r/AskaDocs, USMLE+Derm) were
-  attempted but not run: the accessible r/AskaDocs corpora are either gated,
-  built for a clarifying-question task with no triage-recommendation gold, or
-  raw Reddit text with patient identity already baked in (which a controlled
-  perturbation cannot cleanly override), and USMLE-style material is
-  multiple-choice exam question answering that does not fit the
+  \item[Coverage.] All six Name-Bank regions were exercised
+  (\S\ref{sec:regions}). Two further real datasets (r/AskaDocs, USMLE+Derm)
+  were attempted but not run: the accessible r/AskaDocs corpora are either
+  gated, built for a clarifying-question task with no triage-recommendation
+  gold, or raw Reddit text with patient identity already baked in (which a
+  controlled perturbation cannot cleanly override), and USMLE-style material
+  is multiple-choice exam question answering that does not fit the
   patient-message triage design. The reported findings are therefore scoped to
-  OncQA oncology correspondence and three South regions.
+  OncQA oncology correspondence.
   \item[Reproducibility.] Every number traces to a timestamped run directory;
   the dataset and Name-Bank SHA-256 hashes are pinned in
   \texttt{manifest.json}; the cache keys every LLM call by
@@ -1358,9 +1408,6 @@ The items below extend the audit beyond the scope completed in this report.
   different task, or carry patient identity in free text that the controlled
   perturbation cannot override, so each would need identity scrubbing and an
   independent gold-labelling pass.
-  \item \textbf{Region coverage.} Exercise the Southeast Asia and MENA
-  Name-Bank regions, already constructed, to test whether the disparity
-  generalises beyond the three South regions reported here.
   \item \textbf{Deeper intersectional work.} The gender $\times$ region runs
   here use one seed each; multi-seed intersectional runs, and crossing in
   disease severity, would turn the qualitative gender interaction into a
