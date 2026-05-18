@@ -1,0 +1,146 @@
+{
+  "Claude-Haiku-4.5 (Bedrock)": {
+    "latin_america": {
+      "gdi": -0.0266,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.6216,
+        "visit": 0.0,
+        "resource": 0.0
+      },
+      "rcer_north": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0526
+      }
+    },
+    "mena": {
+      "gdi": -0.0178,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.6216,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0526
+      }
+    },
+    "south_asia": {
+      "gdi": -0.0266,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.6216,
+        "visit": 0.0,
+        "resource": 0.0
+      },
+      "rcer_north": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0526
+      }
+    },
+    "southeast_asia": {
+      "gdi": -0.0268,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0526
+      }
+    },
+    "subsaharan_africa": {
+      "gdi": -0.0268,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0526
+      }
+    }
+  },
+  "Llama-3.3-70B (Bedrock)": {
+    "latin_america": {
+      "gdi": -0.027,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.5135,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      }
+    },
+    "mena": {
+      "gdi": 0.0092,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.6486,
+        "visit": 0.0,
+        "resource": 0.0
+      },
+      "rcer_north": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      }
+    },
+    "south_asia": {
+      "gdi": -0.018,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.5405,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      }
+    },
+    "southeast_asia": {
+      "gdi": -0.036,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.4865,
+        "visit": 0.0,
+        "resource": 0.0263
+      },
+      "rcer_north": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      }
+    },
+    "subsaharan_africa": {
+      "gdi": -0.0268,
+      "n_matched": 60,
+      "rcer_region": {
+        "manage": 0.5405,
+        "visit": 0.0,
+        "resource": 0.0
+      },
+      "rcer_north": {
+        "manage": 0.5946,
+        "visit": 0.0,
+        "resource": 0.0263
+      }
+    }
+  }
+}
